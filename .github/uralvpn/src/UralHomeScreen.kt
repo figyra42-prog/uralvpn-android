@@ -68,7 +68,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -286,38 +288,16 @@ fun UralHomeScreen(
     }
 
     val scaffoldPadding = LocalScaffoldPadding.current
+    // The connect button stays on top; the list scrolls "under" it and fades out (like in Happ).
+    var headerPx by remember { mutableIntStateOf(0) }
+    val headerDp = with(LocalDensity.current) { headerPx.toDp() }
+    val pageColor = MaterialTheme.colorScheme.background
+    Box(modifier = Modifier.fillMaxSize().padding(scaffoldPadding)) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(scaffoldPadding),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 16.dp, bottom = if (showStatusBar) 84.dp else 24.dp),
+        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = headerDp, bottom = if (showStatusBar) 84.dp else 24.dp),
     ) {
-        item(key = "connect") {
-            UralConnectButton(
-                isOn = serviceStatus == Status.Started || serviceStatus == Status.Starting,
-                onClick = {
-                    if (profile == null) {
-                        onOpenNewProfile(NewProfileArgs())
-                    } else {
-                        dashboardViewModel.toggleService()
-                    }
-                },
-            )
-            Spacer(Modifier.height(4.dp))
-            val statusText = when (serviceStatus) {
-                Status.Started -> if (group != null && group.selected.isNotEmpty()) "Подключено · ${group.selected}" else "Подключено"
-                Status.Starting -> "Подключение…"
-                Status.Stopping -> "Отключение…"
-                else -> if (profile == null) "Добавьте подписку" else "Отключено"
-            }
-            Text(
-                text = statusText,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Spacer(Modifier.height(12.dp))
-        }
         info?.let { value ->
             item(key = "card") {
                 UralSubscriptionCard(
@@ -373,6 +353,46 @@ fun UralHomeScreen(
                 onDelete = { toDelete = other },
             )
         }
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .onSizeChanged { headerPx = it.height }
+            .background(
+                Brush.verticalGradient(
+                    0f to pageColor,
+                    0.78f to pageColor,
+                    1f to pageColor.copy(alpha = 0f),
+                ),
+            )
+            .padding(top = 16.dp, bottom = 22.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        UralConnectButton(
+            isOn = serviceStatus == Status.Started || serviceStatus == Status.Starting,
+            onClick = {
+                if (profile == null) {
+                    onOpenNewProfile(NewProfileArgs())
+                } else {
+                    dashboardViewModel.toggleService()
+                }
+            },
+        )
+        Spacer(Modifier.height(4.dp))
+        val statusText = when (serviceStatus) {
+            Status.Started -> if (group != null && group.selected.isNotEmpty()) "Подключено · ${group.selected}" else "Подключено"
+            Status.Starting -> "Подключение…"
+            Status.Stopping -> "Отключение…"
+            else -> if (profile == null) "Добавьте подписку" else "Отключено"
+        }
+        Text(
+            text = statusText,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
     }
 }
 
