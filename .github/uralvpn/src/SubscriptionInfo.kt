@@ -20,8 +20,17 @@ data class SubInfo(
     val total: Long,
     val expireSeconds: Long,
     val announce: String?,
+    val supportUrl: String? = null,
+    val webUrl: String? = null,
 ) {
     val fraction: Float? get() = if (total > 0) (used.toDouble() / total).toFloat().coerceIn(0f, 1f) else null
+}
+
+private fun safeLink(raw: String?): String? {
+    val value = raw?.trim().orEmpty()
+    if (value.isEmpty() || value.length > 2048) return null
+    val scheme = runCatching { java.net.URI(value).scheme?.lowercase(Locale.ROOT) }.getOrNull() ?: return null
+    return value.takeIf { scheme == "http" || scheme == "https" || scheme == "tg" }
 }
 
 object SubInfoCache {
@@ -72,6 +81,8 @@ fun fetchSubInfo(url: String): SubInfo? = runCatching {
                 total = fields["total"] ?: 0L,
                 expireSeconds = if (expire >= 100_000_000_000L) expire / 1000 else expire,
                 announce = announce,
+                supportUrl = safeLink(connection.getHeaderField("support-url")),
+                webUrl = safeLink(connection.getHeaderField("profile-web-page-url")),
             )
         }
     } finally {

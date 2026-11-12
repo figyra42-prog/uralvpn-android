@@ -1,5 +1,7 @@
 package io.nekohasekai.sfa.compose.screen.dashboard
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,8 +23,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.SupportAgent
+import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,6 +54,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -111,10 +120,25 @@ fun UralHomeScreen(
 
     val group = groupsState.groups.firstOrNull { it.selectable }
     val running = serviceStatus == Status.Started
-    val rows = if (running && group != null) {
+    val allRows = if (running && group != null) {
         group.items.map { LocationRow(it.tag, it.displayType, it.urlTestDelay, it.tag == group.selected) }
     } else {
         offlineNames.map { LocationRow(it, "", null, false) }
+    }
+    // The autopilot is the first entry: it stays on top, the rest can be sorted by ping, and a
+    // collapsed list shows only the autopilot (like the old app).
+    var collapsed by remember { mutableStateOf(false) }
+    var sortByPing by remember { mutableStateOf(false) }
+    val first = allRows.firstOrNull()
+    val rest = allRows.drop(1).let { others ->
+        if (sortByPing) others.sortedBy { r -> r.delay?.takeIf { it in 1..65534 } ?: Int.MAX_VALUE } else others
+    }
+    val rows = if (first == null) emptyList() else if (collapsed) listOf(first) else listOf(first) + rest
+    val context = LocalContext.current
+    val openLink: (String) -> Unit = { url ->
+        runCatching {
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }
     }
 
     OverrideTopBar {
@@ -169,7 +193,17 @@ fun UralHomeScreen(
         }
         info?.let { value ->
             item(key = "card") {
-                UralSubscriptionCard(value, profile?.name.orEmpty())
+                UralSubscriptionCard(
+                    info = value,
+                    fallbackTitle = profile?.name.orEmpty(),
+                    collapsed = collapsed,
+                    sortByPing = sortByPing,
+                    pingEnabled = running && group != null,
+                    onToggleCollapse = { collapsed = !collapsed },
+                    onOpenLink = openLink,
+                    onPing = { group?.let { groupsViewModel.urlTestGroup(it.tag) } },
+                    onToggleSort = { sortByPing = !sortByPing },
+                )
                 Spacer(Modifier.height(8.dp))
             }
         }
@@ -231,56 +265,98 @@ private fun UralConnectButton(isOn: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun UralSubscriptionCard(info: SubInfo, fallbackTitle: String) {
+private fun UralSubscriptionCard(
+    info: SubInfo,
+    fallbackTitle: String,
+    collapsed: Boolean,
+    sortByPing: Boolean,
+    pingEnabled: Boolean,
+    onToggleCollapse: () -> Unit,
+    onOpenLink: (String) -> Unit,
+    onPing: () -> Unit,
+    onToggleSort: () -> Unit,
+) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.97f),
         border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
     ) {
-        Column(Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
-            Text(
-                text = info.title ?: fallbackTitle,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Spacer(Modifier.height(6.dp))
-            val low = (info.fraction ?: 0f) >= 0.9f
-            val expired = info.expireSeconds > 0 && info.expireSeconds * 1000 <= System.currentTimeMillis()
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Column(Modifier.padding(start = 8.dp, end = 8.dp, top = 2.dp, bottom = 10.dp)) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onToggleCollapse, modifier = Modifier.size(36.dp)) {
+                    Icon(
+                        imageVector = if (collapsed) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
+                        contentDescription = if (collapsed) "Показать все локации" else "Свернуть до автопилота",
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
                 Text(
-                    text = "Трафик: ${formatTraffic(info.used)} / ${if (info.total > 0) formatTraffic(info.total) else "∞"}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (low) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                    text = info.title ?: fallbackTitle,
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
                     maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
-                Text(
-                    text = "До: ${if (info.expireSeconds > 0) formatExpire(info.expireSeconds) else "∞"}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (expired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                )
+                info.supportUrl?.let { url ->
+                    IconButton(onClick = { onOpenLink(url) }, modifier = Modifier.size(36.dp)) {
+                        Icon(Icons.Default.SupportAgent, contentDescription = "Поддержка", modifier = Modifier.size(22.dp))
+                    }
+                }
+                info.webUrl?.let { url ->
+                    IconButton(onClick = { onOpenLink(url) }, modifier = Modifier.size(36.dp)) {
+                        Icon(Icons.Default.Info, contentDescription = "Страница подписки", modifier = Modifier.size(22.dp))
+                    }
+                }
+                IconButton(onClick = onPing, enabled = pingEnabled, modifier = Modifier.size(36.dp)) {
+                    Icon(Icons.Default.Speed, contentDescription = "Проверить пинг всех", modifier = Modifier.size(22.dp))
+                }
+                IconButton(onClick = onToggleSort, modifier = Modifier.size(36.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.SwapVert,
+                        contentDescription = "Сортировать по пингу",
+                        modifier = Modifier.size(22.dp),
+                        tint = if (sortByPing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
-            info.fraction?.let { fraction ->
-                Spacer(Modifier.height(4.dp))
-                LinearProgressIndicator(
-                    progress = { fraction },
-                    modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
-                    color = if (low) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                )
-            }
-            info.announce?.let { announce ->
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    text = announce,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+            Column(Modifier.padding(horizontal = 8.dp)) {
+                val low = (info.fraction ?: 0f) >= 0.9f
+                val expired = info.expireSeconds > 0 && info.expireSeconds * 1000 <= System.currentTimeMillis()
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(
+                        text = "Трафик: ${formatTraffic(info.used)} / ${if (info.total > 0) formatTraffic(info.total) else "∞"}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (low) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                    )
+                    Text(
+                        text = "До: ${if (info.expireSeconds > 0) formatExpire(info.expireSeconds) else "∞"}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (expired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                    )
+                }
+                info.fraction?.let { fraction ->
+                    Spacer(Modifier.height(4.dp))
+                    LinearProgressIndicator(
+                        progress = { fraction },
+                        modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
+                        color = if (low) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    )
+                }
+                info.announce?.let { announce ->
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = announce,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
         }
     }
