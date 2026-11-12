@@ -15,7 +15,8 @@ import java.io.Closeable
 //   server 0.0.0.0:1) unless the request carries a device id (x-hwid), so device headers are sent;
 // - the panel's sing-box profile has the direct servers only, its CDN (XHTTP) servers come in the
 //   Xray JSON subscription: the same link is fetched again as an Xray client and both are merged in
-//   the core (direct servers -> CDN autopilot, like the panel's Xray "Two Tier" template).
+//   the core (direct servers -> CDN autopilot, like the panel's Xray "Two Tier" template);
+// - the location descriptions the panel gives to the Happ client are saved next to the profile.
 class HTTPClient : Closeable {
     companion object {
         private const val TAG = "HTTPClient"
@@ -31,6 +32,16 @@ class HTTPClient : Closeable {
                 val id = Settings.Secure.getString(Application.application.contentResolver, Settings.Secure.ANDROID_ID)
                 id
             }.getOrNull()?.takeIf { it.isNotBlank() } ?: "uralvpn-${Build.MODEL}"
+        }
+
+        fun descriptionsFile(url: String): java.io.File {
+            val name = java.security.MessageDigest.getInstance("SHA-256").digest(url.toByteArray())
+                .joinToString("") { "%02x".format(it) }.take(16)
+            return java.io.File(Application.application.filesDir, "ural-desc-$name.json")
+        }
+
+        private fun saveDescriptions(url: String, json: String) {
+            descriptionsFile(url).writeText(json)
         }
 
         private fun isSubscriptionHost(url: String): Boolean = !url.contains("github.com") && !url.contains("githubusercontent.com")
@@ -68,6 +79,7 @@ class HTTPClient : Closeable {
         }
         return runCatching {
             val xray = fetch(url, XRAY_USER_AGENT)
+            runCatching { saveDescriptions(url, Libbox.uralvpnDescriptions(xray)) }
             Libbox.uralvpnMergeSubscription(content, xray)
         }.onFailure {
             Log.w(TAG, "merge CDN servers", it)

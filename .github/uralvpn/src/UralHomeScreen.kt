@@ -72,7 +72,7 @@ import io.nekohasekai.sfa.constant.Status
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-private data class LocationRow(val tag: String, val type: String, val delay: Int?, val selected: Boolean)
+private data class LocationRow(val tag: String, val type: String, val delay: Int?, val selected: Boolean, val description: String = "")
 
 // UralVPN home screen in the style of the old uralvpn-app: big connect button, status line,
 // subscription card (traffic, expiry, panel announcement) and the list of locations.
@@ -118,12 +118,19 @@ fun UralHomeScreen(
         }
     }
 
+    var descriptions by remember(profileId) { mutableStateOf(emptyMap<String, String>()) }
+    LaunchedEffect(profileId, remoteUrl, uiState.updatedProfileId, uiState.isLoading) {
+        if (remoteUrl.isNotEmpty()) {
+            descriptions = withContext(Dispatchers.IO) { readDescriptions(remoteUrl) }
+        }
+    }
+
     val group = groupsState.groups.firstOrNull { it.selectable }
     val running = serviceStatus == Status.Started
     val allRows = if (running && group != null) {
-        group.items.map { LocationRow(it.tag, it.displayType, it.urlTestDelay, it.tag == group.selected) }
+        group.items.map { LocationRow(it.tag, it.displayType, it.urlTestDelay, it.tag == group.selected, descriptions[it.tag].orEmpty()) }
     } else {
-        offlineNames.map { LocationRow(it, "", null, false) }
+        offlineNames.map { LocationRow(it, "", null, false, descriptions[it].orEmpty()) }
     }
     // The autopilot is the first entry: it stays on top, the rest can be sorted by ping, and a
     // collapsed list shows only the autopilot (like the old app).
@@ -385,6 +392,15 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, onClick: () -> U
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            if (row.description.isNotEmpty()) {
+                Text(
+                    text = row.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
             if (row.type.isNotEmpty()) {
                 Text(row.type, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

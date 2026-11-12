@@ -105,6 +105,12 @@ fun readSelectorNames(path: String): List<String> = runCatching {
     names
 }.getOrDefault(emptyList())
 
+// Location descriptions the panel gives to the Happ client (saved by HTTPClient at each update).
+fun readDescriptions(url: String): Map<String, String> = runCatching {
+    val json = JSONObject(HTTPClient.descriptionsFile(url).readText())
+    json.keys().asSequence().associateWith { json.getString(it) }
+}.getOrDefault(emptyMap())
+
 fun formatTraffic(bytes: Long): String {
     if (bytes < 1024) return "$bytes B"
     val units = arrayOf("KB", "MB", "GB", "TB")
