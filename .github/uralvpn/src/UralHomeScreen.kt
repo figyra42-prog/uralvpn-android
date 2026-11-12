@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -59,6 +60,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -383,9 +385,21 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, onClick: () -> U
             .padding(horizontal = 14.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // The leading emoji of the name (the flag) is drawn large over both lines, like in the old app.
+        val flagEnd = row.tag.indexOf(' ').let { if (it > 0) it else 0 }
+        val head = row.tag.substring(0, flagEnd)
+        val hasFlag = head.isNotEmpty() && head.none { it.isLetterOrDigit() }
+        if (hasFlag) {
+            Text(
+                text = head,
+                fontSize = 34.sp,
+                modifier = Modifier.width(58.dp),
+                maxLines = 1,
+            )
+        }
         Column(Modifier.weight(1f)) {
             Text(
-                text = row.tag,
+                text = if (hasFlag) row.tag.substring(flagEnd).trim() else row.tag,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = if (row.selected) FontWeight.Bold else FontWeight.Normal,
                 color = if (row.selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
@@ -400,9 +414,6 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, onClick: () -> U
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
-            }
-            if (row.type.isNotEmpty()) {
-                Text(row.type, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         val delay = row.delay
