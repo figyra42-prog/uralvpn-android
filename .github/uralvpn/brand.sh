@@ -84,6 +84,7 @@ fi
 D=$SFA/app/src/main/java/io/nekohasekai/sfa/compose/screen/dashboard
 cp "$HERE/src/UralHomeScreen.kt" "$D/UralHomeScreen.kt"
 cp "$HERE/src/SubscriptionInfo.kt" "$D/SubscriptionInfo.kt"
+cp "$HERE/src/UralDrawer.kt" "$D/UralDrawer.kt"
 python3 -I - "$SFA" <<'PY'
 import re
 import sys
@@ -110,3 +111,6 @@ m = fab.sub(lambda x: "visible = false &&" + x.group(1) + "currentServiceStatus 
 open(main, "w").write(m)
 print("home screen applied")
 PY
+
+# Side menu (burger) instead of the bottom tabs, like in the old app.
+python3 -I "$HERE/patch_nav.py" "$SFA"

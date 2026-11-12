@@ -24,6 +24,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Info
@@ -39,6 +42,8 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,6 +51,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -72,6 +78,7 @@ import io.nekohasekai.sfa.compose.topbar.LocalScaffoldPadding
 import io.nekohasekai.sfa.compose.topbar.OverrideTopBar
 import io.nekohasekai.sfa.constant.Status
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private data class LocationRow(val tag: String, val type: String, val delay: Int?, val selected: Boolean, val description: String = "")
@@ -87,6 +94,10 @@ fun UralHomeScreen(
     dashboardViewModel: DashboardViewModel,
 ) {
     val uiState by dashboardViewModel.uiState.collectAsState()
+    val drawer = LocalUralDrawer.current
+    val scope = rememberCoroutineScope()
+    var searchOpen by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
     val groupsViewModel: GroupsViewModel = viewModel(
         key = "ural-home-groups",
         factory = object : ViewModelProvider.Factory {
@@ -129,10 +140,13 @@ fun UralHomeScreen(
 
     val group = groupsState.groups.firstOrNull { it.selectable }
     val running = serviceStatus == Status.Started
-    val allRows = if (running && group != null) {
+    val baseRows = if (running && group != null) {
         group.items.map { LocationRow(it.tag, it.displayType, it.urlTestDelay, it.tag == group.selected, descriptions[it.tag].orEmpty()) }
     } else {
         offlineNames.map { LocationRow(it, "", null, false, descriptions[it].orEmpty()) }
+    }
+    val allRows = if (query.isBlank()) baseRows else baseRows.filter {
+        it.tag.contains(query.trim(), ignoreCase = true) || it.description.contains(query.trim(), ignoreCase = true)
     }
     // The autopilot is the first entry: it stays on top, the rest can be sorted by ping, and a
     // collapsed list shows only the autopilot (like the old app).
@@ -142,7 +156,7 @@ fun UralHomeScreen(
     val rest = allRows.drop(1).let { others ->
         if (sortByPing) others.sortedBy { r -> r.delay?.takeIf { it in 1..65534 } ?: Int.MAX_VALUE } else others
     }
-    val rows = if (first == null) emptyList() else if (collapsed) listOf(first) else listOf(first) + rest
+    val rows = if (first == null) emptyList() else if (collapsed && query.isBlank()) listOf(first) else listOf(first) + rest
     val context = LocalContext.current
     val openLink: (String) -> Unit = { url ->
         runCatching {
@@ -152,8 +166,45 @@ fun UralHomeScreen(
 
     OverrideTopBar {
         TopAppBar(
-            title = { Text("🏔 UralVPN", fontWeight = FontWeight.Bold) },
+            title = {
+                if (searchOpen) {
+                    TextField(
+                        value = query,
+                        onValueChange = { query = it },
+                        singleLine = true,
+                        placeholder = { Text("Поиск") },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                        ),
+                    )
+                } else {
+                    Text("🏔 UralVPN", fontWeight = FontWeight.Bold)
+                }
+            },
+            navigationIcon = {
+                IconButton(onClick = {
+                    if (searchOpen) {
+                        searchOpen = false
+                        query = ""
+                    } else {
+                        drawer?.let { scope.launch { it.open() } }
+                    }
+                }) {
+                    Icon(
+                        imageVector = if (searchOpen) Icons.Default.Close else Icons.Default.Menu,
+                        contentDescription = if (searchOpen) "Закрыть поиск" else "Меню",
+                    )
+                }
+            },
             actions = {
+                if (!searchOpen) {
+                    IconButton(onClick = { searchOpen = true }) {
+                        Icon(Icons.Default.Search, contentDescription = "Поиск")
+                    }
+                }
                 if (profile != null && remoteUrl.isNotEmpty()) {
                     IconButton(onClick = {
                         dashboardViewModel.updateProfile(profile)
