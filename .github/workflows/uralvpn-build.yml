@@ -46,6 +46,7 @@ jobs:
         working-directory: sing-box
         run: |
           export GOTOOLCHAIN=local
+          export CGO_LDFLAGS_ALLOW='-l:libcronet\.a'
           mkdir -p ../sing-box-for-android/app/libs
           make lib_install
           go run ./cmd/internal/build_libbox -target android
