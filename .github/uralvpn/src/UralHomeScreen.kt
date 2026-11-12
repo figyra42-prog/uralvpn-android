@@ -296,7 +296,7 @@ fun UralHomeScreen(
     val headerDp = with(LocalDensity.current) { headerPx.toDp() }
     val pageColor = MaterialTheme.colorScheme.background
     val listState = rememberLazyListState()
-    val fadeZonePx = with(LocalDensity.current) { 96.dp.toPx() }
+    val fadeZonePx = with(LocalDensity.current) { 36.dp.toPx() }
     Box(modifier = Modifier.fillMaxSize().padding(scaffoldPadding)) {
     LazyColumn(
         state = listState,
@@ -652,12 +652,12 @@ private fun Modifier.edgeShrink(state: LazyListState, key: Any, topPx: Int, zone
     val top = item.offset.toFloat()
     val bottom = top + item.size
     val fromTop = ((top - topPx + zonePx) / zonePx).coerceIn(0f, 1f)
-    val fromBottom = ((layout.viewportEndOffset - bottom) / zonePx + 0.25f).coerceIn(0f, 1f)
+    val fromBottom = ((layout.viewportEndOffset - bottom) / zonePx).coerceIn(0f, 1f)
     val f = minOf(fromTop, fromBottom)
-    val scale = 0.82f + 0.18f * f
+    val scale = 0.95f + 0.05f * f
     scaleX = scale
     scaleY = scale
-    alpha = 0.25f + 0.75f * f
+    alpha = 0.55f + 0.45f * f
 }
 
 // Look of a raised plaque: the top is a bit lighter than the bottom ...
