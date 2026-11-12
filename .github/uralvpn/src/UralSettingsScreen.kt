@@ -16,6 +16,7 @@ import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.PowerSettingsNew
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
@@ -25,10 +26,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -36,6 +41,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.nekohasekai.sfa.BuildConfig
+import io.nekohasekai.sfa.bg.UralAutostart
 import io.nekohasekai.sfa.compose.topbar.LocalScaffoldPadding
 import io.nekohasekai.sfa.compose.topbar.OverrideTopBar
 import io.nekohasekai.sfa.update.UpdateState
@@ -53,6 +59,7 @@ fun SettingsScreen(navController: NavController) {
 
     val context = LocalContext.current
     val hasUpdate by UpdateState.hasUpdate
+    var autostart by remember { mutableStateOf(UralAutostart.enabled) }
     val scaffoldPadding = LocalScaffoldPadding.current
 
     Column(
@@ -90,6 +97,27 @@ fun SettingsScreen(navController: NavController) {
                         Icon(Icons.Outlined.Tune, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     },
                     modifier = Modifier.clickable { navController.navigate("settings/service") },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                )
+                ListItem(
+                    headlineContent = { Text("Автозапуск при включении устройства", style = MaterialTheme.typography.bodyLarge) },
+                    supportingContent = { Text("VPN включится сам после перезагрузки телефона") },
+                    leadingContent = {
+                        Icon(Icons.Outlined.PowerSettingsNew, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    },
+                    trailingContent = {
+                        Switch(
+                            checked = autostart,
+                            onCheckedChange = {
+                                autostart = it
+                                UralAutostart.enabled = it
+                            },
+                        )
+                    },
+                    modifier = Modifier.clickable {
+                        autostart = !autostart
+                        UralAutostart.enabled = autostart
+                    },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
                 ListItem(

@@ -77,3 +77,12 @@ new = """                onProfileCreated = { _ ->
 assert n.count(old) == 1, "onProfileCreated not found"
 open(nav, "w").write(n.replace(old, new, 1))
 print("add-subscription flow applied")
+
+# 5) autostart: the device boot starts the VPN when the "start with the device" switch is on
+#    (the original starts it only if it was running before the reboot)
+boot = root + "/app/src/main/java/io/nekohasekai/sfa/bg/BootReceiver.kt"
+b = open(boot).read()
+old = "                if (Settings.startedByUser) {"
+assert b.count(old) == 1, "BootReceiver condition not found"
+open(boot, "w").write(b.replace(old, "                if (UralAutostart.enabled) {", 1))
+print("autostart applied")

@@ -85,6 +85,8 @@ D=$SFA/app/src/main/java/io/nekohasekai/sfa/compose/screen/dashboard
 cp "$HERE/src/UralHomeScreen.kt" "$D/UralHomeScreen.kt"
 cp "$HERE/src/SubscriptionInfo.kt" "$D/SubscriptionInfo.kt"
 cp "$HERE/src/UralDrawer.kt" "$D/UralDrawer.kt"
+# Autostart switch (read by BootReceiver, patched in patch_nav.py)
+cp "$HERE/src/UralAutostart.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/bg/UralAutostart.kt"
 # Short settings list (replaces the SFA SettingsScreen, same package and signature)
 cp "$HERE/src/UralSettingsScreen.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/compose/screen/settings/SettingsScreen.kt"
 python3 -I - "$SFA" <<'PY'
