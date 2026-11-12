@@ -17,10 +17,11 @@ class HTTPClient : Closeable {
             "SFA/1.13.0 (Android ${Build.VERSION.RELEASE})"
         }
 
-        @SuppressLint("HardwareIds")
         val hwid: String by lazy {
             runCatching {
-                Settings.Secure.getString(Application.application.contentResolver, Settings.Secure.ANDROID_ID)
+                @SuppressLint("HardwareIds")
+                val id = Settings.Secure.getString(Application.application.contentResolver, Settings.Secure.ANDROID_ID)
+                id
             }.getOrNull()?.takeIf { it.isNotBlank() } ?: "uralvpn-${Build.MODEL}"
         }
     }
