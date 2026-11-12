@@ -78,3 +78,35 @@ open(p, "w").write(s.replace(anchor, add + anchor, 1))
 print("systemCertificates added")
 PY
 fi
+
+# Home screen in the style of the old app (UralHomeScreen) replaces the SFA dashboard,
+# and the SFA round start button is hidden (the big connect button does that job).
+D=$SFA/app/src/main/java/io/nekohasekai/sfa/compose/screen/dashboard
+cp "$HERE/src/UralHomeScreen.kt" "$D/UralHomeScreen.kt"
+cp "$HERE/src/SubscriptionInfo.kt" "$D/SubscriptionInfo.kt"
+python3 -I - "$SFA" <<'PY'
+import re
+import sys
+
+root = sys.argv[1]
+nav = root + "/app/src/main/java/io/nekohasekai/sfa/compose/navigation/Navigation.kt"
+s = open(nav).read()
+call = re.compile(r"DashboardScreen\(\s*serviceStatus = serviceStatus,\s*showStartFab = showStartFab,\s*showStatusBar = showStatusBar,\s*onOpenNewProfile = onOpenNewProfile,\s*viewModel = dashboardViewModel,\s*\)")
+assert len(call.findall(s)) == 1, "dashboard call not found"
+s = call.sub("UralHomeScreen(serviceStatus = serviceStatus, showStatusBar = showStatusBar, onOpenNewProfile = onOpenNewProfile, dashboardViewModel = dashboardViewModel)", s)
+imp = "import io.nekohasekai.sfa.compose.screen.dashboard.DashboardScreen\n"
+assert imp in s, "DashboardScreen import not found"
+s = s.replace(imp, imp + "import io.nekohasekai.sfa.compose.screen.dashboard.UralHomeScreen\n", 1)
+open(nav, "w").write(s)
+
+main = root + "/app/src/main/java/io/nekohasekai/sfa/compose/MainActivity.kt"
+m = open(main).read()
+a = "val showStartFab = !isRemote && !serviceRunning && dashboardUiState.selectedProfileId != -1L"
+assert m.count(a) == 1, "showStartFab not found"
+m = m.replace(a, "val showStartFab = false")
+fab = re.compile(r"visible = !isRemote &&(\s+)currentServiceStatus == Status\.Stopped &&")
+assert len(fab.findall(m)) == 1, "start fab not found"
+m = fab.sub(lambda x: "visible = false &&" + x.group(1) + "currentServiceStatus == Status.Stopped &&", m)
+open(main, "w").write(m)
+print("home screen applied")
+PY
