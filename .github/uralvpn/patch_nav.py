@@ -33,3 +33,15 @@ assert imp in s, "import anchor not found"
 s = s.replace(imp, imp + "import io.nekohasekai.sfa.compose.screen.dashboard.UralDrawerHost\n", 1)
 open(main, "w").write(s)
 print("side menu applied")
+
+# 3) no bottom status panel (the big connect button does that job) and no "deprecated option"
+#    pop-ups: they come from the panel's sing-box profile, which the core still understands
+bar2 = "val showStatusBar = isRemote || serviceRunning || currentServiceStatus == Status.Stopping"
+s = open(main).read()
+assert s.count(bar2) == 1, "showStatusBar not found"
+s = s.replace(bar2, "val showStatusBar = false")
+dep = "if (dashboardUiState.showDeprecatedDialog && dashboardUiState.deprecatedNotes.isNotEmpty()) {"
+assert s.count(dep) == 1, "deprecated dialog not found"
+s = s.replace(dep, "if (false && dashboardUiState.showDeprecatedDialog && dashboardUiState.deprecatedNotes.isNotEmpty()) {")
+open(main, "w").write(s)
+print("status bar and deprecated dialog hidden")
