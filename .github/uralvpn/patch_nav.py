@@ -45,3 +45,35 @@ assert s.count(dep) == 1, "deprecated dialog not found"
 s = s.replace(dep, "if (false && dashboardUiState.showDeprecatedDialog && dashboardUiState.deprecatedNotes.isNotEmpty()) {")
 open(main, "w").write(s)
 print("status bar and deprecated dialog hidden")
+
+# 4) adding a subscription: a scanned https link is accepted (SFA takes only sing-box:// links),
+#    and after the profile is created we go back to the home screen instead of the profile editor
+qr = root + "/app/src/main/java/io/nekohasekai/sfa/compose/screen/qrscan/QRScanViewModel.kt"
+q = open(qr).read()
+old = """            val uri = Uri.parse(value)
+            if (uri.scheme != "sing-box" || uri.host != "import-remote-profile") {"""
+new = """            var uri = Uri.parse(value.trim())
+            if (uri.scheme == "http" || uri.scheme == "https") {
+                uri = Uri.parse("sing-box://import-remote-profile?url=" + Uri.encode(value.trim()) + "#" + Uri.encode("UralVPN"))
+            }
+            if (uri.scheme != "sing-box" || uri.host != "import-remote-profile") {"""
+assert q.count(old) == 1, "QR processQRCode not found"
+open(qr, "w").write(q.replace(old, new, 1))
+
+nav = root + "/app/src/main/java/io/nekohasekai/sfa/compose/navigation/Navigation.kt"
+n = open(nav).read()
+old = """                onProfileCreated = { profileId ->
+                    onClearNewProfileArgs()
+                    navController.navigate(ProfileRoutes.editProfile(profileId)) {
+                        popUpTo(ProfileRoutes.NewProfile) {
+                            inclusive = true
+                        }
+                    }
+                },"""
+new = """                onProfileCreated = { _ ->
+                    onClearNewProfileArgs()
+                    navController.navigateUp()
+                },"""
+assert n.count(old) == 1, "onProfileCreated not found"
+open(nav, "w").write(n.replace(old, new, 1))
+print("add-subscription flow applied")

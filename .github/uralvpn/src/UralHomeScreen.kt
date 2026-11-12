@@ -24,7 +24,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentPaste
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ExpandLess
@@ -35,7 +38,11 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material.icons.filled.SwapVert
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -70,7 +77,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.nekohasekai.libbox.Libbox
+import io.nekohasekai.sfa.compose.component.qr.QRScanSheet
 import io.nekohasekai.sfa.compose.navigation.NewProfileArgs
+import io.nekohasekai.sfa.compose.screen.qrscan.QRScanResult
+import io.nekohasekai.sfa.database.Profile
+import androidx.compose.runtime.mutableStateMapOf
 import io.nekohasekai.sfa.compose.screen.dashboard.groups.GroupsViewModel
 import io.nekohasekai.sfa.compose.theme.LocalStatusColors
 import io.nekohasekai.sfa.compose.theme.UralLime
@@ -96,8 +108,9 @@ fun UralHomeScreen(
     val uiState by dashboardViewModel.uiState.collectAsState()
     val drawer = LocalUralDrawer.current
     val scope = rememberCoroutineScope()
-    var searchOpen by remember { mutableStateOf(false) }
-    var query by remember { mutableStateOf("") }
+    var addMenuOpen by remember { mutableStateOf(false) }
+    var showScan by remember { mutableStateOf(false) }
+    var toDelete by remember { mutableStateOf<Profile?>(null) }
     val groupsViewModel: GroupsViewModel = viewModel(
         key = "ural-home-groups",
         factory = object : ViewModelProvider.Factory {
@@ -140,6 +153,21 @@ fun UralHomeScreen(
         }
     }
 
+    val others = uiState.profiles.filter { it.id != profileId }
+    val otherInfo = remember { mutableStateMapOf<Long, SubInfo>() }
+    LaunchedEffect(others.map { it.id }, uiState.updatedProfileId) {
+        others.forEach { p ->
+            val url = p.typed.remoteURL
+            if (url.isNotEmpty()) {
+                SubInfoCache.map[p.id]?.let { otherInfo[p.id] = it }
+                withContext(Dispatchers.IO) { fetchSubInfo(url) }?.let {
+                    SubInfoCache.map[p.id] = it
+                    otherInfo[p.id] = it
+                }
+            }
+        }
+    }
+
     val group = groupsState.groups.firstOrNull { it.selectable }
     val running = serviceStatus == Status.Started
     val baseRows = if (running && group != null) {
@@ -147,9 +175,7 @@ fun UralHomeScreen(
     } else {
         offlineNames.map { LocationRow(it, "", null, false, descriptions[it].orEmpty()) }
     }
-    val allRows = if (query.isBlank()) baseRows else baseRows.filter {
-        it.tag.contains(query.trim(), ignoreCase = true) || it.description.contains(query.trim(), ignoreCase = true)
-    }
+    val allRows = baseRows
     // The autopilot is the first entry: it stays on top, the rest can be sorted by ping, and a
     // collapsed list shows only the autopilot (like the old app).
     var collapsed by remember { mutableStateOf(false) }
@@ -158,7 +184,7 @@ fun UralHomeScreen(
     val rest = allRows.drop(1).let { others ->
         if (sortByPing) others.sortedBy { r -> r.delay?.takeIf { it in 1..65534 } ?: Int.MAX_VALUE } else others
     }
-    val rows = if (first == null) emptyList() else if (collapsed && query.isBlank()) listOf(first) else listOf(first) + rest
+    val rows = if (first == null) emptyList() else if (collapsed) listOf(first) else listOf(first) + rest
     val context = LocalContext.current
     val openLink: (String) -> Unit = { url ->
         runCatching {
@@ -168,55 +194,86 @@ fun UralHomeScreen(
 
     OverrideTopBar {
         TopAppBar(
-            title = {
-                if (searchOpen) {
-                    TextField(
-                        value = query,
-                        onValueChange = { query = it },
-                        singleLine = true,
-                        placeholder = { Text("Поиск") },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                        ),
-                    )
-                } else {
-                    Text("🏔 UralVPN", fontWeight = FontWeight.Bold)
-                }
-            },
+            title = { Text("🏔 UralVPN", fontWeight = FontWeight.Bold) },
             navigationIcon = {
-                IconButton(onClick = {
-                    if (searchOpen) {
-                        searchOpen = false
-                        query = ""
-                    } else {
-                        drawer?.let { scope.launch { it.open() } }
-                    }
-                }) {
-                    Icon(
-                        imageVector = if (searchOpen) Icons.Default.Close else Icons.Default.Menu,
-                        contentDescription = if (searchOpen) "Закрыть поиск" else "Меню",
-                    )
+                IconButton(onClick = { drawer?.let { scope.launch { it.open() } } }) {
+                    Icon(imageVector = Icons.Default.Menu, contentDescription = "Меню")
                 }
             },
             actions = {
-                if (!searchOpen) {
-                    IconButton(onClick = { searchOpen = true }) {
-                        Icon(Icons.Default.Search, contentDescription = "Поиск")
-                    }
-                }
                 if (profile != null && remoteUrl.isNotEmpty()) {
                     IconButton(onClick = {
                         dashboardViewModel.updateProfile(profile)
                         refreshTick++
                     }) { Icon(Icons.Default.Refresh, contentDescription = "Обновить подписку") }
                 }
-                IconButton(onClick = { onOpenNewProfile(NewProfileArgs()) }) {
-                    Icon(Icons.Default.Add, contentDescription = "Добавить подписку")
+                Box {
+                    IconButton(onClick = { addMenuOpen = true }) {
+                        Icon(Icons.Default.Add, contentDescription = "Добавить подписку")
+                    }
+                    DropdownMenu(expanded = addMenuOpen, onDismissRequest = { addMenuOpen = false }) {
+                        DropdownMenuItem(
+                            text = { Text("Вставить из буфера обмена") },
+                            leadingIcon = { Icon(Icons.Default.ContentPaste, contentDescription = null) },
+                            onClick = {
+                                addMenuOpen = false
+                                val link = readClipboardLink(context)
+                                if (link == null) {
+                                    android.widget.Toast.makeText(context, "В буфере обмена нет ссылки на подписку", android.widget.Toast.LENGTH_SHORT).show()
+                                } else {
+                                    onOpenNewProfile(NewProfileArgs(importName = "UralVPN", importUrl = link))
+                                }
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Сканировать QR-код") },
+                            leadingIcon = { Icon(Icons.Default.QrCodeScanner, contentDescription = null) },
+                            onClick = {
+                                addMenuOpen = false
+                                showScan = true
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Ввести ссылку вручную") },
+                            leadingIcon = { Icon(Icons.Default.Link, contentDescription = null) },
+                            onClick = {
+                                addMenuOpen = false
+                                onOpenNewProfile(NewProfileArgs(importName = "UralVPN", importUrl = ""))
+                            },
+                        )
+                    }
                 }
             },
+        )
+    }
+
+    if (showScan) {
+        QRScanSheet(
+            onDismiss = { showScan = false },
+            onScanResult = { result ->
+                showScan = false
+                when (result) {
+                    is QRScanResult.RemoteProfile -> runCatching {
+                        val parsed = Libbox.parseRemoteProfileImportLink(result.uri.toString())
+                        onOpenNewProfile(NewProfileArgs(importName = parsed.name, importUrl = parsed.url))
+                    }
+                    is QRScanResult.QRSData -> onOpenNewProfile(NewProfileArgs(qrsData = result.data))
+                }
+            },
+        )
+    }
+    toDelete?.let { target ->
+        AlertDialog(
+            onDismissRequest = { toDelete = null },
+            title = { Text("Удалить подписку?") },
+            text = { Text(otherInfo[target.id]?.title ?: target.name) },
+            confirmButton = {
+                TextButton(onClick = {
+                    dashboardViewModel.deleteProfile(target)
+                    toDelete = null
+                }) { Text("Удалить") }
+            },
+            dismissButton = { TextButton(onClick = { toDelete = null }) { Text("Отмена") } },
         )
     }
 
@@ -295,6 +352,15 @@ fun UralHomeScreen(
             UralLocationRow(row, enabled = running && group != null) {
                 if (group != null) groupsViewModel.selectGroupItem(group.tag, row.tag)
             }
+        }
+        items(others, key = { "profile-${it.id}" }) { other ->
+            Spacer(Modifier.height(10.dp))
+            UralOtherProfileCard(
+                title = otherInfo[other.id]?.title ?: other.name,
+                info = otherInfo[other.id],
+                onSelect = { dashboardViewModel.selectProfile(other.id) },
+                onDelete = { toDelete = other },
+            )
         }
     }
 }
@@ -494,6 +560,40 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, onClick: () -> U
                     else -> colors.good
                 },
             )
+        }
+    }
+}
+
+// A link to a subscription from the clipboard (the first http(s) word), or null.
+private fun readClipboardLink(context: android.content.Context): String? {
+    val manager = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+    val text = manager?.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(context)?.toString().orEmpty()
+    return text.trim().split(Regex("\\s+")).firstOrNull { it.startsWith("http://", true) || it.startsWith("https://", true) }
+}
+
+// Another subscription: shown below the active one (like in Happ); a tap makes it the active one.
+@Composable
+private fun UralOtherProfileCard(title: String, info: SubInfo?, onSelect: () -> Unit, onDelete: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium).clickable(onClick = onSelect),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.97f),
+        border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+    ) {
+        Row(Modifier.padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                val details = if (info == null) {
+                    "Нажмите, чтобы переключиться"
+                } else {
+                    "Трафик: ${formatTraffic(info.used)} / ${if (info.total > 0) formatTraffic(info.total) else "∞"}" +
+                        if (info.expireSeconds > 0) " · до ${formatExpire(info.expireSeconds)}" else ""
+                }
+                Text(details, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Default.Delete, contentDescription = "Удалить подписку", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
     }
 }
