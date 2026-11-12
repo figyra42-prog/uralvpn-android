@@ -1,0 +1,63 @@
+name: UralVPN build
+on:
+  workflow_dispatch:
+  push:
+    branches: [uralvpn]
+permissions:
+  contents: read
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    env:
+      NDK_VER: 28.0.13004108
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: sing-box-for-android
+          submodules: recursive
+      - uses: actions/checkout@v5
+        with:
+          repository: figyra42-prog/uralvpn-core
+          ref: uralvpn
+          path: sing-box
+          submodules: recursive
+      - uses: actions/checkout@v5
+        with:
+          repository: figyra42-prog/uralvpn-app
+          ref: master
+          path: uralvpn-app
+          sparse-checkout: V2rayNG/app/src/main
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4
+        with:
+          log-accepted-android-sdk-licenses: false
+      - name: Install NDK
+        run: |
+          yes | sdkmanager --install "ndk;$NDK_VER" > /dev/null
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/$NDK_VER" >> "$GITHUB_ENV"
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: sing-box/go.mod
+          cache-dependency-path: sing-box/go.sum
+      - name: Build libbox from uralvpn-core
+        working-directory: sing-box
+        run: |
+          export GOTOOLCHAIN=local
+          mkdir -p ../sing-box-for-android/app/libs
+          make lib_install
+          go run ./cmd/internal/build_libbox -target android
+          ls -la ../sing-box-for-android/app/libs
+      - name: Apply UralVPN branding
+        run: bash sing-box-for-android/.github/uralvpn/brand.sh uralvpn-app/V2rayNG/app/src/main sing-box-for-android
+      - name: Build APK
+        working-directory: sing-box-for-android
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          ./gradlew --no-daemon :app:assembleOtherDebug
+      - uses: actions/upload-artifact@v5
+        with:
+          name: uralvpn-android-apk
+          path: sing-box-for-android/app/build/outputs/apk/other/debug/*.apk
