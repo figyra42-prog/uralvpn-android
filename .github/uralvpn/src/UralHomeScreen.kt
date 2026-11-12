@@ -132,9 +132,11 @@ fun UralHomeScreen(
     }
 
     var descriptions by remember(profileId) { mutableStateOf(emptyMap<String, String>()) }
+    var subStatus by remember(profileId) { mutableStateOf("") }
     LaunchedEffect(profileId, remoteUrl, uiState.updatedProfileId, uiState.isLoading) {
         if (remoteUrl.isNotEmpty()) {
             descriptions = withContext(Dispatchers.IO) { readDescriptions(remoteUrl) }
+            subStatus = withContext(Dispatchers.IO) { readStatus(remoteUrl) }
         }
     }
 
@@ -265,6 +267,17 @@ fun UralHomeScreen(
                     onToggleSort = { sortByPing = !sortByPing },
                 )
                 Spacer(Modifier.height(8.dp))
+            }
+        }
+        if (subStatus.isNotEmpty()) {
+            item(key = "status") {
+                Text(
+                    text = subStatus,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
+                )
             }
         }
         if (rows.isEmpty()) {

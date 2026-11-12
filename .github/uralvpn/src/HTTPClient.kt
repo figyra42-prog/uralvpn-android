@@ -40,6 +40,16 @@ class HTTPClient : Closeable {
             return java.io.File(Application.application.filesDir, "ural-desc-$name.json")
         }
 
+        fun statusFile(url: String): java.io.File {
+            val name = descriptionsFile(url).name.removePrefix("ural-desc-").removeSuffix(".json")
+            return java.io.File(Application.application.filesDir, "ural-status-$name.txt")
+        }
+
+        // Why the CDN servers are missing (empty when everything is fine); shown on the home screen.
+        private fun saveStatus(url: String, text: String) {
+            runCatching { statusFile(url).writeText(text) }
+        }
+
         private fun saveDescriptions(url: String, json: String) {
             descriptionsFile(url).writeText(json)
         }
@@ -77,13 +87,19 @@ class HTTPClient : Closeable {
         if (!isSubscriptionHost(url) || !isSingBoxProfile(content)) {
             return content
         }
-        return runCatching {
+        val merged = runCatching {
             val xray = fetch(url, XRAY_USER_AGENT)
             runCatching { saveDescriptions(url, Libbox.uralvpnDescriptions(xray)) }
             Libbox.uralvpnMergeSubscription(content, xray)
-        }.onFailure {
+        }
+        merged.onFailure {
             Log.w(TAG, "merge CDN servers", it)
-        }.getOrDefault(content)
+            saveStatus(url, "CDN не добавлены: ${it.message ?: it.javaClass.simpleName}".take(300))
+        }
+        merged.onSuccess {
+            saveStatus(url, if (it.contains("CDN")) "" else "В подписке нет CDN-серверов (панель их не отдала)")
+        }
+        return merged.getOrDefault(content)
     }
 
     override fun close() {

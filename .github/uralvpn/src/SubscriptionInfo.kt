@@ -111,6 +111,8 @@ fun readDescriptions(url: String): Map<String, String> = runCatching {
     json.keys().asSequence().associateWith { json.getString(it) }
 }.getOrDefault(emptyMap())
 
+fun readStatus(url: String): String = runCatching { HTTPClient.statusFile(url).readText().trim() }.getOrDefault("")
+
 fun formatTraffic(bytes: Long): String {
     if (bytes < 1024) return "$bytes B"
     val units = arrayOf("KB", "MB", "GB", "TB")
