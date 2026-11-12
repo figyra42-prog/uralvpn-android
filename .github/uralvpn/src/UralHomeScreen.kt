@@ -508,13 +508,15 @@ private fun UralSubscriptionCard(
 @Composable
 private fun UralLocationRow(row: LocationRow, enabled: Boolean, onClick: () -> Unit) {
     val colors = LocalStatusColors.current
-    val container = if (row.selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+    // every location is a slightly lighter card (like in Happ); the selected one is the accent color
+    val container = if (row.selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.55f)
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 2.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .padding(vertical = 3.dp)
+            .clip(RoundedCornerShape(14.dp))
             .background(container)
+            .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (row.selected) 0f else 0.35f), RoundedCornerShape(14.dp))
             .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
