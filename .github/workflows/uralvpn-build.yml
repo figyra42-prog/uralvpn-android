@@ -58,6 +58,8 @@ jobs:
           export GOTOOLCHAIN=local
           export CGO_LDFLAGS_ALLOW='-l:libcronet\.a'
           mkdir -p ../sing-box-for-android/app/libs
+          # UralVPN: xhttp small scMaxEachPostBytes as in Xray-core (panel CDN hosts use 1536-6144)
+          python3 .github/e2e/patch_xhttp.py transport/v2rayxhttp/client.go
           # UralVPN: TUN stack gVisor is required by panel configs (stack: gvisor / mixed)
           sed -i 's/sharedTags = append(sharedTags, "with_quic",/sharedTags = append(sharedTags, "with_gvisor", "with_quic",/' cmd/internal/build_libbox/main.go
           grep -n 'with_gvisor' cmd/internal/build_libbox/main.go
