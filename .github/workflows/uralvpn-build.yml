@@ -50,7 +50,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: sing-box-for-android/app/libs
-          key: libbox-arm-${{ steps.core.outputs.sha }}-${{ hashFiles('sing-box-for-android/.github/workflows/uralvpn-build.yml') }}
+          key: libbox-arm-gvisor-${{ steps.core.outputs.sha }}-${{ hashFiles('sing-box-for-android/.github/workflows/uralvpn-build.yml') }}
       - name: Build libbox from uralvpn-core
         if: steps.libbox-cache.outputs.cache-hit != 'true'
         working-directory: sing-box
@@ -58,6 +58,9 @@ jobs:
           export GOTOOLCHAIN=local
           export CGO_LDFLAGS_ALLOW='-l:libcronet\.a'
           mkdir -p ../sing-box-for-android/app/libs
+          # UralVPN: TUN stack gVisor is required by panel configs (stack: gvisor / mixed)
+          sed -i 's/sharedTags = append(sharedTags, "with_quic",/sharedTags = append(sharedTags, "with_gvisor", "with_quic",/' cmd/internal/build_libbox/main.go
+          grep -n 'with_gvisor' cmd/internal/build_libbox/main.go
           make lib_install
           go run ./cmd/internal/build_libbox -target android -platform android/arm64,android/arm
           ls -la ../sing-box-for-android/app/libs
