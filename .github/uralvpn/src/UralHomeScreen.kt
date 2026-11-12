@@ -109,6 +109,13 @@ fun UralHomeScreen(
     val drawer = LocalUralDrawer.current
     val scope = rememberCoroutineScope()
     var addMenuOpen by remember { mutableStateOf(false) }
+    // the side menu item "Добавить подписку" opens this same menu
+    LaunchedEffect(UralAddRequest.pending) {
+        if (UralAddRequest.pending) {
+            UralAddRequest.pending = false
+            addMenuOpen = true
+        }
+    }
     var showScan by remember { mutableStateOf(false) }
     var toDelete by remember { mutableStateOf<Profile?>(null) }
     val groupsViewModel: GroupsViewModel = viewModel(
