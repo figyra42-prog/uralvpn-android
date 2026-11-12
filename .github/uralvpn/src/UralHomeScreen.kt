@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -68,6 +70,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -292,8 +295,11 @@ fun UralHomeScreen(
     var headerPx by remember { mutableIntStateOf(0) }
     val headerDp = with(LocalDensity.current) { headerPx.toDp() }
     val pageColor = MaterialTheme.colorScheme.background
+    val listState = rememberLazyListState()
+    val fadeZonePx = with(LocalDensity.current) { 96.dp.toPx() }
     Box(modifier = Modifier.fillMaxSize().padding(scaffoldPadding)) {
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = headerDp, bottom = if (showStatusBar) 84.dp else 24.dp),
@@ -340,13 +346,18 @@ fun UralHomeScreen(
             }
         }
         items(rows, key = { it.tag }) { row ->
-            UralLocationRow(row, enabled = running && group != null) {
+            UralLocationRow(
+                row,
+                enabled = running && group != null,
+                modifier = Modifier.edgeShrink(listState, row.tag, headerPx, fadeZonePx),
+            ) {
                 if (group != null) groupsViewModel.selectGroupItem(group.tag, row.tag)
             }
         }
         items(others, key = { "profile-${it.id}" }) { other ->
             Spacer(Modifier.height(10.dp))
             UralOtherProfileCard(
+                modifier = Modifier.edgeShrink(listState, "profile-${other.id}", headerPx, fadeZonePx),
                 title = otherInfo[other.id]?.title ?: other.name,
                 info = otherInfo[other.id],
                 onSelect = { dashboardViewModel.selectProfile(other.id) },
@@ -533,12 +544,12 @@ private fun UralSubscriptionCard(
 }
 
 @Composable
-private fun UralLocationRow(row: LocationRow, enabled: Boolean, onClick: () -> Unit) {
+private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val colors = LocalStatusColors.current
     // every location is a slightly lighter card (like in Happ); the selected one is the accent color
     val container = if (row.selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.55f)
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 3.dp)
             .clip(RoundedCornerShape(14.dp))
@@ -607,9 +618,9 @@ private fun readClipboardLink(context: android.content.Context): String? {
 
 // Another subscription: shown below the active one (like in Happ); a tap makes it the active one.
 @Composable
-private fun UralOtherProfileCard(title: String, info: SubInfo?, onSelect: () -> Unit, onDelete: () -> Unit) {
+private fun UralOtherProfileCard(modifier: Modifier = Modifier, title: String, info: SubInfo?, onSelect: () -> Unit, onDelete: () -> Unit) {
     Surface(
-        modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium).clickable(onClick = onSelect),
+        modifier = modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium).clickable(onClick = onSelect),
         shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.97f),
         border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
@@ -630,4 +641,20 @@ private fun UralOtherProfileCard(title: String, info: SubInfo?, onSelect: () -> 
             }
         }
     }
+}
+
+// Rows shrink and fade as they approach the top (under the connect button) and the bottom edge of
+// the list, like in Happ. At rest every row is full size.
+private fun Modifier.edgeShrink(state: LazyListState, key: Any, topPx: Int, zonePx: Float): Modifier = graphicsLayer {
+    val layout = state.layoutInfo
+    val item = layout.visibleItemsInfo.firstOrNull { it.key == key } ?: return@graphicsLayer
+    val top = item.offset.toFloat()
+    val bottom = top + item.size
+    val fromTop = ((top - topPx + zonePx) / zonePx).coerceIn(0f, 1f)
+    val fromBottom = ((layout.viewportEndOffset - bottom) / zonePx + 0.25f).coerceIn(0f, 1f)
+    val f = minOf(fromTop, fromBottom)
+    val scale = 0.82f + 0.18f * f
+    scaleX = scale
+    scaleY = scale
+    alpha = 0.25f + 0.75f * f
 }
