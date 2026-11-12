@@ -179,7 +179,8 @@ fun UralHomeScreen(
     // The autopilot is the first entry: it stays on top, the rest can be sorted by ping, and a
     // collapsed list shows only the autopilot (like the old app).
     var collapsed by remember { mutableStateOf(false) }
-    var sortByPing by remember { mutableStateOf(false) }
+    val uiPrefs = remember { io.nekohasekai.sfa.Application.application.getSharedPreferences("ural_ui", android.content.Context.MODE_PRIVATE) }
+    var sortByPing by remember { mutableStateOf(uiPrefs.getBoolean("sort_by_ping", false)) }
     val first = allRows.firstOrNull()
     val rest = allRows.drop(1).let { others ->
         if (sortByPing) others.sortedBy { r -> r.delay?.takeIf { it in 1..65534 } ?: Int.MAX_VALUE } else others
@@ -321,7 +322,10 @@ fun UralHomeScreen(
                     onToggleCollapse = { collapsed = !collapsed },
                     onOpenLink = openLink,
                     onPing = { group?.let { groupsViewModel.urlTestGroup(it.tag) } },
-                    onToggleSort = { sortByPing = !sortByPing },
+                    onToggleSort = {
+                        sortByPing = !sortByPing
+                        uiPrefs.edit().putBoolean("sort_by_ping", sortByPing).apply()
+                    },
                 )
                 Spacer(Modifier.height(8.dp))
             }
@@ -523,8 +527,8 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, onClick: () -> U
         if (hasFlag) {
             Text(
                 text = head,
-                fontSize = 34.sp,
-                modifier = Modifier.width(58.dp),
+                fontSize = 35.7.sp,
+                modifier = Modifier.width(61.dp),
                 maxLines = 1,
             )
         }
@@ -541,6 +545,7 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, onClick: () -> U
                 Text(
                     text = row.description,
                     style = MaterialTheme.typography.bodySmall,
+                    fontSize = 13.5.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
