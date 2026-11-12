@@ -75,8 +75,25 @@ jobs:
         run: bash sing-box-for-android/.github/uralvpn/brand.sh uralvpn-app/V2rayNG/app/src/main sing-box-for-android
       - name: Build APK
         working-directory: sing-box-for-android
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KS_KEY_PASS: ${{ secrets.ANDROID_KEY_PASS }}
         run: |
           echo "sdk.dir=$ANDROID_HOME" > local.properties
+          # UralVPN: a permanent signing key (repository secrets) so that updates install over the old build
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > app/release.keystore
+            {
+              echo "KEYSTORE_PASS=$KS_PASS"
+              echo "ALIAS_NAME=$KS_ALIAS"
+              echo "ALIAS_PASS=$KS_KEY_PASS"
+            } >> local.properties
+            echo "signing: permanent key"
+          else
+            echo "signing: no key secrets, debug key"
+          fi
           ./gradlew --no-daemon :app:assembleOtherDebug
       - uses: actions/upload-artifact@v5
         with:
