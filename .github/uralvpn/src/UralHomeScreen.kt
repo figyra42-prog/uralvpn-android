@@ -437,9 +437,10 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, onClick: () -> U
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // The leading emoji of the name (the flag) is drawn large over both lines, like in the old app.
-        val flagEnd = row.tag.indexOf(' ').let { if (it > 0) it else 0 }
-        val head = row.tag.substring(0, flagEnd)
-        val hasFlag = head.isNotEmpty() && head.none { it.isLetterOrDigit() }
+        // The flag is everything before the first letter or digit (some names have no space after it).
+        val flagEnd = row.tag.indexOfFirst { it.isLetterOrDigit() }.let { if (it > 0) it else 0 }
+        val head = row.tag.substring(0, flagEnd).trim()
+        val hasFlag = head.isNotEmpty()
         if (hasFlag) {
             Text(
                 text = head,
