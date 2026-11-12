@@ -37,6 +37,8 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 TH=$SFA/app/src/main/java/io/nekohasekai/sfa/compose/theme
 cp "$HERE/src/Color.kt" "$TH/Color.kt"
 cp "$HERE/src/Theme.kt" "$TH/Theme.kt"
+# Subscription requests with device headers (panel returns a stub config without x-hwid)
+cp "$HERE/src/HTTPClient.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/utils/HTTPClient.kt"
 # XML seed color (used by legacy views/dialogs)
 sed -i 's#<color name="seed">[^<]*</color>#<color name="seed">\#4E6B00</color>#' "$RES/values/colors.xml"
 grep -n 'name="seed"' "$RES/values/colors.xml"
