@@ -548,17 +548,14 @@ private fun UralSubscriptionCard(
 private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val colors = LocalStatusColors.current
     // every location is a slightly lighter card (like in Happ); the selected one is the accent color
-    val shape = RoundedCornerShape(14.dp)
-    val baseColor = if (row.selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHighest
-    // raised plaque: lighter top edge, soft shadow below, thin light rim on top (looks closer to the eye)
+    val container = if (row.selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.55f)
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 2.dp, vertical = 5.dp)
-            .shadow(if (row.selected) 9.dp else 6.dp, shape, ambientColor = Color.Black, spotColor = Color.Black)
-            .clip(shape)
-            .background(raisedBrush(baseColor))
-            .border(1.dp, raisedRim(), shape)
+            .padding(vertical = 3.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(container)
+            .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (row.selected) 0f else 0.35f), RoundedCornerShape(14.dp))
             .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -624,13 +621,12 @@ private fun readClipboardLink(context: android.content.Context): String? {
 @Composable
 private fun UralOtherProfileCard(modifier: Modifier = Modifier, title: String, info: SubInfo?, onSelect: () -> Unit, onDelete: () -> Unit) {
     Surface(
-        modifier = modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp).clip(MaterialTheme.shapes.medium).clickable(onClick = onSelect),
+        modifier = modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium).clickable(onClick = onSelect),
         shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surfaceContainerHighest,
-        shadowElevation = 6.dp,
-        border = BorderStroke(1.dp, raisedRim()),
+        color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.97f),
+        border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
     ) {
-        Row(Modifier.background(raisedBrush(MaterialTheme.colorScheme.surfaceContainerHighest)).padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 val details = if (info == null) {
