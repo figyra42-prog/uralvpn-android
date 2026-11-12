@@ -32,6 +32,15 @@ sed -i 's#base.archivesName.set("SFA-${versionName}")#base.archivesName.set("Ura
 # Only real-phone ABIs (libbox is built for arm64 and arm only)
 sed -i 's#include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")#include("armeabi-v7a", "arm64-v8a")#' "$G"
 
+# Brand colors and theme (Compose) from uralvpn-app, Material You disabled
+HERE=$(cd "$(dirname "$0")" && pwd)
+TH=$SFA/app/src/main/java/io/nekohasekai/sfa/compose/theme
+cp "$HERE/src/Color.kt" "$TH/Color.kt"
+cp "$HERE/src/Theme.kt" "$TH/Theme.kt"
+# XML seed color (used by legacy views/dialogs)
+sed -i 's#<color name="seed">[^<]*</color>#<color name="seed">\#4E6B00</color>#' "$RES/values/colors.xml"
+grep -n 'name="seed"' "$RES/values/colors.xml"
+
 grep -n 'applicationId\|archivesName' "$G"
 grep -n 'name="app_name"' "$RES/values/strings.xml"
 
