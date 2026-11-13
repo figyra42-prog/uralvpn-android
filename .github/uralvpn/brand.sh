@@ -119,3 +119,6 @@ PY
 
 # Side menu (burger) instead of the bottom tabs, like in the old app.
 python3 -I "$HERE/patch_nav.py" "$SFA"
+
+# Last update time in the subscription card (shows the background refresh).
+python3 -I "$HERE/patch_card.py" "$SFA"
