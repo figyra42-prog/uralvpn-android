@@ -539,7 +539,7 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
     val colors = LocalStatusColors.current
     // a list with dividers (like in the old app); the selected location has an accent bar on the left
     val accent = MaterialTheme.colorScheme.primary
-    val divider = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
+    val divider = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.22f)
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -548,10 +548,10 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
                     drawRect(accent.copy(alpha = 0.10f))
                     drawRect(accent, size = androidx.compose.ui.geometry.Size(4.dp.toPx(), size.height))
                 }
-                drawLine(divider, androidx.compose.ui.geometry.Offset(0f, size.height), androidx.compose.ui.geometry.Offset(size.width, size.height), 1.dp.toPx())
+                drawLine(divider, androidx.compose.ui.geometry.Offset(16.dp.toPx(), size.height - 0.5.dp.toPx()), androidx.compose.ui.geometry.Offset(size.width - 16.dp.toPx(), size.height - 0.5.dp.toPx()), 1.dp.toPx())
             }
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 11.dp),
+            .padding(horizontal = 14.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // The leading emoji of the name (the flag) is drawn large over both lines, like in the old app.
@@ -563,6 +563,7 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
             Text(
                 text = head,
                 fontSize = 38.2.sp,
+                lineHeight = 44.sp,
                 modifier = Modifier.width(65.dp),
                 maxLines = 1,
             )
