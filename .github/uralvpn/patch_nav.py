@@ -198,3 +198,13 @@ old = 'text = if (delay <= 0) "—" else if (failed) "×" else "$delay ms",'
 assert h.count(old) == 1, "ping text not found"
 open(home, "w").write(h.replace(old, 'text = if (delay <= 0) "—" else if (failed) "н/д" else "$delay ms",'))
 print("failed ping shows n/a")
+
+# 9) the ping time in the location row is a bit smaller
+h = open(home).read()
+old = """                style = MaterialTheme.typography.labelLarge,
+                color = when {"""
+assert h.count(old) == 1, "ping style not found"
+open(home, "w").write(h.replace(old, """                style = MaterialTheme.typography.labelLarge,
+                fontSize = 12.sp,
+                color = when {""", 1))
+print("ping time font is smaller")
