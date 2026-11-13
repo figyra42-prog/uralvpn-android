@@ -3,11 +3,16 @@ on:
   workflow_dispatch:
     inputs:
       draft_release:
-        description: 'Put the APK into a draft release (visible to the repo owner only)'
+        description: 'Put the APKs into a draft release (visible to the repo owner only)'
+        type: boolean
+        default: false
+      public_release:
+        description: 'PUBLIC release: everybody sees it, the app updates itself from it'
         type: boolean
         default: false
   push:
     branches: [uralvpn]
+    paths-ignore: ['.github/workflows/uralvpn-verify.yml']
 permissions:
   contents: write
 jobs:
@@ -73,8 +78,21 @@ jobs:
           make lib_install
           go run ./cmd/internal/build_libbox -target android -platform android/arm64,android/arm
           ls -la ../sing-box-for-android/app/libs
+      - name: Version
+        id: ver
+        working-directory: sing-box-for-android
+        run: |
+          # UralVPN: own version that grows with every build (the update check compares them)
+          CODE=$((1000 + ${{ github.run_number }}))
+          NAME="1.0.${{ github.run_number }}"
+          sed -i "s/^VERSION_CODE=.*/VERSION_CODE=$CODE/; s/^VERSION_NAME=.*/VERSION_NAME=$NAME/" version.properties
+          cat version.properties
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
       - name: Apply UralVPN branding
-        run: bash sing-box-for-android/.github/uralvpn/brand.sh uralvpn-app/V2rayNG/app/src/main sing-box-for-android
+        run: |
+          bash sing-box-for-android/.github/uralvpn/brand.sh uralvpn-app/V2rayNG/app/src/main sing-box-for-android
+          python3 -I sing-box-for-android/.github/uralvpn/patch_release.py sing-box-for-android
       - name: Build APK
         working-directory: sing-box-for-android
         env:
@@ -84,30 +102,39 @@ jobs:
           KS_KEY_PASS: ${{ secrets.ANDROID_KEY_PASS }}
         run: |
           echo "sdk.dir=$ANDROID_HOME" > local.properties
-          # UralVPN: a permanent signing key (repository secrets) so that updates install over the old build
-          if [ -n "$KS_B64" ]; then
-            echo "$KS_B64" | base64 -d > app/release.keystore
-            {
-              echo "KEYSTORE_PASS=$KS_PASS"
-              echo "ALIAS_NAME=$KS_ALIAS"
-              echo "ALIAS_PASS=$KS_KEY_PASS"
-            } >> local.properties
-            echo "signing: permanent key"
-          else
-            echo "signing: no key secrets, debug key"
-          fi
-          ./gradlew --no-daemon :app:assembleOtherDebug
+          # UralVPN: the permanent signing key (repository secrets); a release build needs it
+          test -n "$KS_B64"
+          echo "$KS_B64" | base64 -d > app/release.keystore
+          {
+            echo "KEYSTORE_PASS=$KS_PASS"
+            echo "ALIAS_NAME=$KS_ALIAS"
+            echo "ALIAS_PASS=$KS_KEY_PASS"
+          } >> local.properties
+          echo "signing: permanent key"
+          ./gradlew --no-daemon :app:assembleOtherRelease
+          echo "{\"version_code\": ${{ steps.ver.outputs.code }}}" > SFA-version-metadata.json
+          ls -l app/build/outputs/apk/other/release/
       - uses: actions/upload-artifact@v5
         with:
           name: uralvpn-android-apk
-          path: sing-box-for-android/app/build/outputs/apk/other/debug/*.apk
+          path: sing-box-for-android/app/build/outputs/apk/other/release/*.apk
       - name: Draft release with the APK
-        if: ${{ inputs.draft_release }}
+        if: ${{ inputs.draft_release && !inputs.public_release }}
         env:
           GH_TOKEN: ${{ github.token }}
         working-directory: sing-box-for-android
         run: |
-          gh release create "draft-${{ github.run_number }}" app/build/outputs/apk/other/debug/*.apk \
+          gh release create "draft-${{ github.run_number }}" app/build/outputs/apk/other/release/*.apk SFA-version-metadata.json \
             --draft --prerelease --target "${{ github.sha }}" \
-            --title "UralVPN test build #${{ github.run_number }}" \
-            --notes "Test build ${{ github.sha }}. Debug APK, not for public distribution."
+            --title "UralVPN test build #${{ github.run_number }} (${{ steps.ver.outputs.name }})" \
+            --notes "Test build ${{ github.sha }}. Release build (R8), not for public distribution."
+      - name: Public release with the APK
+        if: ${{ inputs.public_release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        working-directory: sing-box-for-android
+        run: |
+          gh release create "v${{ steps.ver.outputs.name }}" app/build/outputs/apk/other/release/*.apk SFA-version-metadata.json \
+            --latest --target "${{ github.sha }}" \
+            --title "UralVPN ${{ steps.ver.outputs.name }}" \
+            --notes "UralVPN ${{ steps.ver.outputs.name }}. Installs over the previous version; take the universal APK if you are not sure which one fits. The app checks for updates itself (Settings -> App)."
