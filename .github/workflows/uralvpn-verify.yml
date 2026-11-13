@@ -1,5 +1,8 @@
 name: UralVPN verify APK
 on:
+  push:
+    branches: [uralvpn]
+    paths: ['.github/workflows/uralvpn-verify.yml']
   workflow_dispatch:
     inputs:
       tag:
@@ -17,8 +20,8 @@ jobs:
       - name: Check both APKs
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ inputs.tag }}
-          GOOD: ${{ inputs.good_tag }}
+          TAG: ${{ inputs.tag || 'draft-49' }}
+          GOOD: ${{ inputs.good_tag || 'draft-47' }}
         run: |
           set -u
           mkdir -p new good
@@ -40,3 +43,5 @@ jobs:
             echo "--- alignment"
             "$BT/zipalign" -c -P 16 4 "$f" 2>&1 | tail -1 || true
           done
+
+# read-only check of a release APK (signature, package, alignment); no secrets are used
