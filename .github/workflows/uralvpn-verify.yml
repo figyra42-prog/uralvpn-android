@@ -1,0 +1,42 @@
+name: UralVPN verify APK
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag of the build to check (for example draft-49)'
+        default: 'draft-49'
+      good_tag:
+        description: 'Release tag of a build that installed fine, for comparison'
+        default: 'draft-47'
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check both APKs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+          GOOD: ${{ inputs.good_tag }}
+        run: |
+          set -u
+          mkdir -p new good
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p '*arm64*' -D new
+          gh release download "$GOOD" -R "$GITHUB_REPOSITORY" -p '*arm64*' -D good
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          echo "build-tools: $BT"
+          for d in good new; do
+            f=$(ls $d/*.apk)
+            echo "=================== $d: $f"
+            ls -l "$f"
+            sha256sum "$f" | cut -d' ' -f1
+            echo "--- zip test"
+            unzip -tq "$f" | tail -1
+            echo "--- signature"
+            "$BT/apksigner" verify --verbose --print-certs "$f" 2>&1 | grep -E "Verifies|Verified using|Number of signers|certificate SHA-256|ERROR|WARNING" || true
+            echo "--- package"
+            "$BT/aapt2" dump badging "$f" 2>&1 | grep -E "^package:|application-label:|sdkVersion|targetSdkVersion|native-code" || true
+            echo "--- alignment"
+            "$BT/zipalign" -c -P 16 4 "$f" 2>&1 | tail -1 || true
+          done
