@@ -129,3 +129,6 @@ python3 -I "$HERE/patch_select.py" "$SFA"
 
 # The links of the bot button "Add to UralVPN" (uralvpn://install-sub?url=...) open the import dialog.
 python3 -I "$HERE/patch_link.py" "$SFA"
+
+# Icons of the card follow the theme, no Ghostty config in the settings, theme switch.
+python3 -I "$HERE/patch_theme.py" "$SFA"
