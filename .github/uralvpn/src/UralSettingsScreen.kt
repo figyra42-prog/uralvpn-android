@@ -42,6 +42,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.nekohasekai.sfa.BuildConfig
 import io.nekohasekai.sfa.bg.UralAutostart
+import io.nekohasekai.sfa.bg.UralTools
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material.icons.outlined.BugReport
 import io.nekohasekai.sfa.compose.topbar.LocalScaffoldPadding
 import io.nekohasekai.sfa.compose.topbar.OverrideTopBar
 import io.nekohasekai.sfa.update.UpdateState
@@ -60,6 +64,8 @@ fun SettingsScreen(navController: NavController) {
     val context = LocalContext.current
     val hasUpdate by UpdateState.hasUpdate
     var autostart by remember { mutableStateOf(UralAutostart.enabled) }
+    var simBlock by remember { mutableStateOf(UralTools.simulateBlock) }
+    val scope = rememberCoroutineScope()
     val scaffoldPadding = LocalScaffoldPadding.current
 
     Column(
@@ -117,6 +123,28 @@ fun SettingsScreen(navController: NavController) {
                     modifier = Modifier.clickable {
                         autostart = !autostart
                         UralAutostart.enabled = autostart
+                    },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                )
+                ListItem(
+                    headlineContent = { Text("Имитировать блокировку прямых", style = MaterialTheme.typography.bodyLarge) },
+                    supportingContent = { Text("Проверка автопилота: прямые серверы отключаются, работают только CDN. После проверки выключите.") },
+                    leadingContent = {
+                        Icon(Icons.Outlined.BugReport, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    },
+                    trailingContent = {
+                        Switch(
+                            checked = simBlock,
+                            onCheckedChange = { value ->
+                                simBlock = value
+                                UralTools.simulateBlock = value
+                                UralTools.toast(if (value) "Блокировка включена, обновляю подписку…" else "Блокировка выключена, обновляю подписку…")
+                                scope.launch {
+                                    val ok = UralTools.refreshNow()
+                                    UralTools.toast(if (ok) "Готово. Отключите и снова включите VPN." else "Не удалось обновить подписку: проверьте сеть")
+                                }
+                            },
+                        )
                     },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )

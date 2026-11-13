@@ -99,7 +99,7 @@ class HTTPClient : Closeable {
         merged.onSuccess {
             saveStatus(url, if (it.contains("CDN")) "" else "В подписке нет CDN-серверов (панель их не отдала)")
         }
-        return merged.getOrDefault(content)
+        return io.nekohasekai.sfa.bg.UralTools.applySimulation(merged.getOrDefault(content))
     }
 
     override fun close() {

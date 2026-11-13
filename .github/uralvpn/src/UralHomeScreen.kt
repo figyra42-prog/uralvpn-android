@@ -133,6 +133,7 @@ fun UralHomeScreen(
     val remoteUrl = profile?.typed?.remoteURL.orEmpty()
     val profilePath = profile?.typed?.path.orEmpty()
 
+    LaunchedEffect(uiState.profiles.size) { io.nekohasekai.sfa.bg.UralTools.ensureAutoUpdate() }
     var refreshTick by remember { mutableIntStateOf(0) }
     var info by remember(profileId) { mutableStateOf(profileId?.let { SubInfoCache.map[it] }) }
     LaunchedEffect(profileId, remoteUrl, uiState.updatedProfileId, refreshTick) {
