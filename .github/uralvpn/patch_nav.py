@@ -86,3 +86,19 @@ old = "                if (Settings.startedByUser) {"
 assert b.count(old) == 1, "BootReceiver condition not found"
 open(boot, "w").write(b.replace(old, "                if (UralAutostart.enabled) {", 1))
 print("autostart applied")
+
+# 6) the icons of the subscription card (support, site, ping, sort, collapse) are white and a bit
+#    bigger: the default tint looked gray. The sort icon stays lime while sorting by ping is on.
+home = root + "/app/src/main/java/io/nekohasekai/sfa/compose/screen/dashboard/UralHomeScreen.kt"
+h = open(home).read()
+plain = re.compile(r'Icon\(Icons\.Default\.(SupportAgent|Info|Speed), contentDescription = ("[^"\n]*"), modifier = Modifier\.size\(22\.dp\)\)')
+assert len(plain.findall(h)) == 3, "card icons not found"
+h = plain.sub(lambda m: 'Icon(Icons.Default.%s, contentDescription = %s, modifier = Modifier.size(24.dp), tint = Color.White)' % (m.group(1), m.group(2)), h)
+sort = re.compile(r'(imageVector = Icons\.Default\.SwapVert,\s*contentDescription = "[^"\n]*",\s*modifier = Modifier\.size\()22\.dp(\),\s*tint = if \(sortByPing\) MaterialTheme\.colorScheme\.primary else )MaterialTheme\.colorScheme\.onSurfaceVariant,')
+assert len(sort.findall(h)) == 1, "sort icon not found"
+h = sort.sub(lambda m: m.group(1) + "24.dp" + m.group(2) + "Color.White,", h)
+fold = re.compile(r'(imageVector = if \(collapsed\) Icons\.Default\.ExpandMore else Icons\.Default\.ExpandLess,\s*contentDescription = if \(collapsed\) "[^"\n]*" else "[^"\n]*",\s*modifier = Modifier\.size\()22\.dp\),')
+assert len(fold.findall(h)) == 1, "collapse icon not found"
+h = fold.sub(lambda m: m.group(1) + "24.dp), tint = Color.White,", h)
+open(home, "w").write(h)
+print("card icons are white")
