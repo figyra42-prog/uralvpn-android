@@ -191,3 +191,10 @@ private fun uralOutboundJson(path: String, tag: String): String = runCatching {
 '''
 open(home, "w").write(h)
 print("long press shows the location config")
+
+# 8) a server that did not answer shows "н/д" (no data) instead of the cross
+h = open(home).read()
+old = 'text = if (delay <= 0) "—" else if (failed) "×" else "$delay ms",'
+assert h.count(old) == 1, "ping text not found"
+open(home, "w").write(h.replace(old, 'text = if (delay <= 0) "—" else if (failed) "н/д" else "$delay ms",'))
+print("failed ping shows n/a")
