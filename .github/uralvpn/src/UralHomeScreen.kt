@@ -151,6 +151,18 @@ fun UralHomeScreen(
         }
     }
 
+    // "Updated N locations" line after the subscription refresh (like in the old app)
+    var updateNote by remember { mutableStateOf("") }
+    LaunchedEffect(uiState.updatedProfileId) {
+        val id = uiState.updatedProfileId ?: return@LaunchedEffect
+        val path = uiState.profiles.firstOrNull { it.id == id }?.typed?.path.orEmpty()
+        if (path.isEmpty()) return@LaunchedEffect
+        val count = (withContext(Dispatchers.IO) { readSelectorNames(path) }.size - 1).coerceAtLeast(0)
+        updateNote = ural_updatedText(count)
+        kotlinx.coroutines.delay(4000)
+        updateNote = ""
+    }
+
     var descriptions by remember(profileId) { mutableStateOf(emptyMap<String, String>()) }
     var subStatus by remember(profileId) { mutableStateOf("") }
     LaunchedEffect(profileId, remoteUrl, uiState.updatedProfileId, uiState.isLoading) {
@@ -335,6 +347,22 @@ fun UralHomeScreen(
                     },
                 )
                 Spacer(Modifier.height(8.dp))
+            }
+        }
+        if (updateNote.isNotEmpty()) {
+            item(key = "updated") {
+                Surface(
+                    shape = MaterialTheme.shapes.large,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.padding(vertical = 4.dp),
+                ) {
+                    Text(
+                        text = "✓ " + updateNote,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    )
+                }
             }
         }
         if (subStatus.isNotEmpty()) {
@@ -613,5 +641,33 @@ private fun UralOtherProfileCard(modifier: Modifier = Modifier, title: String, i
                 Icon(Icons.Default.Delete, contentDescription = "Удалить подписку", tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
+    }
+}
+
+// Volume of the subscription card: light top edge, darker bottom.
+@Composable
+private fun raisedRim(): Brush =
+    Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.22f), Color.Black.copy(alpha = 0.25f)))
+
+private fun raisedBrush(base: Color): Brush =
+    Brush.verticalGradient(
+        listOf(
+            Color(
+                red = base.red + (1f - base.red) * 0.07f,
+                green = base.green + (1f - base.green) * 0.07f,
+                blue = base.blue + (1f - base.blue) * 0.07f,
+                alpha = base.alpha,
+            ),
+            Color(red = base.red * 0.93f, green = base.green * 0.93f, blue = base.blue * 0.93f, alpha = base.alpha),
+        ),
+    )
+
+private fun ural_updatedText(n: Int): String {
+    val m10 = n % 10
+    val m100 = n % 100
+    return when {
+        m10 == 1 && m100 != 11 -> "Обновлена $n локация"
+        m10 in 2..4 && m100 !in 12..14 -> "Обновлены $n локации"
+        else -> "Обновлено $n локаций"
     }
 }
