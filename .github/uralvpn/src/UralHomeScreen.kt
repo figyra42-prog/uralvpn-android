@@ -136,13 +136,18 @@ fun UralHomeScreen(
 
     LaunchedEffect(uiState.profiles.size) { io.nekohasekai.sfa.bg.UralTools.ensureAutoUpdate() }
     var refreshTick by remember { mutableIntStateOf(0) }
-    var info by remember(profileId) { mutableStateOf(profileId?.let { SubInfoCache.map[it] }) }
+    var info by remember(profileId) { mutableStateOf(profileId?.let { SubInfoCache.get(it) }) }
     LaunchedEffect(profileId, remoteUrl, uiState.updatedProfileId, refreshTick) {
         if (profileId != null && remoteUrl.isNotEmpty()) {
-            val fetched = withContext(Dispatchers.IO) { fetchSubInfo(remoteUrl) }
-            if (fetched != null) {
-                SubInfoCache.map[profileId] = fetched
-                info = fetched
+            // a failed request (network is not ready right after the start) is repeated a few times
+            for (delayMs in longArrayOf(0, 2000, 5000, 15000, 30000)) {
+                if (delayMs > 0) kotlinx.coroutines.delay(delayMs)
+                val fetched = withContext(Dispatchers.IO) { fetchSubInfo(remoteUrl) }
+                if (fetched != null) {
+                    SubInfoCache.put(profileId, fetched)
+                    info = fetched
+                    break
+                }
             }
         }
     }
@@ -179,9 +184,9 @@ fun UralHomeScreen(
         others.forEach { p ->
             val url = p.typed.remoteURL
             if (url.isNotEmpty()) {
-                SubInfoCache.map[p.id]?.let { otherInfo[p.id] = it }
+                SubInfoCache.get(p.id)?.let { otherInfo[p.id] = it }
                 withContext(Dispatchers.IO) { fetchSubInfo(url) }?.let {
-                    SubInfoCache.map[p.id] = it
+                    SubInfoCache.put(p.id, it)
                     otherInfo[p.id] = it
                 }
             }

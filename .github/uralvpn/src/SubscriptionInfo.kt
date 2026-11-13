@@ -33,8 +33,43 @@ private fun safeLink(raw: String?): String? {
     return value.takeIf { scheme == "http" || scheme == "https" || scheme == "tg" }
 }
 
+// The last known account info is kept in memory and on disk, so the card is shown at once after the
+// app starts, even before (or without) a successful network request.
 object SubInfoCache {
     val map = ConcurrentHashMap<Long, SubInfo>()
+
+    private val prefs get() = io.nekohasekai.sfa.Application.application.getSharedPreferences("ural_subinfo", android.content.Context.MODE_PRIVATE)
+
+    fun get(id: Long): SubInfo? = map[id] ?: load(id)?.also { map[id] = it }
+
+    fun put(id: Long, info: SubInfo) {
+        map[id] = info
+        runCatching {
+            val json = JSONObject()
+                .put("title", info.title ?: JSONObject.NULL)
+                .put("used", info.used)
+                .put("total", info.total)
+                .put("expire", info.expireSeconds)
+                .put("announce", info.announce ?: JSONObject.NULL)
+                .put("support", info.supportUrl ?: JSONObject.NULL)
+                .put("web", info.webUrl ?: JSONObject.NULL)
+            prefs.edit().putString("info_$id", json.toString()).apply()
+        }
+    }
+
+    private fun load(id: Long): SubInfo? = runCatching {
+        val json = JSONObject(prefs.getString("info_$id", null) ?: return null)
+        fun text(key: String) = if (json.isNull(key)) null else json.getString(key)
+        SubInfo(
+            title = text("title"),
+            used = json.getLong("used"),
+            total = json.getLong("total"),
+            expireSeconds = json.getLong("expire"),
+            announce = text("announce"),
+            supportUrl = text("support"),
+            webUrl = text("web"),
+        )
+    }.getOrNull()
 }
 
 private fun decodeText(raw: String?): String? {
