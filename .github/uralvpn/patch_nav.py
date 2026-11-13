@@ -102,3 +102,92 @@ assert len(fold.findall(h)) == 1, "collapse icon not found"
 h = fold.sub(lambda m: m.group(1) + "24.dp), tint = Color.White,", h)
 open(home, "w").write(h)
 print("card icons are white")
+
+# 7) a long press on a location shows its config (JSON of the outbound) with the secrets hidden,
+#    to compare the servers with the other apps (Happ shows the same behind the arrow)
+h = open(home).read()
+
+
+def swap(text, old, new, what):
+    assert text.count(old) == 1, what + " not found"
+    return text.replace(old, new, 1)
+
+
+h = swap(h, "import androidx.compose.foundation.layout.Box\n",
+         "import androidx.compose.foundation.layout.Box\nimport androidx.compose.foundation.ExperimentalFoundationApi\nimport androidx.compose.foundation.combinedClickable\nimport androidx.compose.foundation.rememberScrollState\nimport androidx.compose.foundation.verticalScroll\n",
+         "Box import")
+h = swap(h, "    var toDelete by remember { mutableStateOf<Profile?>(null) }\n",
+         "    var toDelete by remember { mutableStateOf<Profile?>(null) }\n    var configTag by remember { mutableStateOf<String?>(null) }\n",
+         "toDelete state")
+h = swap(h, "    val scaffoldPadding = LocalScaffoldPadding.current\n    LazyColumn(",
+         """    configTag?.let { tag ->
+        val json = remember(tag, profilePath) { uralOutboundJson(profilePath, tag) }
+        AlertDialog(
+            onDismissRequest = { configTag = null },
+            title = { Text(tag) },
+            text = {
+                Text(
+                    json,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                    fontSize = 11.sp,
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val manager = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    manager.setPrimaryClip(android.content.ClipData.newPlainText("config", json))
+                    android.widget.Toast.makeText(context, "Скопировано (ключи скрыты)", android.widget.Toast.LENGTH_SHORT).show()
+                    configTag = null
+                }) { Text("Копировать") }
+            },
+            dismissButton = { TextButton(onClick = { configTag = null }) { Text("Закрыть") } },
+        )
+    }
+
+    val scaffoldPadding = LocalScaffoldPadding.current
+    LazyColumn(""", "scaffold padding")
+h = swap(h, "            UralLocationRow(\n                row,\n                enabled = running && group != null,\n            ) {",
+         "            UralLocationRow(\n                row,\n                enabled = running && group != null,\n                onLongClick = { configTag = row.tag },\n            ) {",
+         "location row call")
+h = swap(h, "@Composable\nprivate fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {",
+         "@OptIn(ExperimentalFoundationApi::class)\n@Composable\nprivate fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifier = Modifier, onLongClick: () -> Unit = {}, onClick: () -> Unit) {",
+         "location row signature")
+h = swap(h, ".clickable(enabled = enabled, onClick = onClick)",
+         ".combinedClickable(onClick = { if (enabled) onClick() }, onLongClick = onLongClick)",
+         "location row click")
+h += '''
+// Config of one location for the long-press dialog: the outbound JSON of the profile, the secrets
+// (uuid, passwords, keys, short id) replaced with ***.
+private val uralSecretKeys = setOf(
+    "uuid", "password", "private_key", "public_key", "short_id", "pre_shared_key", "psk",
+    "auth", "auth_str", "token", "key", "secret", "username",
+)
+
+private fun uralMask(value: Any?): Any? = when (value) {
+    is org.json.JSONObject -> org.json.JSONObject().also { out ->
+        value.keys().forEach { k ->
+            val inner = value.opt(k)
+            val scalar = inner !is org.json.JSONObject && inner !is org.json.JSONArray
+            out.put(k, if (scalar && k.lowercase() in uralSecretKeys) "***" else uralMask(inner))
+        }
+    }
+    is org.json.JSONArray -> org.json.JSONArray().also { out ->
+        for (i in 0 until value.length()) out.put(uralMask(value.opt(i)))
+    }
+    else -> value
+}
+
+private fun uralOutboundJson(path: String, tag: String): String = runCatching {
+    val outbounds = org.json.JSONObject(java.io.File(path).readText()).getJSONArray("outbounds")
+    for (i in 0 until outbounds.length()) {
+        val outbound = outbounds.getJSONObject(i)
+        if (outbound.optString("tag") == tag) {
+            return@runCatching (uralMask(outbound) as org.json.JSONObject).toString(2).replace("\\\\/", "/")
+        }
+    }
+    "Конфигурация не найдена"
+}.getOrElse { "Не удалось прочитать конфигурацию: " + (it.message ?: it.javaClass.simpleName) }
+'''
+open(home, "w").write(h)
+print("long press shows the location config")
