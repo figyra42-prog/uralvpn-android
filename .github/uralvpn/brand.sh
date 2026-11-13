@@ -29,8 +29,8 @@ sed -i 's#<string name="app_name" translatable="false">[^<]*</string>#<string na
 G=$SFA/app/build.gradle.kts
 sed -i 's#applicationId = "io.nekohasekai.sfa"#applicationId = "app.uralvpn.next"#' "$G"
 sed -i 's#base.archivesName.set("SFA-${versionName}")#base.archivesName.set("UralVPN-${versionName}")#' "$G"
-# Only real-phone ABIs (libbox is built for arm64 and arm only)
-sed -i 's#include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")#include("armeabi-v7a", "arm64-v8a")#' "$G"
+# Only one separate APK, arm64 (the universal APK keeps the old 32-bit phones working)
+sed -i 's#include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")#include("arm64-v8a")#' "$G"
 
 # Brand colors and theme (Compose) from uralvpn-app, Material You disabled
 HERE=$(cd "$(dirname "$0")" && pwd)
@@ -88,6 +88,7 @@ cp "$HERE/src/UralDrawer.kt" "$D/UralDrawer.kt"
 # Autostart switch (read by BootReceiver, patched in patch_nav.py)
 cp "$HERE/src/UralAutostart.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/bg/UralAutostart.kt"
 cp "$HERE/src/UralTools.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/bg/UralTools.kt"
+cp "$HERE/src/UralExpiryWork.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/bg/UralExpiryWork.kt"
 # Short settings list (replaces the SFA SettingsScreen, same package and signature)
 cp "$HERE/src/UralSettingsScreen.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/compose/screen/settings/SettingsScreen.kt"
 python3 -I - "$SFA" <<'PY'
@@ -125,3 +126,6 @@ python3 -I "$HERE/patch_card.py" "$SFA"
 
 # The config text of a location (long press) can be selected and partly copied.
 python3 -I "$HERE/patch_select.py" "$SFA"
+
+# The links of the bot button "Add to UralVPN" (uralvpn://install-sub?url=...) open the import dialog.
+python3 -I "$HERE/patch_link.py" "$SFA"

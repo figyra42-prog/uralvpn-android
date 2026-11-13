@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # UralVPN: the subscription card shows when the subscription was last updated (also by the background
 # refresh), so that the background update can be seen: "Обновлено: сегодня 14:32".
+# Also a red warning line when 3 days or less are left before the end of the subscription.
 # Usage: patch_card.py <sfa-root>
 import sys
 
@@ -18,7 +19,18 @@ h = h.replace(call, call + "                    lastUpdated = profile?.typed?.la
 
 anchor = "                info.fraction?.let { fraction ->\n"
 assert h.count(anchor) == 1, "fraction anchor not found"
-h = h.replace(anchor, """                if (lastUpdated > 0L) {
+h = h.replace(anchor, """                io.nekohasekai.sfa.bg.UralExpiryWork.daysLeft(info.expireSeconds)?.let { leftDays ->
+                    if (leftDays <= 3) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = "⚠ " + io.nekohasekai.sfa.bg.UralExpiryWork.text(leftDays) + ". Продлите её в боте.",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
+                if (lastUpdated > 0L) {
                     Spacer(Modifier.height(2.dp))
                     Text(
                         text = "Обновлено: " + uralUpdatedAt(lastUpdated),

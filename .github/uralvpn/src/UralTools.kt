@@ -1,6 +1,7 @@
 package io.nekohasekai.sfa.bg
 
 import android.content.Context
+import android.net.Uri
 import android.widget.Toast
 import io.nekohasekai.libbox.Libbox
 import io.nekohasekai.sfa.Application
@@ -27,10 +28,22 @@ object UralTools {
             prefs.edit().putBoolean("simulate_block", value).apply()
         }
 
+    // The link of the bot button "Add to UralVPN" (uralvpn://install-sub?url=<subscription link>) is
+    // turned into the link of the import dialog that the app already understands.
+    fun normalizeLink(uri: Uri): Uri {
+        if (uri.scheme != "uralvpn") return uri
+        val raw = uri.getQueryParameter("url")
+            ?: uri.toString().substringAfter("url=", "")
+        val link = Uri.decode(raw).trim()
+        if (!link.startsWith("https://") && !link.startsWith("http://")) return uri
+        return Uri.parse("sing-box://import-remote-profile?url=" + Uri.encode(link) + "#" + Uri.encode("UralVPN"))
+    }
+
     // The system scheduler (WorkManager, already in the app) refreshes the subscription every
     // REFRESH_MINUTES minutes in the background, the refresh goes through HTTPClient (device headers,
     // CDN merge). It is switched on once for every remote profile, a later manual change is kept.
     suspend fun ensureAutoUpdate() {
+        UralExpiryWork.schedule()
         runCatching {
             var changed = false
             for (profile in ProfileManager.list()) {

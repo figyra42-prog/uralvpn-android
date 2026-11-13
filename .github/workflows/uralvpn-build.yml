@@ -124,7 +124,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         working-directory: sing-box-for-android
         run: |
-          gh release create "draft-${{ github.run_number }}" app/build/outputs/apk/other/release/*.apk SFA-version-metadata.json \
+          D=app/build/outputs/apk/other/release
+          cp "$D"/*universal*.apk "$D/UralVPN-universal.apk"
+          cp "$D"/*arm64-v8a*.apk "$D/UralVPN-arm64-v8a.apk"
+          gh release create "draft-${{ github.run_number }}" "$D/UralVPN-universal.apk" "$D/UralVPN-arm64-v8a.apk" SFA-version-metadata.json \
             --draft --prerelease --target "${{ github.sha }}" \
             --title "UralVPN test build #${{ github.run_number }} (${{ steps.ver.outputs.name }})" \
             --notes "Test build ${{ github.sha }}. Release build (R8), not for public distribution."
@@ -134,7 +137,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         working-directory: sing-box-for-android
         run: |
-          gh release create "v${{ steps.ver.outputs.name }}" app/build/outputs/apk/other/release/*.apk SFA-version-metadata.json \
+          D=app/build/outputs/apk/other/release
+          cp "$D"/*universal*.apk "$D/UralVPN-universal.apk"
+          cp "$D"/*arm64-v8a*.apk "$D/UralVPN-arm64-v8a.apk"
+          gh release create "v${{ steps.ver.outputs.name }}" "$D/UralVPN-universal.apk" "$D/UralVPN-arm64-v8a.apk" SFA-version-metadata.json \
             --latest --target "${{ github.sha }}" \
             --title "UralVPN ${{ steps.ver.outputs.name }}" \
             --notes "UralVPN ${{ steps.ver.outputs.name }}. Installs over the previous version; take the universal APK if you are not sure which one fits. The app checks for updates itself (Settings -> App)."
