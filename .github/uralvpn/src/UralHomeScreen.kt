@@ -19,8 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -70,10 +68,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -291,19 +286,38 @@ fun UralHomeScreen(
     }
 
     val scaffoldPadding = LocalScaffoldPadding.current
-    // The connect button stays on top; the list scrolls "under" it and fades out (like in Happ).
-    var headerPx by remember { mutableIntStateOf(0) }
-    val headerDp = with(LocalDensity.current) { headerPx.toDp() }
-    val pageColor = MaterialTheme.colorScheme.background
-    val listState = rememberLazyListState()
-    val fadeZonePx = with(LocalDensity.current) { 36.dp.toPx() }
-    Box(modifier = Modifier.fillMaxSize().padding(scaffoldPadding)) {
     LazyColumn(
-        state = listState,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(scaffoldPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
-        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = headerDp, bottom = if (showStatusBar) 84.dp else 24.dp),
+        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 16.dp, bottom = if (showStatusBar) 84.dp else 24.dp),
     ) {
+        item(key = "connect") {
+            UralConnectButton(
+                isOn = serviceStatus == Status.Started || serviceStatus == Status.Starting,
+                onClick = {
+                    if (profile == null) {
+                        onOpenNewProfile(NewProfileArgs())
+                    } else {
+                        dashboardViewModel.toggleService()
+                    }
+                },
+            )
+            Spacer(Modifier.height(4.dp))
+            val statusText = when (serviceStatus) {
+                Status.Started -> if (group != null && group.selected.isNotEmpty()) "Подключено · ${group.selected}" else "Подключено"
+                Status.Starting -> "Подключение…"
+                Status.Stopping -> "Отключение…"
+                else -> if (profile == null) "Добавьте подписку" else "Отключено"
+            }
+            Text(
+                text = statusText,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(Modifier.height(12.dp))
+        }
         info?.let { value ->
             item(key = "card") {
                 UralSubscriptionCard(
@@ -349,7 +363,6 @@ fun UralHomeScreen(
             UralLocationRow(
                 row,
                 enabled = running && group != null,
-                modifier = Modifier.edgeShrink(listState, row.tag, headerPx, fadeZonePx),
             ) {
                 if (group != null) groupsViewModel.selectGroupItem(group.tag, row.tag)
             }
@@ -357,53 +370,12 @@ fun UralHomeScreen(
         items(others, key = { "profile-${it.id}" }) { other ->
             Spacer(Modifier.height(10.dp))
             UralOtherProfileCard(
-                modifier = Modifier.edgeShrink(listState, "profile-${other.id}", headerPx, fadeZonePx),
                 title = otherInfo[other.id]?.title ?: other.name,
                 info = otherInfo[other.id],
                 onSelect = { dashboardViewModel.selectProfile(other.id) },
                 onDelete = { toDelete = other },
             )
         }
-    }
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .onSizeChanged { headerPx = it.height }
-            .background(
-                Brush.verticalGradient(
-                    0f to pageColor,
-                    0.78f to pageColor,
-                    1f to pageColor.copy(alpha = 0f),
-                ),
-            )
-            .padding(top = 16.dp, bottom = 22.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        UralConnectButton(
-            isOn = serviceStatus == Status.Started || serviceStatus == Status.Starting,
-            onClick = {
-                if (profile == null) {
-                    onOpenNewProfile(NewProfileArgs())
-                } else {
-                    dashboardViewModel.toggleService()
-                }
-            },
-        )
-        Spacer(Modifier.height(4.dp))
-        val statusText = when (serviceStatus) {
-            Status.Started -> if (group != null && group.selected.isNotEmpty()) "Подключено · ${group.selected}" else "Подключено"
-            Status.Starting -> "Подключение…"
-            Status.Stopping -> "Отключение…"
-            else -> if (profile == null) "Добавьте подписку" else "Отключено"
-        }
-        Text(
-            text = statusText,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-    }
     }
 }
 
@@ -643,29 +615,3 @@ private fun UralOtherProfileCard(modifier: Modifier = Modifier, title: String, i
         }
     }
 }
-
-// Rows shrink and fade as they approach the top (under the connect button) and the bottom edge of
-// the list, like in Happ. At rest every row is full size.
-private fun Modifier.edgeShrink(state: LazyListState, key: Any, topPx: Int, zonePx: Float): Modifier = graphicsLayer {
-    val layout = state.layoutInfo
-    val item = layout.visibleItemsInfo.firstOrNull { it.key == key } ?: return@graphicsLayer
-    val top = item.offset.toFloat()
-    val bottom = top + item.size
-    val fromTop = ((top - topPx + zonePx) / zonePx).coerceIn(0f, 1f)
-    val fromBottom = ((layout.viewportEndOffset - bottom) / zonePx).coerceIn(0f, 1f)
-    val f = minOf(fromTop, fromBottom)
-    val scale = 0.95f + 0.05f * f
-    scaleX = scale
-    scaleY = scale
-    alpha = 0.55f + 0.45f * f
-}
-
-// Look of a raised plaque: the top is a bit lighter than the bottom ...
-private fun raisedBrush(base: Color): Brush = Brush.verticalGradient(
-    listOf(androidx.compose.ui.graphics.lerp(base, Color.White, 0.09f), base),
-)
-
-// ... and a thin light rim runs along the top edge and fades out towards the bottom.
-private fun raisedRim(): Brush = Brush.verticalGradient(
-    listOf(Color.White.copy(alpha = 0.18f), Color.White.copy(alpha = 0.03f)),
-)
