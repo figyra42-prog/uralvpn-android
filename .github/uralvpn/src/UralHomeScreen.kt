@@ -66,6 +66,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -531,15 +532,19 @@ private fun UralSubscriptionCard(
 @Composable
 private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val colors = LocalStatusColors.current
-    // every location is a slightly lighter card (like in Happ); the selected one is the accent color
-    val container = if (row.selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.55f)
+    // a list with dividers (like in the old app); the selected location has an accent bar on the left
+    val accent = MaterialTheme.colorScheme.primary
+    val divider = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 3.dp)
-            .clip(RoundedCornerShape(14.dp))
-            .background(container)
-            .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (row.selected) 0f else 0.35f), RoundedCornerShape(14.dp))
+            .drawBehind {
+                if (row.selected) {
+                    drawRect(accent.copy(alpha = 0.10f))
+                    drawRect(accent, size = androidx.compose.ui.geometry.Size(4.dp.toPx(), size.height))
+                }
+                drawLine(divider, androidx.compose.ui.geometry.Offset(0f, size.height), androidx.compose.ui.geometry.Offset(size.width, size.height), 1.dp.toPx())
+            }
             .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -552,8 +557,8 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
         if (hasFlag) {
             Text(
                 text = head,
-                fontSize = 35.7.sp,
-                modifier = Modifier.width(61.dp),
+                fontSize = 38.2.sp,
+                modifier = Modifier.width(65.dp),
                 maxLines = 1,
             )
         }
@@ -562,7 +567,7 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
                 text = if (hasFlag) row.tag.substring(flagEnd).trim() else row.tag,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = if (row.selected) FontWeight.Bold else FontWeight.Normal,
-                color = if (row.selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
