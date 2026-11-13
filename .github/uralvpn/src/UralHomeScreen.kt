@@ -151,16 +151,15 @@ fun UralHomeScreen(
         }
     }
 
-    // "Updated N locations" line after the subscription refresh (like in the old app)
-    var updateNote by remember { mutableStateOf("") }
+    // "Updated N locations" pop-up message after the subscription refresh (like in the old app).
+    // A Toast disappears by itself (about 3.5 s); the key is not reset, so nothing cancels it.
+    val toastContext = LocalContext.current
     LaunchedEffect(uiState.updatedProfileId) {
         val id = uiState.updatedProfileId ?: return@LaunchedEffect
         val path = uiState.profiles.firstOrNull { it.id == id }?.typed?.path.orEmpty()
         if (path.isEmpty()) return@LaunchedEffect
         val count = (withContext(Dispatchers.IO) { readSelectorNames(path) }.size - 1).coerceAtLeast(0)
-        updateNote = ural_updatedText(count)
-        kotlinx.coroutines.delay(4000)
-        updateNote = ""
+        android.widget.Toast.makeText(toastContext, ural_updatedText(count), android.widget.Toast.LENGTH_LONG).show()
     }
 
     var descriptions by remember(profileId) { mutableStateOf(emptyMap<String, String>()) }
@@ -347,22 +346,6 @@ fun UralHomeScreen(
                     },
                 )
                 Spacer(Modifier.height(8.dp))
-            }
-        }
-        if (updateNote.isNotEmpty()) {
-            item(key = "updated") {
-                Surface(
-                    shape = MaterialTheme.shapes.large,
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.padding(vertical = 4.dp),
-                ) {
-                    Text(
-                        text = "✓ " + updateNote,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    )
-                }
             }
         }
         if (subStatus.isNotEmpty()) {
