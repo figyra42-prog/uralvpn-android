@@ -122,3 +122,6 @@ python3 -I "$HERE/patch_nav.py" "$SFA"
 
 # Last update time in the subscription card (shows the background refresh).
 python3 -I "$HERE/patch_card.py" "$SFA"
+
+# The config text of a location (long press) can be selected and partly copied.
+python3 -I "$HERE/patch_select.py" "$SFA"
