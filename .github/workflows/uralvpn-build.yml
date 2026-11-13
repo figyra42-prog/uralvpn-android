@@ -55,7 +55,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: sing-box-for-android/app/libs
-          key: libbox-arm-gvisor-${{ steps.core.outputs.sha }}-${{ hashFiles('sing-box-for-android/.github/workflows/uralvpn-build.yml') }}
+          key: libbox-arm-gvisor-${{ steps.core.outputs.sha }}-${{ hashFiles('sing-box-for-android/.github/workflows/uralvpn-build.yml', 'sing-box-for-android/.github/uralvpn/patch_urltest.py') }}
       - name: Build libbox from uralvpn-core
         if: steps.libbox-cache.outputs.cache-hit != 'true'
         working-directory: sing-box
@@ -65,7 +65,7 @@ jobs:
           mkdir -p ../sing-box-for-android/app/libs
           # UralVPN: xhttp small scMaxEachPostBytes as in Xray-core (panel CDN hosts use 1536-6144)
           python3 .github/e2e/patch_xhttp.py transport/v2rayxhttp/client.go
-          # UralVPN: the ping test survives a poor connection (3 tries, 4 parallel tests)
+          # UralVPN: the ping test survives a poor connection (3 tries of 8 s each, 4 parallel tests)
           python3 ../sing-box-for-android/.github/uralvpn/patch_urltest.py protocol/group/urltest.go
           # UralVPN: TUN stack gVisor is required by panel configs (stack: gvisor / mixed)
           sed -i 's/sharedTags = append(sharedTags, "with_quic",/sharedTags = append(sharedTags, "with_gvisor", "with_quic",/' cmd/internal/build_libbox/main.go

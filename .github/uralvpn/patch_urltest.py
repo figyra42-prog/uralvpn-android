@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-# UralVPN: the ping test must survive a poor connection (up to 3 tries per server, fewer parallel tests,
-# longer total time), like Happ does. Usage (from the core root): patch_urltest.py protocol/group/urltest.go
+# UralVPN: the ping test must survive a poor connection (up to 3 tries per server, each with its own
+# 8 s limit and a fresh connection, fewer parallel tests, longer total time), like Happ does.
+# Usage (from the core root): patch_urltest.py protocol/group/urltest.go
 import sys
 
 path = sys.argv[1]
@@ -20,7 +21,9 @@ pairs = [
         """var delay uint16 //UralVPN: retries, one lost packet must not make a server red
 \t\t\t\t\tvar testErr error
 \t\t\t\t\tfor attempt := 0; attempt < 3; attempt++ {
-\t\t\t\t\t\tdelay, testErr = urlTestLinks(testCtx, links, detour)
+\t\t\t\t\t\tattemptCtx, attemptCancel := context.WithTimeout(testCtx, 8*time.Second) //UralVPN: own limit per attempt, a hung one is cut and retried on a fresh connection
+\t\t\t\t\t\tdelay, testErr = urlTestLinks(attemptCtx, links, detour)
+\t\t\t\t\t\tattemptCancel()
 \t\t\t\t\t\tif testErr == nil || testCtx.Err() != nil {
 \t\t\t\t\t\t\tbreak
 \t\t\t\t\t\t}
