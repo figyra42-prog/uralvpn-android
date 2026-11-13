@@ -48,10 +48,21 @@ class UralExpiryWork(context: Context, params: WorkerParameters) : CoroutineWork
             return left / DAY_MS
         }
 
+        const val BOT_URL = "https://t.me/uralvpn_mybot"
+
+        fun openBot(context: Context) {
+            runCatching {
+                context.startActivity(
+                    android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(BOT_URL))
+                        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                )
+            }
+        }
+
         fun text(days: Long): String = when {
-            days < 0 -> "Подписка закончилась"
-            days == 0L -> "Подписка заканчивается меньше чем через сутки"
-            else -> "Подписка заканчивается через $days дн"
+            days < 0 -> "Подписка закончилась."
+            days == 0L -> "Подписка заканчивается меньше чем через сутки."
+            else -> "Подписка заканчивается через $days дн."
         }
     }
 
@@ -89,14 +100,14 @@ class UralExpiryWork(context: Context, params: WorkerParameters) : CoroutineWork
         if (Build.VERSION.SDK_INT >= 26) {
             manager.createNotificationChannel(NotificationChannel(CHANNEL, "Окончание подписки", NotificationManager.IMPORTANCE_DEFAULT))
         }
-        val launch = context.packageManager.getLaunchIntentForPackage(context.packageName)
-        val pending = launch?.let {
+        val launch = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(BOT_URL))
+        val pending = launch.let {
             android.app.PendingIntent.getActivity(context, 0, it, android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
         }
         val notification = NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(R.drawable.ic_launcher_monochrome)
             .setContentTitle(title)
-            .setContentText(text + ". Продлите её в боте.")
+            .setContentText("$text Нажмите, чтобы открыть бота.")
             .setAutoCancel(true)
             .setContentIntent(pending)
             .build()

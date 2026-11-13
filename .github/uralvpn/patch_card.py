@@ -22,11 +22,16 @@ assert h.count(anchor) == 1, "fraction anchor not found"
 h = h.replace(anchor, """                io.nekohasekai.sfa.bg.UralExpiryWork.daysLeft(info.expireSeconds)?.let { leftDays ->
                     if (leftDays <= 3) {
                         Spacer(Modifier.height(4.dp))
+                        val expiryContext = androidx.compose.ui.platform.LocalContext.current
                         Text(
-                            text = "⚠ " + io.nekohasekai.sfa.bg.UralExpiryWork.text(leftDays) + ". Продлите её в боте.",
+                            text = "⚠ " + io.nekohasekai.sfa.bg.UralExpiryWork.text(leftDays) + " Продлите её в боте ›",
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.error,
+                            textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline,
+                            modifier = Modifier.clickable {
+                                io.nekohasekai.sfa.bg.UralExpiryWork.openBot(expiryContext)
+                            },
                         )
                     }
                 }
