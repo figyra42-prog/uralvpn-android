@@ -39,19 +39,19 @@ class UralExpiryWork(context: Context, params: WorkerParameters) : CoroutineWork
             }
         }
 
-        // Whole days left, rounded up (1 = less than a day); -1 when the subscription has ended;
-        // null when there is no end date.
+        // Whole days left, rounded down like the panel status (0 = less than a day); -1 when the
+        // subscription has ended; null when there is no end date.
         fun daysLeft(expireSeconds: Long): Long? {
             if (expireSeconds <= 0) return null
             val left = expireSeconds * 1000 - System.currentTimeMillis()
             if (left <= 0) return -1
-            return -Math.floorDiv(-left, DAY_MS)
+            return left / DAY_MS
         }
 
         fun text(days: Long): String = when {
             days < 0 -> "Подписка закончилась"
-            days <= 1 -> "Подписка заканчивается завтра или раньше"
-            else -> "Подписка заканчивается через $days дн."
+            days == 0L -> "Подписка заканчивается меньше чем через сутки"
+            else -> "Подписка заканчивается через $days дн"
         }
     }
 
