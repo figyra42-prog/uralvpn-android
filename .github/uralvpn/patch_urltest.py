@@ -2,10 +2,18 @@
 # UralVPN: one lost packet must not make a server "n/a": a failed ping test is repeated once.
 # Each try has its own 6 s limit, so a dead server ends in about 12 s (the core's limit is 15 s) and
 # the working ones are not slowed down; concurrency (10) and the total timeout stay as in the core.
+# Also runs patch_sessionid.py (session id of the length the server asks for) on the same core checkout:
+# this script is the one the CI step calls, and its hash is in the cache key of the built core.
 # Usage (from the core root): patch_urltest.py protocol/group/urltest.go
+import os
+import subprocess
 import sys
 
 path = sys.argv[1]
+subprocess.run(
+    [sys.executable, "-I", os.path.join(os.path.dirname(os.path.abspath(__file__)), "patch_sessionid.py"), os.getcwd()],
+    check=True,
+)
 s = open(path).read()
 
 old = "delay, testErr := urlTestLinks(testCtx, links, detour) //H"
