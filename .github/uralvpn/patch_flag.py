@@ -79,15 +79,15 @@ new = """        if (hasFlag) {
                 0
             }
             if (flagRes != 0) {
-                val flagShape = RoundedCornerShape(5.dp)
-                Box(modifier = Modifier.width(72.dp), contentAlignment = Alignment.CenterStart) {
+                val flagShape = RoundedCornerShape(9.dp)
+                Box(modifier = Modifier.width(67.dp), contentAlignment = Alignment.CenterStart) {
                     androidx.compose.foundation.Image(
                         painter = androidx.compose.ui.res.painterResource(flagRes),
                         contentDescription = null,
                         contentScale = androidx.compose.ui.layout.ContentScale.FillBounds,
                         modifier = Modifier
-                            .width(50.dp)
-                            .height(37.dp)
+                            .width(45.dp)
+                            .height(33.dp)
                             .clip(flagShape)
                             .border(0.5.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f), flagShape),
                     )
@@ -95,9 +95,9 @@ new = """        if (hasFlag) {
             } else {
                 Text(
                     text = head,
-                    fontSize = 42.sp,
-                    lineHeight = 48.sp,
-                    modifier = Modifier.width(72.dp),
+                    fontSize = 38.sp,
+                    lineHeight = 43.sp,
+                    modifier = Modifier.width(67.dp),
                     maxLines = 1,
                 )
             }
