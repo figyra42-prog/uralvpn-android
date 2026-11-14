@@ -138,3 +138,6 @@ python3 -I "$HERE/patch_qrimage.py" "$SFA"
 
 # The app selection screen: title "Приложения (обход VPN)", visible mode switch (bypass / only selected).
 python3 -I "$HERE/patch_perapp.py" "$SFA"
+
+# The flags of the locations are 10% bigger.
+python3 -I "$HERE/patch_flag.py" "$SFA"
