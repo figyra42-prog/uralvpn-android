@@ -135,3 +135,6 @@ python3 -I "$HERE/patch_theme.py" "$SFA"
 
 # The QR scan screen can also take a picture (gallery, screenshot).
 python3 -I "$HERE/patch_qrimage.py" "$SFA"
+
+# The app selection screen: title "Приложения (обход VPN)", visible mode switch (bypass / only selected).
+python3 -I "$HERE/patch_perapp.py" "$SFA"
