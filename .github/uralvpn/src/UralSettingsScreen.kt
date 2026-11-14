@@ -15,10 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.FilterAlt
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.PowerSettingsNew
 import androidx.compose.material.icons.outlined.Tune
-import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,17 +38,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.nekohasekai.sfa.BuildConfig
-import io.nekohasekai.sfa.bg.UralAutostart
 import io.nekohasekai.sfa.bg.UralTools
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material.icons.outlined.BugReport
 import io.nekohasekai.sfa.compose.topbar.LocalScaffoldPadding
 import io.nekohasekai.sfa.compose.topbar.OverrideTopBar
-import io.nekohasekai.sfa.update.UpdateState
 
 // UralVPN: short settings list like in the old app (the SFA tools for Tailscale, remote control,
-// privileges and the core tuning are not shown).
+// privileges and the core tuning are not shown). Autostart, updates and notifications are in the side menu.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(navController: NavController) {
@@ -62,8 +57,6 @@ fun SettingsScreen(navController: NavController) {
     }
 
     val context = LocalContext.current
-    val hasUpdate by UpdateState.hasUpdate
-    var autostart by remember { mutableStateOf(UralAutostart.enabled) }
     var simBlock by remember { mutableStateOf(UralTools.simulateBlock) }
     val scope = rememberCoroutineScope()
     val scaffoldPadding = LocalScaffoldPadding.current
@@ -85,45 +78,13 @@ fun SettingsScreen(navController: NavController) {
         ) {
             Column {
                 ListItem(
-                    headlineContent = { Text("Приложение", style = MaterialTheme.typography.bodyLarge) },
-                    leadingContent = {
-                        Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                    },
-                    trailingContent = {
-                        if (hasUpdate) Badge(containerColor = MaterialTheme.colorScheme.primary)
-                    },
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                        .clickable { navController.navigate("settings/app") },
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                )
-                ListItem(
                     headlineContent = { Text("Сервис", style = MaterialTheme.typography.bodyLarge) },
                     leadingContent = {
                         Icon(Icons.Outlined.Tune, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     },
-                    modifier = Modifier.clickable { navController.navigate("settings/service") },
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                )
-                ListItem(
-                    headlineContent = { Text("Автозапуск при включении устройства", style = MaterialTheme.typography.bodyLarge) },
-                    supportingContent = { Text("VPN включится сам после перезагрузки телефона") },
-                    leadingContent = {
-                        Icon(Icons.Outlined.PowerSettingsNew, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                    },
-                    trailingContent = {
-                        Switch(
-                            checked = autostart,
-                            onCheckedChange = {
-                                autostart = it
-                                UralAutostart.enabled = it
-                            },
-                        )
-                    },
-                    modifier = Modifier.clickable {
-                        autostart = !autostart
-                        UralAutostart.enabled = autostart
-                    },
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                        .clickable { navController.navigate("settings/service") },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
                 ListItem(
