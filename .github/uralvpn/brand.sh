@@ -144,3 +144,6 @@ python3 -I "$HERE/patch_flag.py" "$SFA"
 
 # The rows of the locations are higher, the dividers are wider.
 python3 -I "$HERE/patch_rows.py" "$SFA"
+
+# The logo of the top bar is centered, the burger button has the word "Меню".
+python3 -I "$HERE/patch_title.py" "$SFA"
