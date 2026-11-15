@@ -3,7 +3,8 @@
 # Each try has its own 6 s limit, so a dead server ends in about 12 s (the core's limit is 15 s) and
 # the working ones are not slowed down; concurrency (10) and the total timeout stay as in the core.
 # Also runs patch_sessionid.py (session id of the length the server asks for) and patch_xhttpstatus.py (the reason
-# of a dead XHTTP connection in the log, no gRPC header on a download GET) on the same core checkout:
+# of a dead XHTTP connection in the log, no gRPC header on a download GET) and patch_timing.py (the cold open
+# of every tested server in the log) on the same core checkout:
 # this script is the one the CI step calls, and its hash is in the cache key of the built core.
 # Usage (from the core root): patch_urltest.py protocol/group/urltest.go
 import os
@@ -11,7 +12,7 @@ import subprocess
 import sys
 
 path = sys.argv[1]
-for extra in ("patch_sessionid.py", "patch_xhttpstatus.py"):
+for extra in ("patch_sessionid.py", "patch_xhttpstatus.py", "patch_timing.py"):
     subprocess.run(
         [sys.executable, "-I", os.path.join(os.path.dirname(os.path.abspath(__file__)), extra), os.getcwd()],
         check=True,
