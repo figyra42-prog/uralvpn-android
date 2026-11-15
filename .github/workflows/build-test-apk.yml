@@ -70,7 +70,9 @@ jobs:
             ./experimental/libbox
 
       - name: Copy libbox.aar to app
-        run: cp sing-box-core/libbox.aar sing-box-for-android/app/libs/libbox.aar
+        run: |
+          mkdir -p sing-box-for-android/app/libs
+          cp sing-box-core/libbox.aar sing-box-for-android/app/libs/libbox.aar
 
       - name: Build APK
         working-directory: sing-box-for-android
