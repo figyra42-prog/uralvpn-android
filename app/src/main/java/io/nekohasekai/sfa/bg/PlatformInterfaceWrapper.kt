@@ -192,6 +192,23 @@ interface PlatformInterfaceWrapper : PlatformInterface {
         return WIFIState(ssid, wifiInfo.bssid)
     }
 
+    override fun systemCertificates(): StringIterator {
+        val certs = mutableListOf<String>()
+        File("/system/etc/security/cacerts").listFiles()?.forEach { file ->
+            if (!file.isFile || !file.name.endsWith(".0")) return@forEach
+            runCatching {
+                val der = file.readBytes()
+                val b64 = android.util.Base64.encodeToString(der, android.util.Base64.NO_WRAP)
+                certs.add(
+                    "-----BEGIN CERTIFICATE-----\n" +
+                        b64.chunked(64).joinToString("\n") +
+                        "\n-----END CERTIFICATE-----"
+                )
+            }
+        }
+        return certs.asIterable().toStringIterator()
+    }
+
     override fun localDNSTransport(): LocalDNSTransport? = LocalResolver
 
     override fun startNeighborMonitor(listener: NeighborUpdateListener?) {
