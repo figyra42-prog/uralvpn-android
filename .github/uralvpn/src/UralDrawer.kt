@@ -51,7 +51,9 @@ import io.nekohasekai.sfa.compose.navigation.Screen
 import io.nekohasekai.sfa.database.ProfileManager
 import io.nekohasekai.sfa.database.TypedProfile
 import io.nekohasekai.sfa.update.UpdateState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 // UralVPN: side menu like in the old app (burger on the home screen) instead of the bottom tabs.
 val LocalUralDrawer = staticCompositionLocalOf<DrawerState?> { null }
@@ -86,6 +88,7 @@ fun UralDrawerHost(
     var showAbout by remember { mutableStateOf(false) }
     var showSub by remember { mutableStateOf(false) }
     var subLinks by remember { mutableStateOf(listOf<Pair<String, String>>()) }
+    var subFailed by remember { mutableStateOf(false) }
     var autostart by remember { mutableStateOf(UralAutostart.enabled) }
     val hasUpdate by UpdateState.hasUpdate
     ModalNavigationDrawer(
@@ -127,11 +130,16 @@ fun UralDrawerHost(
                         onClick = {
                             scope.launch {
                                 drawerState.close()
-                                subLinks = runCatching {
-                                    ProfileManager.list()
-                                        .filter { it.typed.type == TypedProfile.Type.Remote && it.typed.remoteURL.isNotBlank() }
-                                        .map { it.name to it.typed.remoteURL }
-                                }.getOrDefault(emptyList())
+                                // the profile database must be read off the main thread
+                                val result = runCatching {
+                                    withContext(Dispatchers.IO) {
+                                        ProfileManager.list()
+                                            .filter { it.typed.type == TypedProfile.Type.Remote && it.typed.remoteURL.isNotBlank() }
+                                            .map { it.name to it.typed.remoteURL }
+                                    }
+                                }
+                                subFailed = result.isFailure
+                                subLinks = result.getOrDefault(emptyList())
                                 showSub = true
                             }
                         },
@@ -230,7 +238,9 @@ fun UralDrawerHost(
             title = { Text("Моя подписка") },
             text = {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    if (subLinks.isEmpty()) {
+                    if (subFailed) {
+                        Text("Не удалось прочитать список подписок. Закройте и откройте окно ещё раз.")
+                    } else if (subLinks.isEmpty()) {
                         Text("Подписка ещё не добавлена. Нажмите «Добавить подписку» в меню.")
                     }
                     subLinks.forEachIndexed { index, (name, url) ->
