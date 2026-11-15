@@ -47,9 +47,10 @@ jobs:
           echo "ANDROID_NDK_HOME=$NDK" >> "$GITHUB_ENV"
           echo "SDK: $ANDROID_HOME | NDK: $NDK"
 
-      - name: Install gomobile
+      - name: Install gomobile (sagernet fork)
         run: |
-          go install golang.org/x/mobile/cmd/gomobile@latest
+          go install github.com/sagernet/gomobile/cmd/gomobile@v0.1.12
+          go install github.com/sagernet/gomobile/cmd/gobind@v0.1.12
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
 
       - name: Build libbox.aar
