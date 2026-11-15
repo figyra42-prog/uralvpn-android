@@ -49,7 +49,6 @@ import io.nekohasekai.sfa.BuildConfig
 import io.nekohasekai.sfa.bg.UralAutostart
 import io.nekohasekai.sfa.compose.navigation.Screen
 import io.nekohasekai.sfa.database.ProfileManager
-import io.nekohasekai.sfa.database.TypedProfile
 import io.nekohasekai.sfa.update.UpdateState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -88,7 +87,7 @@ fun UralDrawerHost(
     var showAbout by remember { mutableStateOf(false) }
     var showSub by remember { mutableStateOf(false) }
     var subLinks by remember { mutableStateOf(listOf<Pair<String, String>>()) }
-    var subFailed by remember { mutableStateOf(false) }
+    var subFailed by remember { mutableStateOf<String?>(null) }
     var autostart by remember { mutableStateOf(UralAutostart.enabled) }
     val hasUpdate by UpdateState.hasUpdate
     ModalNavigationDrawer(
@@ -134,11 +133,11 @@ fun UralDrawerHost(
                                 val result = runCatching {
                                     withContext(Dispatchers.IO) {
                                         ProfileManager.list()
-                                            .filter { it.typed.type == TypedProfile.Type.Remote && it.typed.remoteURL.isNotBlank() }
+                                            .filter { it.typed.remoteURL.isNotBlank() } // the same condition as the home screen
                                             .map { it.name to it.typed.remoteURL }
                                     }
                                 }
-                                subFailed = result.isFailure
+                                subFailed = result.exceptionOrNull()?.let { it.javaClass.simpleName + ": " + it.message }
                                 subLinks = result.getOrDefault(emptyList())
                                 showSub = true
                             }
@@ -238,8 +237,8 @@ fun UralDrawerHost(
             title = { Text("Моя подписка") },
             text = {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    if (subFailed) {
-                        Text("Не удалось прочитать список подписок. Закройте и откройте окно ещё раз.")
+                    if (subFailed != null) {
+                        Text("Не удалось прочитать список подписок: $subFailed")
                     } else if (subLinks.isEmpty()) {
                         Text("Подписка ещё не добавлена. Нажмите «Добавить подписку» в меню.")
                     }
