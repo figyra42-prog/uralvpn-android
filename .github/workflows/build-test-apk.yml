@@ -1,0 +1,68 @@
+name: Build test APK (XHTTP body-uplink fix)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout app
+        uses: actions/checkout@v4
+        with:
+          path: sing-box-for-android
+
+      - name: Checkout core (with fix)
+        uses: actions/checkout@v4
+        with:
+          repository: figyra42-prog/uralvpn-core
+          ref: fix-xhttp-body-uplink
+          path: sing-box-core
+          submodules: recursive
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27'
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK + NDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install gomobile
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Build libbox.aar
+        working-directory: sing-box-core
+        run: |
+          export PATH="$PATH:$(go env GOPATH)/bin"
+          gomobile bind \
+            -target=android \
+            -androidapi=24 \
+            -javapkg=io.nekohasekai \
+            -libname=box \
+            -o libbox.aar \
+            -tags "with_quic,with_wireguard,with_utls,with_naive_outbound,with_clash_api,with_usbip,with_openvpn,with_openconnect,badlinkname,tfogo_checklinkname0,with_tailscale,ts_omit_logtail,ts_omit_ssh,ts_omit_drive,ts_omit_taildrop,ts_omit_webclient,ts_omit_doctor,ts_omit_capture,ts_omit_kube,ts_omit_aws,ts_omit_synology,ts_omit_bird" \
+            ./experimental/libbox
+
+      - name: Copy libbox.aar to app
+        run: cp sing-box-core/libbox.aar sing-box-for-android/app/libs/libbox.aar
+
+      - name: Build APK
+        working-directory: sing-box-for-android
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assemblePlayDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: uralvpn-test-apk
+          path: sing-box-for-android/app/build/outputs/apk/play/debug/*.apk
