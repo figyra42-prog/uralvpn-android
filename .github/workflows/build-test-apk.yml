@@ -32,7 +32,20 @@ jobs:
           java-version: '17'
 
       - name: Setup Android SDK + NDK
-        uses: android-actions/setup-android@v3
+        run: |
+          export ANDROID_HOME=${ANDROID_HOME:-/usr/local/lib/android/sdk}
+          SDKMGR=$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | head -1)
+          yes | "$SDKMGR" --licenses > /dev/null 2>&1 || true
+          "$SDKMGR" "platforms;android-37.1" "build-tools;37.0.0" > /dev/null 2>&1 || true
+          NDK=$(ls -d "$ANDROID_HOME"/ndk/* 2>/dev/null | head -1)
+          if [ -z "$NDK" ]; then
+            "$SDKMGR" "ndk;27.0.12077973" > /dev/null 2>&1 || true
+            NDK=$(ls -d "$ANDROID_HOME"/ndk/* 2>/dev/null | head -1)
+          fi
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_HOME=$NDK" >> "$GITHUB_ENV"
+          echo "SDK: $ANDROID_HOME | NDK: $NDK"
 
       - name: Install gomobile
         run: |
