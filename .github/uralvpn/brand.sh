@@ -147,3 +147,6 @@ python3 -I "$HERE/patch_rows.py" "$SFA"
 
 # The logo of the top bar is centered, the burger button has the word "Меню".
 python3 -I "$HERE/patch_title.py" "$SFA"
+
+# The "+" is bigger and white, the refresh button moves from the top bar to the card next to the ping.
+python3 -I "$HERE/patch_actions.py" "$SFA"
