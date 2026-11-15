@@ -58,7 +58,7 @@ jobs:
         run: |
           export PATH="$PATH:$(go env GOPATH)/bin"
           gomobile bind \
-            -target=android \
+            -target=android/arm64 \
             -androidapi=24 \
             -javapkg=io.nekohasekai \
             -libname=box \
