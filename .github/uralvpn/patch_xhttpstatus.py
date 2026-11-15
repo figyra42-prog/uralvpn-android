@@ -23,12 +23,58 @@ if "func (w *WaitReadCloser) abort(" in d:
 else:
     d = swap(
         d,
-        "\t\t\tresp.Body.Close() // if it is called immediately, the upload will be interrupted also\n\t\t\treader.Close()    //H\n",
+        "\t\t\tio.Copy(io.Discard, resp.Body)\n\t\t\tresp.Body.Close() // if it is called immediately, the upload will be interrupted also\n\t\t\treader.Close()    //H\n",
+        "\t\t\tsnippet, _ := io.ReadAll(io.LimitReader(resp.Body, 200)) //UralVPN: who answered and what\n"
+        "\t\t\tio.Copy(io.Discard, resp.Body)\n"
         "\t\t\tresp.Body.Close() // if it is called immediately, the upload will be interrupted also\n"
-        "\t\t\tif !uploadOnly {\n\t\t\t\treader.abort(E.New(\"xhttp: server answered \", resp.Status)) //UralVPN: the reason is visible in the log\n\t\t\t}\n"
+        "\t\t\tif !uploadOnly {\n\t\t\t\treader.abort(E.New(\"xhttp: server answered \", resp.Status, uralWhy(resp, snippet))) //UralVPN: the reason is visible in the log\n\t\t\t}\n"
         "\t\t\treader.Close() //H\n",
         "non-200 branch",
     )
+    d = swap(
+        d,
+        "\t\tio.Copy(io.Discard, resp.Body)\n\t\tdefer resp.Body.Close()\n\t\tif resp.StatusCode != http.StatusOK { //H: as in Xray, a rejected upload is an error\n\t\t\treturn E.New(\"bad status code: \", resp.Status) //H\n",
+        "\t\tuploadSnippet, _ := io.ReadAll(io.LimitReader(resp.Body, 200)) //UralVPN: who answered and what\n"
+        "\t\tio.Copy(io.Discard, resp.Body)\n\t\tdefer resp.Body.Close()\n\t\tif resp.StatusCode != http.StatusOK { //H: as in Xray, a rejected upload is an error\n"
+        "\t\t\treturn E.New(\"bad status code: \", resp.Status, uralWhy(resp, uploadSnippet)) //H\n",
+        "upload status",
+    )
+    open(os.path.join(root, "transport", "v2rayxhttp", "ural_why.go"), "w").write('''package xhttp
+
+import (
+	"fmt"
+	"net/http"
+	"sort"
+	"strings"
+)
+
+// uralWhy describes an answer that is not 200: the headers (they show who answered: the CDN, nginx or Xray)
+// and the beginning of the body. Cookies are left out.
+func uralWhy(resp *http.Response, body []byte) string {
+	keys := make([]string, 0, len(resp.Header))
+	for k := range resp.Header {
+		if !strings.EqualFold(k, "Set-Cookie") {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	parts := make([]string, 0, len(keys))
+	for _, k := range keys {
+		parts = append(parts, k+": "+strings.Join(resp.Header[k], ","))
+	}
+	headers := strings.Join(parts, "; ")
+	if len(headers) > 700 {
+		headers = headers[:700] + "..."
+	}
+	text := strings.Map(func(r rune) rune {
+		if r < 32 || r == 127 {
+			return \' \'
+		}
+		return r
+	}, string(body))
+	return fmt.Sprintf(" [%s] body=%q", headers, text)
+}
+''')
     d = swap(
         d,
         "\taccess sync.Mutex\n\treader io.ReadCloser\n\tclosed bool\n}\n",
