@@ -431,7 +431,7 @@ private fun UralConnectButton(isOn: Boolean, startTime: Long?, onClick: () -> Un
     val ringBase = MaterialTheme.colorScheme.surfaceContainerHighest
     val ringDark = lerp(ringBase, Color.Black, 0.45f)
     val ringMid = lerp(ringBase, Color.Black, 0.15f)
-    val ringLight = lerp(ringBase, Color.White, 0.10f)
+    val ringLight = lerp(ringBase, Color(0xFFFFFFFF), 0.10f)
     Box(modifier = Modifier.size(196.dp), contentAlignment = Alignment.Center) {
         Box(
             Modifier
