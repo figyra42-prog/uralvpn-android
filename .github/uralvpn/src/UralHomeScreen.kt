@@ -406,18 +406,23 @@ private fun UralConnectButton(isOn: Boolean, onClick: () -> Unit) {
         Brush.radialGradient(colors = listOf(Color(0xFF7A7985), Color(0xFF050508)), center = Offset(0.5f, 0.5f))
     }
     val glow = if (isOn) UralLime.copy(alpha = 0.40f) else Color.Black.copy(alpha = 0.60f)
-    Box(modifier = Modifier.size(236.dp), contentAlignment = Alignment.Center) {
+    val accent = MaterialTheme.colorScheme.primary
+    // Concentric circles as in the reference: a thin outer ring, a translucent middle disc and the
+    // main button with the power icon and the state label inside.
+    Box(modifier = Modifier.size(252.dp), contentAlignment = Alignment.Center) {
         Box(
             Modifier
-                .size(236.dp)
-                .shadow(16.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.45f), spotColor = Color.Black.copy(alpha = 0.45f))
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+                .size(252.dp)
+                .border(1.dp, accent.copy(alpha = if (isOn) 0.45f else 0.18f), CircleShape),
         )
         Box(
             Modifier
-                .size(208.dp)
+                .size(204.dp)
+                .background(accent.copy(alpha = if (isOn) 0.20f else 0.08f), CircleShape),
+        )
+        Box(
+            Modifier
+                .size(160.dp)
                 .shadow(if (isOn) 26.dp else 18.dp, CircleShape, ambientColor = glow, spotColor = glow)
                 .clip(CircleShape)
                 .background(brush)
@@ -425,12 +430,22 @@ private fun UralConnectButton(isOn: Boolean, onClick: () -> Unit) {
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                imageVector = Icons.Filled.PowerSettingsNew,
-                contentDescription = if (isOn) "Отключить" else "Подключить",
-                tint = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(92.dp),
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    imageVector = Icons.Filled.PowerSettingsNew,
+                    contentDescription = if (isOn) "Отключить" else "Подключить",
+                    tint = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(60.dp),
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = if (isOn) "ПОДКЛЮЧЕН" else "ОТКЛЮЧЕН",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.5.sp,
+                    color = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }
@@ -448,13 +463,13 @@ private fun UralSubscriptionCard(
     onToggleSort: () -> Unit,
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 3.dp),
-        shape = MaterialTheme.shapes.large,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp),
+        shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surfaceContainerHighest,
-        shadowElevation = 11.dp,
+        shadowElevation = 9.dp,
         border = BorderStroke(1.dp, raisedRim()),
     ) {
-        Column(Modifier.background(raisedBrush(MaterialTheme.colorScheme.surfaceContainerHighest)).padding(start = 12.dp, end = 12.dp, top = 6.dp, bottom = 16.dp)) {
+        Column(Modifier.background(raisedBrush(MaterialTheme.colorScheme.surfaceContainerHighest)).padding(start = 8.dp, end = 8.dp, top = 2.dp, bottom = 10.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onToggleCollapse, modifier = Modifier.size(36.dp)) {
                     Icon(
@@ -466,7 +481,7 @@ private fun UralSubscriptionCard(
                 Text(
                     text = info.title ?: fallbackTitle,
                     modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -499,31 +514,31 @@ private fun UralSubscriptionCard(
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(
                         text = "Трафик: ${formatTraffic(info.used)} / ${if (info.total > 0) formatTraffic(info.total) else "∞"}",
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         color = if (low) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                     )
                     Text(
                         text = "До: ${if (info.expireSeconds > 0) formatExpire(info.expireSeconds) else "∞"}",
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         color = if (expired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                     )
                 }
                 info.fraction?.let { fraction ->
-                    Spacer(Modifier.height(6.dp))
+                    Spacer(Modifier.height(4.dp))
                     LinearProgressIndicator(
                         progress = { fraction },
-                        modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
+                        modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
                         color = if (low) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                         trackColor = MaterialTheme.colorScheme.surfaceVariant,
                     )
                 }
                 info.announce?.let { announce ->
-                    Spacer(Modifier.height(14.dp))
+                    Spacer(Modifier.height(12.dp))
                     Text(
                         text = announce,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth(),
