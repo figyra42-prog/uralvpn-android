@@ -404,23 +404,30 @@ fun UralHomeScreen(
 @Composable
 private fun UralConnectButton(isOn: Boolean, startTime: Long?, onClick: () -> Unit) {
     // Как в версии 1.1.0: двойной контур, лаймовое свечение при подключении.
-    // Выпуклость: центр светлый, к внешнему краю темнеет. Центр градиента — по умолчанию (середина круга).
+    // Выпуклость: центр светлее, к внешнему краю темнеет. Много промежуточных оттенков,
+    // чтобы переход был плавным и без видимых ступенек. Центр градиента — по умолчанию (середина круга).
     val brush = if (isOn) {
         Brush.radialGradient(
             colorStops = arrayOf(
-                0.00f to Color(0xFFF2FFB0),
-                0.55f to Color(0xFFE8FF8C),
-                0.88f to Color(0xFF7FA82A),
-                1.00f to Color(0xFF3A5A0C),
+                0.00f to Color(0xFFD6EE9E),
+                0.25f to Color(0xFFCAE68E),
+                0.50f to Color(0xFFB2D475),
+                0.70f to Color(0xFF8FB551),
+                0.85f to Color(0xFF6D9433),
+                0.95f to Color(0xFF51761E),
+                1.00f to Color(0xFF41610F),
             ),
         )
     } else {
         Brush.radialGradient(
             colorStops = arrayOf(
-                0.00f to Color(0xFF8E8C99),
-                0.55f to Color(0xFF6B6A76),
-                0.88f to Color(0xFF2B2A33),
-                1.00f to Color(0xFF050508),
+                0.00f to Color(0xFF8A8895),
+                0.25f to Color(0xFF7F7D8A),
+                0.50f to Color(0xFF6E6C79),
+                0.70f to Color(0xFF565460),
+                0.85f to Color(0xFF3B3A44),
+                0.95f to Color(0xFF22212A),
+                1.00f to Color(0xFF0A0A11),
             ),
         )
     }
@@ -441,7 +448,8 @@ private fun UralConnectButton(isOn: Boolean, startTime: Long?, onClick: () -> Un
         val sec = elapsedSeconds % 60
         if (h > 0) String.format("%d:%02d:%02d", h, m, sec) else String.format("%02d:%02d", m, sec)
     }
-    val textColor = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+    // Тёмный текст внутри кнопки в обоих состояниях: лаймовая поверхность светлая в любой теме.
+    val textColor = if (isOn) Color(0xFF1C2A00) else MaterialTheme.colorScheme.primary
     // Внешнее кольцо: у внутреннего края темнее, к наружному — светлее.
     val ringBase = MaterialTheme.colorScheme.surfaceContainerHighest
     val ringDark = lerp(ringBase, Color.Black, 0.45f)
