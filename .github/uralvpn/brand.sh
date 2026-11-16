@@ -150,3 +150,7 @@ python3 -I "$HERE/patch_title.py" "$SFA"
 
 # The "+" is bigger and white, the refresh button moves from the top bar to the card next to the ping.
 python3 -I "$HERE/patch_actions.py" "$SFA"
+
+# Russian apps (banks, Gosuslugi, MAX, Yandex, VK, shops, taxi, telecom) go around the VPN by default:
+# exclude mode on at the first start, the list is filled by a scan, a new Russian app joins the list itself.
+python3 -I "$HERE/patch_rusapps.py" "$SFA"
