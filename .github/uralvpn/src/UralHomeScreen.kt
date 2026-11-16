@@ -456,7 +456,7 @@ private fun UralSubscriptionCard(
     ) {
         Column(Modifier.background(raisedBrush(MaterialTheme.colorScheme.surfaceContainerHighest)).padding(start = 12.dp, end = 12.dp, top = 6.dp, bottom = 16.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onToggleCollapse, modifier = Modifier.size(40.dp)) {
+                IconButton(onClick = onToggleCollapse, modifier = Modifier.size(36.dp)) {
                     Icon(
                         imageVector = if (collapsed) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
                         contentDescription = if (collapsed) "Показать все локации" else "Свернуть до автопилота",
@@ -472,19 +472,19 @@ private fun UralSubscriptionCard(
                     overflow = TextOverflow.Ellipsis,
                 )
                 info.supportUrl?.let { url ->
-                    IconButton(onClick = { onOpenLink(url) }, modifier = Modifier.size(38.dp)) {
+                    IconButton(onClick = { onOpenLink(url) }, modifier = Modifier.size(36.dp)) {
                         Icon(Icons.Default.SupportAgent, contentDescription = "Поддержка", modifier = Modifier.size(22.dp))
                     }
                 }
                 info.webUrl?.let { url ->
-                    IconButton(onClick = { onOpenLink(url) }, modifier = Modifier.size(38.dp)) {
+                    IconButton(onClick = { onOpenLink(url) }, modifier = Modifier.size(36.dp)) {
                         Icon(Icons.Default.Info, contentDescription = "Страница подписки", modifier = Modifier.size(22.dp))
                     }
                 }
-                IconButton(onClick = onPing, enabled = pingEnabled, modifier = Modifier.size(38.dp)) {
+                IconButton(onClick = onPing, enabled = pingEnabled, modifier = Modifier.size(36.dp)) {
                     Icon(Icons.Default.Speed, contentDescription = "Проверить пинг всех", modifier = Modifier.size(22.dp))
                 }
-                IconButton(onClick = onToggleSort, modifier = Modifier.size(38.dp)) {
+                IconButton(onClick = onToggleSort, modifier = Modifier.size(36.dp)) {
                     Icon(
                         imageVector = Icons.Default.SwapVert,
                         contentDescription = "Сортировать по пингу",
