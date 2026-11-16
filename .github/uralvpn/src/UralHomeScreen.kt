@@ -70,6 +70,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -426,13 +427,27 @@ private fun UralConnectButton(isOn: Boolean, startTime: Long?, onClick: () -> Un
         if (h > 0) String.format("%d:%02d:%02d", h, m, sec) else String.format("%02d:%02d", m, sec)
     }
     val textColor = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+    // Внешнее кольцо: у внутреннего края темнее, к наружному — светлее.
+    val ringBase = MaterialTheme.colorScheme.surfaceContainerHighest
+    val ringDark = lerp(ringBase, Color.Black, 0.45f)
+    val ringMid = lerp(ringBase, Color.Black, 0.15f)
+    val ringLight = lerp(ringBase, Color.White, 0.10f)
     Box(modifier = Modifier.size(196.dp), contentAlignment = Alignment.Center) {
         Box(
             Modifier
                 .size(196.dp)
                 .shadow(14.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.45f), spotColor = Color.Black.copy(alpha = 0.45f))
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                .background(
+                    Brush.radialGradient(
+                        colorStops = arrayOf(
+                            0.00f to ringDark,
+                            0.70f to ringDark,
+                            0.88f to ringMid,
+                            1.00f to ringLight,
+                        ),
+                    ),
+                )
                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
         )
         Box(
