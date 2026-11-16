@@ -57,6 +57,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
@@ -91,6 +92,7 @@ import io.nekohasekai.sfa.compose.topbar.LocalScaffoldPadding
 import io.nekohasekai.sfa.compose.topbar.OverrideTopBar
 import io.nekohasekai.sfa.constant.Status
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -312,6 +314,7 @@ fun UralHomeScreen(
         item(key = "connect") {
             UralConnectButton(
                 isOn = serviceStatus == Status.Started || serviceStatus == Status.Starting,
+                startTime = uiState.serviceStartTime,
                 onClick = {
                     if (profile == null) {
                         onOpenNewProfile(NewProfileArgs())
@@ -398,110 +401,81 @@ fun UralHomeScreen(
 }
 
 @Composable
-private fun UralConnectButton(isOn: Boolean, onClick: () -> Unit) {
-    // Как в эталоне: мягкое свечение, выпуклый обод (светлый по внешнему краю, тёмный к середине)
-    // и утопленная середина, в которую «проваливается» значок. Свет сверху-слева.
-    val bezelLight = if (isOn) Color(0xFFC9FF6B) else Color(0xFF7B798F)
-    val bezelMid = if (isOn) Color(0xFF8FD122) else Color(0xFF4A4859)
-    val bezelDeep = if (isOn) Color(0xFF3D6208) else Color(0xFF23222C)
-    val wellFill = if (isOn) Color(0xFF122A08) else Color(0xFF08080E)
-    val accent = MaterialTheme.colorScheme.primary
-    val glow = if (isOn) UralLime.copy(alpha = 0.55f) else Color.Black.copy(alpha = 0.60f)
-    Box(modifier = Modifier.size(252.dp), contentAlignment = Alignment.Center) {
-        // свет от кнопки растекается в тёмный фон
-        Box(
-            Modifier
-                .size(216.dp)
-                .clip(CircleShape)
-                .background(
-                    Brush.radialGradient(
-                        colorStops = arrayOf(
-                            0.70f to accent.copy(alpha = if (isOn) 0.10f else 0.04f),
-                            0.90f to accent.copy(alpha = if (isOn) 0.22f else 0.08f),
-                            1.00f to Color.Transparent,
-                        ),
-                    ),
-                ),
-        )
-        // обод: гладкий переход от яркого внешнего края к тёмной середине — кнопка «вдавливается»
+private fun UralConnectButton(isOn: Boolean, startTime: Long?, onClick: () -> Unit) {
+    // Как в версии 1.1.0: двойной контур, лаймовое свечение при подключении.
+    val brush = if (isOn) {
+        Brush.radialGradient(colors = listOf(Color(0xFFE8FF8C), Color(0xFF4E7A12)), center = Offset(0.5f, 0.5f))
+    } else {
+        Brush.radialGradient(colors = listOf(Color(0xFF7A7985), Color(0xFF050508)), center = Offset(0.5f, 0.5f))
+    }
+    val glow = if (isOn) UralLime.copy(alpha = 0.40f) else Color.Black.copy(alpha = 0.60f)
+    // Время подключения: настоящий момент запуска сервиса, тикает раз в секунду.
+    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(startTime, isOn) {
+        now = System.currentTimeMillis()
+        while (isOn) {
+            delay(1000)
+            now = System.currentTimeMillis()
+        }
+    }
+    val elapsedSeconds = if (isOn && startTime != null) ((now - startTime) / 1000).coerceAtLeast(0) else 0
+    val elapsedText = run {
+        val h = elapsedSeconds / 3600
+        val m = (elapsedSeconds % 3600) / 60
+        val sec = elapsedSeconds % 60
+        if (h > 0) String.format("%d:%02d:%02d", h, m, sec) else String.format("%02d:%02d", m, sec)
+    }
+    val textColor = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+    Box(modifier = Modifier.size(196.dp), contentAlignment = Alignment.Center) {
         Box(
             Modifier
                 .size(196.dp)
-                .shadow(26.dp, CircleShape, ambientColor = glow, spotColor = glow)
+                .shadow(14.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.45f), spotColor = Color.Black.copy(alpha = 0.45f))
                 .clip(CircleShape)
-                .background(
-                    Brush.radialGradient(
-                        colorStops = arrayOf(
-                            0.00f to bezelDeep,
-                            0.38f to bezelDeep,
-                            0.52f to bezelMid,
-                            0.66f to bezelLight,
-                            0.76f to bezelMid,
-                            1.00f to bezelDeep,
-                        ),
-                    ),
-                )
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+        )
+        Box(
+            Modifier
+                .size(172.dp)
+                .shadow(if (isOn) 22.dp else 16.dp, CircleShape, ambientColor = glow, spotColor = glow)
+                .clip(CircleShape)
+                .background(brush)
+                .then(if (isOn) Modifier else Modifier.border(1.5.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape))
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
-            // тень, которую отбрасывает обод на утопленную середину
-            Box(
-                Modifier
-                    .size(150.dp)
-                    .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = if (isOn) 0.45f else 0.55f)),
-            )
-            // сама утопленная середина
-            Box(
-                Modifier
-                    .size(140.dp)
-                    .clip(CircleShape)
-                    .background(wellFill),
-                contentAlignment = Alignment.Center,
-            ) {
-                // тень по краю колодца — тем сильнее, чем ближе к стенке
-                Box(
-                    Modifier
-                        .matchParentSize()
-                        .background(
-                            Brush.radialGradient(
-                                colorStops = arrayOf(
-                                    0.55f to Color.Transparent,
-                                    0.86f to Color.Black.copy(alpha = if (isOn) 0.40f else 0.50f),
-                                    1.00f to Color.Black.copy(alpha = if (isOn) 0.70f else 0.80f),
-                                ),
-                            ),
-                        ),
-                )
-                // отблеск на дальнем (нижнем) краю колодца — от него и читается глубина
-                Box(
-                    Modifier
-                        .matchParentSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colorStops = arrayOf(
-                                    0.72f to Color.Transparent,
-                                    1.00f to bezelLight.copy(alpha = if (isOn) 0.30f else 0.18f),
-                                ),
-                            ),
-                        ),
-                )
+            if (isOn) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         imageVector = Icons.Filled.PowerSettingsNew,
-                        contentDescription = if (isOn) "Отключить" else "Подключить",
-                        tint = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(40.dp),
+                        contentDescription = "Отключить",
+                        tint = textColor,
+                        modifier = Modifier.size(44.dp),
                     )
-                    Spacer(Modifier.height(6.dp))
+                    Spacer(Modifier.height(4.dp))
                     Text(
-                        text = if (isOn) "ПОДКЛЮЧЕН" else "ОТКЛЮЧЕН",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.5.sp,
-                        color = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        text = "Подключён",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = textColor,
                     )
+                    if (startTime != null) {
+                        Text(
+                            text = elapsedText,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Medium,
+                            color = textColor.copy(alpha = 0.85f),
+                        )
+                    }
                 }
+            } else {
+                Icon(
+                    imageVector = Icons.Filled.PowerSettingsNew,
+                    contentDescription = "Подключить",
+                    tint = textColor,
+                    modifier = Modifier.size(72.dp),
+                )
             }
         }
     }
