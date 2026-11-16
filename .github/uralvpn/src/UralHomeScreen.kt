@@ -460,7 +460,7 @@ private fun UralSubscriptionCard(
                     Icon(
                         imageVector = if (collapsed) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
                         contentDescription = if (collapsed) "Показать все локации" else "Свернуть до автопилота",
-                        modifier = Modifier.size(26.dp),
+                        modifier = Modifier.size(22.dp),
                     )
                 }
                 Text(
@@ -473,22 +473,22 @@ private fun UralSubscriptionCard(
                 )
                 info.supportUrl?.let { url ->
                     IconButton(onClick = { onOpenLink(url) }, modifier = Modifier.size(38.dp)) {
-                        Icon(Icons.Default.SupportAgent, contentDescription = "Поддержка", modifier = Modifier.size(24.dp))
+                        Icon(Icons.Default.SupportAgent, contentDescription = "Поддержка", modifier = Modifier.size(22.dp))
                     }
                 }
                 info.webUrl?.let { url ->
                     IconButton(onClick = { onOpenLink(url) }, modifier = Modifier.size(38.dp)) {
-                        Icon(Icons.Default.Info, contentDescription = "Страница подписки", modifier = Modifier.size(24.dp))
+                        Icon(Icons.Default.Info, contentDescription = "Страница подписки", modifier = Modifier.size(22.dp))
                     }
                 }
                 IconButton(onClick = onPing, enabled = pingEnabled, modifier = Modifier.size(38.dp)) {
-                    Icon(Icons.Default.Speed, contentDescription = "Проверить пинг всех", modifier = Modifier.size(24.dp))
+                    Icon(Icons.Default.Speed, contentDescription = "Проверить пинг всех", modifier = Modifier.size(22.dp))
                 }
                 IconButton(onClick = onToggleSort, modifier = Modifier.size(38.dp)) {
                     Icon(
                         imageVector = Icons.Default.SwapVert,
                         contentDescription = "Сортировать по пингу",
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(22.dp),
                         tint = if (sortByPing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
