@@ -439,7 +439,6 @@ private fun UralConnectButton(isOn: Boolean, onClick: () -> Unit) {
                             0.76f to bezelMid,
                             1.00f to bezelDeep,
                         ),
-                        center = Offset(0.44f, 0.40f),
                     ),
                 )
                 .clickable(onClick = onClick),
@@ -479,12 +478,11 @@ private fun UralConnectButton(isOn: Boolean, onClick: () -> Unit) {
                     Modifier
                         .matchParentSize()
                         .background(
-                            Brush.radialGradient(
+                            Brush.verticalGradient(
                                 colorStops = arrayOf(
-                                    0.80f to Color.Transparent,
-                                    1.00f to bezelLight.copy(alpha = if (isOn) 0.35f else 0.22f),
+                                    0.72f to Color.Transparent,
+                                    1.00f to bezelLight.copy(alpha = if (isOn) 0.30f else 0.18f),
                                 ),
-                                center = Offset(0.50f, 0.40f),
                             ),
                         ),
                 )
