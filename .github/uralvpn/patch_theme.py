@@ -38,8 +38,8 @@ print("terminal config item removed")
 # 3) theme switch
 st = base + "settings/SettingsScreen.kt"
 s = open(st).read()
-anchor = 'headlineContent = { Text("Приложения (обход VPN)"'
-assert s.count(anchor) == 1, "bypass item not found"
+anchor = 'headlineContent = { Text("Российские приложения мимо VPN"'
+assert s.count(anchor) == 1, "russian apps switch not found"
 i = s.index(anchor)
 j = s.rindex("                ListItem(\n", 0, i)
 item = '''                ListItem(

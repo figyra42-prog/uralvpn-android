@@ -184,16 +184,37 @@ s = swap(
         // UralVPN: on the first start the Russian apps go around the VPN (exclude mode), the user can edit the list later.
         suspend fun setupRussianAppsOnce() {
             if (Settings.uralvpnRusAppsSetupDone) return
-            val found = PerAppProxyScanner.scanAllChinaApps()
-            val list = Settings.perAppProxyList.toMutableSet()
-            list.addAll(found)
-            Settings.perAppProxyList = list
-            Settings.perAppProxyMode = Settings.PER_APP_PROXY_EXCLUDE
-            Settings.perAppProxyManagedMode = false
-            Settings.perAppProxyEnabled = true
+            val found = setRussianBypass(true)
+            Log.d(TAG, "russian apps setup done: $found apps bypass the VPN")
+        }
+
+        // UralVPN: the switch "Российские приложения мимо VPN" in the settings. On: the installed Russian apps are
+        // scanned into the bypass list (the user's own entries stay), exclude mode, per-app proxy on. Off: per-app
+        // proxy off, everything goes through the VPN. A running VPN is reloaded. Returns the number of Russian apps found.
+        fun isRussianBypassOn(): Boolean =
+            Settings.perAppProxyEnabled && !Settings.perAppProxyManagedMode &&
+                Settings.perAppProxyMode == Settings.PER_APP_PROXY_EXCLUDE
+
+        suspend fun setRussianBypass(enabled: Boolean): Int {
+            var found = 0
+            if (enabled) {
+                val apps = PerAppProxyScanner.scanAllChinaApps()
+                found = apps.size
+                val list = Settings.perAppProxyList.toMutableSet()
+                list.addAll(apps)
+                Settings.perAppProxyList = list
+                Settings.perAppProxyMode = Settings.PER_APP_PROXY_EXCLUDE
+                Settings.perAppProxyManagedMode = false
+                Settings.perAppProxyEnabled = true
+            } else {
+                Settings.perAppProxyEnabled = false
+            }
             Settings.uralvpnRusAppsSetupDone = true
             Settings.dataStore.flush()
-            Log.d(TAG, "russian apps setup done: ${found.size} apps bypass the VPN")
+            runCatching {
+                io.nekohasekai.libbox.Libbox.newStandaloneCommandClient().serviceReload()
+            }.onFailure { Log.d(TAG, "service reload skipped: ${it.message}") }
+            return found
         }
     }
 }""",
