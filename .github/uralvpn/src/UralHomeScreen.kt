@@ -399,98 +399,111 @@ fun UralHomeScreen(
 
 @Composable
 private fun UralConnectButton(isOn: Boolean, onClick: () -> Unit) {
-    // Concentric circles as in the reference: a soft drop shadow under everything, a thin outer
-    // ring, a raised middle ring and the button itself — lit from the top-left, with its edge
-    // sinking towards the icon.
-    val light = if (isOn) Color(0xFFD6FF74) else Color(0xFF7C7B87)
-    val base = if (isOn) Color(0xFF7CB62C) else Color(0xFF3A3A45)
-    val deep = if (isOn) Color(0xFF2C4A05) else Color(0xFF0A0A10)
+    // Как в эталоне: мягкое свечение, выпуклый обод (светлый по внешнему краю, тёмный к середине)
+    // и утопленная середина, в которую «проваливается» значок. Свет сверху-слева.
+    val bezelLight = if (isOn) Color(0xFFC9FF6B) else Color(0xFF7B798F)
+    val bezelMid = if (isOn) Color(0xFF8FD122) else Color(0xFF4A4859)
+    val bezelDeep = if (isOn) Color(0xFF3D6208) else Color(0xFF23222C)
+    val wellFill = if (isOn) Color(0xFF122A08) else Color(0xFF08080E)
     val accent = MaterialTheme.colorScheme.primary
+    val glow = if (isOn) UralLime.copy(alpha = 0.55f) else Color.Black.copy(alpha = 0.60f)
     Box(modifier = Modifier.size(252.dp), contentAlignment = Alignment.Center) {
-        // soft drop shadow under the whole button
+        // свет от кнопки растекается в тёмный фон
         Box(
             Modifier
-                .size(252.dp)
-                .clip(CircleShape)
-                .background(
-                    Brush.radialGradient(
-                        colorStops = arrayOf(0.82f to Color.Transparent, 1.00f to Color.Black.copy(alpha = 0.65f)),
-                    ),
-                ),
-        )
-        // outer thin ring
-        Box(
-            Modifier
-                .size(250.dp)
-                .border(1.dp, accent.copy(alpha = if (isOn) 0.45f else 0.20f), CircleShape),
-        )
-        // middle ring: a raised torus — dark at the inner edge, lit at the outer edge
-        Box(
-            Modifier
-                .size(206.dp)
+                .size(216.dp)
                 .clip(CircleShape)
                 .background(
                     Brush.radialGradient(
                         colorStops = arrayOf(
-                            0.00f to Color.Black.copy(alpha = 0.55f),
-                            0.66f to accent.copy(alpha = if (isOn) 0.35f else 0.16f),
-                            0.90f to accent.copy(alpha = if (isOn) 0.18f else 0.09f),
-                            1.00f to Color.Black.copy(alpha = 0.40f),
+                            0.70f to accent.copy(alpha = if (isOn) 0.10f else 0.04f),
+                            0.90f to accent.copy(alpha = if (isOn) 0.22f else 0.08f),
+                            1.00f to Color.Transparent,
                         ),
                     ),
                 ),
         )
-        // the button itself: lit from the top-left
+        // обод: гладкий переход от яркого внешнего края к тёмной середине — кнопка «вдавливается»
         Box(
             Modifier
-                .size(162.dp)
+                .size(196.dp)
+                .shadow(26.dp, CircleShape, ambientColor = glow, spotColor = glow)
                 .clip(CircleShape)
-                .background(Brush.linearGradient(listOf(light, base, deep)))
+                .background(
+                    Brush.radialGradient(
+                        colorStops = arrayOf(
+                            0.00f to bezelDeep,
+                            0.38f to bezelDeep,
+                            0.52f to bezelMid,
+                            0.66f to bezelLight,
+                            0.76f to bezelMid,
+                            1.00f to bezelDeep,
+                        ),
+                        center = Offset(0.44f, 0.40f),
+                    ),
+                )
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
-            // rim shading: the face sinks towards the icon
+            // тень, которую отбрасывает обод на утопленную середину
             Box(
                 Modifier
-                    .matchParentSize()
-                    .background(
-                        Brush.radialGradient(
-                            colorStops = arrayOf(
-                                0.55f to Color.Transparent,
-                                0.90f to Color.Black.copy(alpha = 0.22f),
-                                1.00f to Color.Black.copy(alpha = if (isOn) 0.38f else 0.50f),
-                            ),
-                        ),
-                    ),
+                    .size(150.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = if (isOn) 0.45f else 0.55f)),
             )
-            // top specular highlight
+            // сама утопленная середина
             Box(
                 Modifier
-                    .matchParentSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colorStops = arrayOf(
-                                0.00f to Color.White.copy(alpha = if (isOn) 0.22f else 0.12f),
-                                0.42f to Color.Transparent,
+                    .size(140.dp)
+                    .clip(CircleShape)
+                    .background(wellFill),
+                contentAlignment = Alignment.Center,
+            ) {
+                // тень по краю колодца — тем сильнее, чем ближе к стенке
+                Box(
+                    Modifier
+                        .matchParentSize()
+                        .background(
+                            Brush.radialGradient(
+                                colorStops = arrayOf(
+                                    0.55f to Color.Transparent,
+                                    0.86f to Color.Black.copy(alpha = if (isOn) 0.40f else 0.50f),
+                                    1.00f to Color.Black.copy(alpha = if (isOn) 0.70f else 0.80f),
+                                ),
                             ),
                         ),
-                    ),
-            )
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    imageVector = Icons.Filled.PowerSettingsNew,
-                    contentDescription = if (isOn) "Отключить" else "Подключить",
-                    tint = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(60.dp),
                 )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = if (isOn) "ПОДКЛЮЧЕН" else "ОТКЛЮЧЕН",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp,
-                    color = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                // отблеск на дальнем (нижнем) краю колодца — от него и читается глубина
+                Box(
+                    Modifier
+                        .matchParentSize()
+                        .background(
+                            Brush.radialGradient(
+                                colorStops = arrayOf(
+                                    0.80f to Color.Transparent,
+                                    1.00f to bezelLight.copy(alpha = if (isOn) 0.35f else 0.22f),
+                                ),
+                                center = Offset(0.50f, 0.40f),
+                            ),
+                        ),
                 )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = Icons.Filled.PowerSettingsNew,
+                        contentDescription = if (isOn) "Отключить" else "Подключить",
+                        tint = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(40.dp),
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = if (isOn) "ПОДКЛЮЧЕН" else "ОТКЛЮЧЕН",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.5.sp,
+                        color = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }
