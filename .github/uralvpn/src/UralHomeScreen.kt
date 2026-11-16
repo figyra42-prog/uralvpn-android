@@ -404,10 +404,25 @@ fun UralHomeScreen(
 @Composable
 private fun UralConnectButton(isOn: Boolean, startTime: Long?, onClick: () -> Unit) {
     // Как в версии 1.1.0: двойной контур, лаймовое свечение при подключении.
+    // Выпуклость: центр светлый, к внешнему краю темнеет. Центр градиента — по умолчанию (середина круга).
     val brush = if (isOn) {
-        Brush.radialGradient(colors = listOf(Color(0xFFE8FF8C), Color(0xFF4E7A12)), center = Offset(0.5f, 0.5f))
+        Brush.radialGradient(
+            colorStops = arrayOf(
+                0.00f to Color(0xFFF2FFB0),
+                0.55f to Color(0xFFE8FF8C),
+                0.88f to Color(0xFF7FA82A),
+                1.00f to Color(0xFF3A5A0C),
+            ),
+        )
     } else {
-        Brush.radialGradient(colors = listOf(Color(0xFF7A7985), Color(0xFF050508)), center = Offset(0.5f, 0.5f))
+        Brush.radialGradient(
+            colorStops = arrayOf(
+                0.00f to Color(0xFF8E8C99),
+                0.55f to Color(0xFF6B6A76),
+                0.88f to Color(0xFF2B2A33),
+                1.00f to Color(0xFF050508),
+            ),
+        )
     }
     val glow = if (isOn) UralLime.copy(alpha = 0.40f) else Color.Black.copy(alpha = 0.60f)
     // Время подключения: настоящий момент запуска сервиса, тикает раз в секунду.
