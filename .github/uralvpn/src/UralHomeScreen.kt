@@ -406,19 +406,19 @@ private fun UralConnectButton(isOn: Boolean, onClick: () -> Unit) {
         Brush.radialGradient(colors = listOf(Color(0xFF7A7985), Color(0xFF050508)), center = Offset(0.5f, 0.5f))
     }
     val glow = if (isOn) UralLime.copy(alpha = 0.40f) else Color.Black.copy(alpha = 0.60f)
-    Box(modifier = Modifier.size(196.dp), contentAlignment = Alignment.Center) {
+    Box(modifier = Modifier.size(236.dp), contentAlignment = Alignment.Center) {
         Box(
             Modifier
-                .size(196.dp)
-                .shadow(14.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.45f), spotColor = Color.Black.copy(alpha = 0.45f))
+                .size(236.dp)
+                .shadow(16.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.45f), spotColor = Color.Black.copy(alpha = 0.45f))
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
         )
         Box(
             Modifier
-                .size(172.dp)
-                .shadow(if (isOn) 22.dp else 16.dp, CircleShape, ambientColor = glow, spotColor = glow)
+                .size(208.dp)
+                .shadow(if (isOn) 26.dp else 18.dp, CircleShape, ambientColor = glow, spotColor = glow)
                 .clip(CircleShape)
                 .background(brush)
                 .then(if (isOn) Modifier else Modifier.border(1.5.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape))
@@ -429,7 +429,7 @@ private fun UralConnectButton(isOn: Boolean, onClick: () -> Unit) {
                 imageVector = Icons.Filled.PowerSettingsNew,
                 contentDescription = if (isOn) "Отключить" else "Подключить",
                 tint = if (isOn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(72.dp),
+                modifier = Modifier.size(92.dp),
             )
         }
     }
@@ -448,47 +448,47 @@ private fun UralSubscriptionCard(
     onToggleSort: () -> Unit,
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp),
-        shape = MaterialTheme.shapes.medium,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 3.dp),
+        shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.surfaceContainerHighest,
-        shadowElevation = 9.dp,
+        shadowElevation = 11.dp,
         border = BorderStroke(1.dp, raisedRim()),
     ) {
-        Column(Modifier.background(raisedBrush(MaterialTheme.colorScheme.surfaceContainerHighest)).padding(start = 8.dp, end = 8.dp, top = 2.dp, bottom = 10.dp)) {
+        Column(Modifier.background(raisedBrush(MaterialTheme.colorScheme.surfaceContainerHighest)).padding(start = 12.dp, end = 12.dp, top = 6.dp, bottom = 16.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onToggleCollapse, modifier = Modifier.size(36.dp)) {
+                IconButton(onClick = onToggleCollapse, modifier = Modifier.size(40.dp)) {
                     Icon(
                         imageVector = if (collapsed) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
                         contentDescription = if (collapsed) "Показать все локации" else "Свернуть до автопилота",
-                        modifier = Modifier.size(22.dp),
+                        modifier = Modifier.size(26.dp),
                     )
                 }
                 Text(
                     text = info.title ?: fallbackTitle,
                     modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 info.supportUrl?.let { url ->
-                    IconButton(onClick = { onOpenLink(url) }, modifier = Modifier.size(36.dp)) {
-                        Icon(Icons.Default.SupportAgent, contentDescription = "Поддержка", modifier = Modifier.size(22.dp))
+                    IconButton(onClick = { onOpenLink(url) }, modifier = Modifier.size(38.dp)) {
+                        Icon(Icons.Default.SupportAgent, contentDescription = "Поддержка", modifier = Modifier.size(24.dp))
                     }
                 }
                 info.webUrl?.let { url ->
-                    IconButton(onClick = { onOpenLink(url) }, modifier = Modifier.size(36.dp)) {
-                        Icon(Icons.Default.Info, contentDescription = "Страница подписки", modifier = Modifier.size(22.dp))
+                    IconButton(onClick = { onOpenLink(url) }, modifier = Modifier.size(38.dp)) {
+                        Icon(Icons.Default.Info, contentDescription = "Страница подписки", modifier = Modifier.size(24.dp))
                     }
                 }
-                IconButton(onClick = onPing, enabled = pingEnabled, modifier = Modifier.size(36.dp)) {
-                    Icon(Icons.Default.Speed, contentDescription = "Проверить пинг всех", modifier = Modifier.size(22.dp))
+                IconButton(onClick = onPing, enabled = pingEnabled, modifier = Modifier.size(38.dp)) {
+                    Icon(Icons.Default.Speed, contentDescription = "Проверить пинг всех", modifier = Modifier.size(24.dp))
                 }
-                IconButton(onClick = onToggleSort, modifier = Modifier.size(36.dp)) {
+                IconButton(onClick = onToggleSort, modifier = Modifier.size(38.dp)) {
                     Icon(
                         imageVector = Icons.Default.SwapVert,
                         contentDescription = "Сортировать по пингу",
-                        modifier = Modifier.size(22.dp),
+                        modifier = Modifier.size(24.dp),
                         tint = if (sortByPing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -499,31 +499,31 @@ private fun UralSubscriptionCard(
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(
                         text = "Трафик: ${formatTraffic(info.used)} / ${if (info.total > 0) formatTraffic(info.total) else "∞"}",
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = if (low) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                     )
                     Text(
                         text = "До: ${if (info.expireSeconds > 0) formatExpire(info.expireSeconds) else "∞"}",
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = if (expired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                     )
                 }
                 info.fraction?.let { fraction ->
-                    Spacer(Modifier.height(4.dp))
+                    Spacer(Modifier.height(6.dp))
                     LinearProgressIndicator(
                         progress = { fraction },
-                        modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
+                        modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
                         color = if (low) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                         trackColor = MaterialTheme.colorScheme.surfaceVariant,
                     )
                 }
                 info.announce?.let { announce ->
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(14.dp))
                     Text(
                         text = announce,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth(),
