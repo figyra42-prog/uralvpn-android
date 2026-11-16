@@ -3,16 +3,20 @@ on:
   workflow_dispatch:
     inputs:
       draft_release:
-        description: 'Put the APKs into a draft release (visible to the repo owner only)'
+        description: 'Черновик релиза (теперь делается всегда, параметр оставлен для совместимости)'
         type: boolean
         default: false
       public_release:
-        description: 'PUBLIC release: everybody sees it, the app updates itself from it'
+        description: 'ПУБЛИЧНЫЙ релиз: виден всем, приложение обновляется само (только ветка uralvpn)'
         type: boolean
         default: false
   push:
     branches: [uralvpn]
     paths-ignore: ['.github/workflows/uralvpn-verify.yml']
+  # UralVPN (16.11.2026): каждая сборка попадает в «Releases» ЧЕРНОВИКОМ автоматически,
+  # включая обычный пуш в uralvpn — готовый APK всегда лежит там, где его ищет владелец.
+  # Публичный релиз (его видят клиенты, приложение обновляется само) — ТОЛЬКО кнопкой
+  # public_release=true и только на ветке uralvpn.
 permissions:
   contents: write
 jobs:
@@ -120,7 +124,7 @@ jobs:
           name: uralvpn-android-apk
           path: sing-box-for-android/app/build/outputs/apk/other/release/*.apk
       - name: Draft release with the APK
-        if: ${{ inputs.draft_release && !inputs.public_release }}
+        if: ${{ !inputs.public_release }}
         env:
           GH_TOKEN: ${{ github.token }}
         working-directory: sing-box-for-android
@@ -128,12 +132,17 @@ jobs:
           D=app/build/outputs/apk/other/release
           cp "$D"/*universal*.apk "$D/UralVPN-universal.apk"
           cp "$D"/*arm64-v8a*.apk "$D/UralVPN-arm64-v8a.apk"
-          gh release create "draft-${{ github.run_number }}" "$D/UralVPN-universal.apk" "$D/UralVPN-arm64-v8a.apk" SFA-version-metadata.json \
-            --draft --prerelease --target "${{ github.sha }}" \
-            --title "UralVPN test build #${{ github.run_number }} (${{ steps.ver.outputs.name }})" \
-            --notes "Test build ${{ github.sha }}. Release build (R8), not for public distribution."
+          # UralVPN: повтор номера сборки (перезапуск) — обновляем тот же черновик, а не падаем
+          if gh release view "draft-${{ github.run_number }}" >/dev/null 2>&1; then
+            gh release upload "draft-${{ github.run_number }}" "$D/UralVPN-universal.apk" "$D/UralVPN-arm64-v8a.apk" SFA-version-metadata.json --clobber
+          else
+            gh release create "draft-${{ github.run_number }}" "$D/UralVPN-universal.apk" "$D/UralVPN-arm64-v8a.apk" SFA-version-metadata.json \
+              --draft --prerelease --target "${{ github.sha }}" \
+              --title "UralVPN test build #${{ github.run_number }} (${{ steps.ver.outputs.name }})" \
+              --notes "Test build ${{ github.sha }}. Release build (R8), not for public distribution."
+          fi
       - name: Public release with the APK
-        if: ${{ inputs.public_release }}
+        if: ${{ inputs.public_release && github.ref == 'refs/heads/uralvpn' }}
         env:
           GH_TOKEN: ${{ github.token }}
         working-directory: sing-box-for-android
