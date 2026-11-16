@@ -86,10 +86,29 @@ jobs:
       - name: Version
         id: ver
         working-directory: sing-box-for-android
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          # UralVPN: own version that grows with every build (the update check compares them)
+          # UralVPN: версия вида 1.1.0 → 1.1.1 → 1.1.2 … (решение владельца 16.11.2026).
+          # Публичный релиз = последний публичный тег + 1 в последней цифре (до 1.1.0 — ровно 1.1.0).
+          # Тестовая сборка = следующая версия с пометкой -testN. Код версии растёт с каждой сборкой,
+          # по нему приложение понимает, что вышло обновление.
           CODE=$((1000 + ${{ github.run_number }}))
-          NAME="1.0.${{ github.run_number }}"
+          LAST=$(gh api "repos/${{ github.repository }}/releases?per_page=100" \
+            --jq '[.[] | select(.draft|not) | select(.prerelease|not) | .tag_name | select(startswith("v"))] | .[0] // "v0.0.0"')
+          LAST=${LAST#v}
+          IFS=. read -r MA MI PA <<< "$LAST"
+          if [ "${MA:-0}" -lt 1 ] || { [ "${MA:-0}" -eq 1 ] && [ "${MI:-0}" -lt 1 ]; }; then
+            NEXT="1.1.0"
+          else
+            NEXT="$MA.$MI.$((PA + 1))"
+          fi
+          if [ "${{ inputs.public_release }}" = "true" ]; then
+            NAME="$NEXT"
+          else
+            NAME="$NEXT-test${{ github.run_number }}"
+          fi
+          echo "last public: $LAST, this build: $NAME (code $CODE)"
           sed -i "s/^VERSION_CODE=.*/VERSION_CODE=$CODE/; s/^VERSION_NAME=.*/VERSION_NAME=$NAME/" version.properties
           cat version.properties
           echo "code=$CODE" >> "$GITHUB_OUTPUT"
