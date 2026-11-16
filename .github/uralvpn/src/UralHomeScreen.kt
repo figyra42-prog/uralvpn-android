@@ -399,20 +399,32 @@ fun UralHomeScreen(
 
 @Composable
 private fun UralConnectButton(isOn: Boolean, onClick: () -> Unit) {
-    // Concentric circles as in the reference: a thin outer ring, a recessed middle "well", and the
-    // main button that looks raised above it (lit from the top-left, shadow at the bottom-right).
-    val light = if (isOn) Color(0xFFF2FFB8) else Color(0xFF63626E)
-    val dark = if (isOn) Color(0xFF3F6B0A) else Color(0xFF07070B)
-    val glow = if (isOn) UralLime.copy(alpha = 0.45f) else Color.Black.copy(alpha = 0.65f)
+    // Concentric circles as in the reference: a soft drop shadow under everything, a thin outer
+    // ring, a raised middle ring and the button itself — lit from the top-left, with its edge
+    // sinking towards the icon.
+    val light = if (isOn) Color(0xFFD6FF74) else Color(0xFF7C7B87)
+    val base = if (isOn) Color(0xFF7CB62C) else Color(0xFF3A3A45)
+    val deep = if (isOn) Color(0xFF2C4A05) else Color(0xFF0A0A10)
     val accent = MaterialTheme.colorScheme.primary
     Box(modifier = Modifier.size(252.dp), contentAlignment = Alignment.Center) {
-        // outer thin ring
+        // soft drop shadow under the whole button
         Box(
             Modifier
                 .size(252.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        colorStops = arrayOf(0.82f to Color.Transparent, 1.00f to Color.Black.copy(alpha = 0.65f)),
+                    ),
+                ),
+        )
+        // outer thin ring
+        Box(
+            Modifier
+                .size(250.dp)
                 .border(1.dp, accent.copy(alpha = if (isOn) 0.45f else 0.20f), CircleShape),
         )
-        // middle disc: darker towards its edge — the "well" the button sits in
+        // middle ring: a raised torus — dark at the inner edge, lit at the outer edge
         Box(
             Modifier
                 .size(206.dp)
@@ -420,39 +432,24 @@ private fun UralConnectButton(isOn: Boolean, onClick: () -> Unit) {
                 .background(
                     Brush.radialGradient(
                         colorStops = arrayOf(
-                            0.55f to accent.copy(alpha = 0.04f),
-                            0.80f to accent.copy(alpha = 0.14f),
-                            1.00f to accent.copy(alpha = 0.30f),
+                            0.00f to Color.Black.copy(alpha = 0.55f),
+                            0.66f to accent.copy(alpha = if (isOn) 0.35f else 0.16f),
+                            0.90f to accent.copy(alpha = if (isOn) 0.18f else 0.09f),
+                            1.00f to Color.Black.copy(alpha = 0.40f),
                         ),
                     ),
                 ),
         )
-        // shading right around the button: the edge of the well
+        // the button itself: lit from the top-left
         Box(
             Modifier
-                .size(184.dp)
+                .size(162.dp)
                 .clip(CircleShape)
-                .background(
-                    Brush.radialGradient(
-                        colorStops = arrayOf(
-                            0.84f to Color.Transparent,
-                            1.00f to Color.Black.copy(alpha = 0.50f),
-                        ),
-                    ),
-                ),
-        )
-        // the button itself: raised, light from the top-left
-        Box(
-            Modifier
-                .size(160.dp)
-                .shadow(if (isOn) 26.dp else 18.dp, CircleShape, ambientColor = glow, spotColor = glow)
-                .clip(CircleShape)
-                .background(Brush.radialGradient(colors = listOf(light, dark), center = Offset(0.36f, 0.30f)))
-                .then(if (isOn) Modifier else Modifier.border(1.dp, Color.White.copy(alpha = 0.10f), CircleShape))
+                .background(Brush.linearGradient(listOf(light, base, deep)))
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
-            // inner shading: the face of the button sinks a little towards the icon
+            // rim shading: the face sinks towards the icon
             Box(
                 Modifier
                     .matchParentSize()
@@ -460,7 +457,21 @@ private fun UralConnectButton(isOn: Boolean, onClick: () -> Unit) {
                         Brush.radialGradient(
                             colorStops = arrayOf(
                                 0.55f to Color.Transparent,
-                                1.00f to Color.Black.copy(alpha = if (isOn) 0.16f else 0.30f),
+                                0.90f to Color.Black.copy(alpha = 0.22f),
+                                1.00f to Color.Black.copy(alpha = if (isOn) 0.38f else 0.50f),
+                            ),
+                        ),
+                    ),
+            )
+            // top specular highlight
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colorStops = arrayOf(
+                                0.00f to Color.White.copy(alpha = if (isOn) 0.22f else 0.12f),
+                                0.42f to Color.Transparent,
                             ),
                         ),
                     ),
