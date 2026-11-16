@@ -93,7 +93,7 @@ s = open(p).read()
 s = swap(
     s,
     '    const val PER_APP_PROXY_ENABLED = "per_app_proxy_enabled"\n',
-    '    const val PER_APP_PROXY_ENABLED = "per_app_proxy_enabled"\n    const val URALVPN_RUS_APPS_SETUP_DONE = "uralvpn_rus_apps_setup_done"\n',
+    '    const val PER_APP_PROXY_ENABLED = "per_app_proxy_enabled"\n    const val URALVPN_RUS_APPS_SETUP_DONE = "uralvpn_rus_apps_setup_done"\n    const val URALVPN_RUS_APPS_BYPASS = "uralvpn_rus_apps_bypass"\n',
     "settings key",
 )
 open(p, "w").write(s)
@@ -103,7 +103,7 @@ s = open(p).read()
 s = swap(
     s,
     "    var perAppProxyEnabled by dataStore.boolean(SettingsKey.PER_APP_PROXY_ENABLED) { false }\n",
-    "    var perAppProxyEnabled by dataStore.boolean(SettingsKey.PER_APP_PROXY_ENABLED) { false }\n    var uralvpnRusAppsSetupDone by dataStore.boolean(SettingsKey.URALVPN_RUS_APPS_SETUP_DONE) { false }\n",
+    "    var perAppProxyEnabled by dataStore.boolean(SettingsKey.PER_APP_PROXY_ENABLED) { false }\n    var uralvpnRusAppsSetupDone by dataStore.boolean(SettingsKey.URALVPN_RUS_APPS_SETUP_DONE) { false }\n    var uralvpnRusAppsBypass by dataStore.boolean(SettingsKey.URALVPN_RUS_APPS_BYPASS) { false }\n",
     "settings field",
 )
 open(p, "w").write(s)
@@ -139,8 +139,8 @@ s = swap(
                     Log.d(TAG, "per app proxy disabled")
                     return@launch
                 }
-                if (Settings.perAppProxyMode != Settings.PER_APP_PROXY_EXCLUDE) {
-                    Log.d(TAG, "not exclude mode")
+                if (!Settings.uralvpnRusAppsBypass || Settings.perAppProxyMode != Settings.PER_APP_PROXY_EXCLUDE) {
+                    Log.d(TAG, "russian bypass off or not exclude mode")
                     return@launch
                 }
                 val packageName = intent.data?.schemeSpecificPart ?: return@launch
@@ -188,33 +188,33 @@ s = swap(
             Log.d(TAG, "russian apps setup done: $found apps bypass the VPN")
         }
 
-        // UralVPN: the switch "Российские приложения мимо VPN" in the settings. On: the installed Russian apps are
-        // scanned into the bypass list (the user's own entries stay), exclude mode, per-app proxy on. Off: per-app
-        // proxy off, everything goes through the VPN. A running VPN is reloaded. Returns the number of Russian apps found.
-        fun isRussianBypassOn(): Boolean =
-            Settings.perAppProxyEnabled && !Settings.perAppProxyManagedMode &&
-                Settings.perAppProxyMode == Settings.PER_APP_PROXY_EXCLUDE
+        // UralVPN: the switch "Российские приложения мимо VPN" on the screen "Приложения (обход VPN)".
+        // On: the installed Russian apps are scanned into the bypass list (the user's own entries stay), exclude mode,
+        // per-app proxy on, new Russian apps join the list themselves. Off: the Russian apps leave the list, nothing is
+        // added automatically; the per-app proxy itself stays as it is. A running VPN is reloaded.
+        // Returns the number of Russian apps found.
+        fun isRussianBypassOn(): Boolean = Settings.uralvpnRusAppsBypass
 
         suspend fun setRussianBypass(enabled: Boolean): Int {
-            var found = 0
+            val apps = PerAppProxyScanner.scanAllChinaApps()
+            val list = Settings.perAppProxyList.toMutableSet()
             if (enabled) {
-                val apps = PerAppProxyScanner.scanAllChinaApps()
-                found = apps.size
-                val list = Settings.perAppProxyList.toMutableSet()
                 list.addAll(apps)
                 Settings.perAppProxyList = list
                 Settings.perAppProxyMode = Settings.PER_APP_PROXY_EXCLUDE
                 Settings.perAppProxyManagedMode = false
                 Settings.perAppProxyEnabled = true
             } else {
-                Settings.perAppProxyEnabled = false
+                list.removeAll(apps)
+                Settings.perAppProxyList = list
             }
+            Settings.uralvpnRusAppsBypass = enabled
             Settings.uralvpnRusAppsSetupDone = true
             Settings.dataStore.flush()
             runCatching {
                 io.nekohasekai.libbox.Libbox.newStandaloneCommandClient().serviceReload()
             }.onFailure { Log.d(TAG, "service reload skipped: ${it.message}") }
-            return found
+            return apps.size
         }
     }
 }""",
@@ -238,3 +238,74 @@ s = swap(
 )
 open(p, "w").write(s)
 print("receiver: new Russian apps auto-added, first start setup")
+
+# 5) the screen "Приложения (обход VPN)": the switch "Российские приложения мимо VPN" between "Включено" and "Управление"
+p = base + "compose/screen/settings/ProfileOverrideScreen.kt"
+s = open(p).read()
+s = swap(
+    s,
+    "import androidx.compose.material.icons.outlined.AppShortcut\n",
+    "import androidx.compose.material.icons.outlined.AppShortcut\nimport androidx.compose.material.icons.outlined.PhoneAndroid\n",
+    "icon import",
+)
+s = swap(
+    s,
+    "    var isScanning by remember { mutableStateOf(false) }\n",
+    "    var isScanning by remember { mutableStateOf(false) }\n    var rusBypass by remember { mutableStateOf(io.nekohasekai.sfa.bg.AppChangeReceiver.isRussianBypassOn()) }\n",
+    "rus state",
+)
+s = swap(
+    s,
+    "                if (perAppProxyEnabled && canUsePerAppProxy) {\n                    // Manage entry\n",
+    """                if (perAppProxyEnabled && canUsePerAppProxy) {
+                    // UralVPN: Russian apps bypass switch
+                    ListItem(
+                        headlineContent = {
+                            Text("Российские приложения мимо VPN", style = MaterialTheme.typography.bodyLarge)
+                        },
+                        supportingContent = {
+                            Text(
+                                "Банки, Госуслуги, MAX, Яндекс, VK, магазины, такси и связь работают напрямую. " +
+                                    "Новые российские приложения добавляются сами.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                        leadingContent = {
+                            Icon(
+                                imageVector = Icons.Outlined.PhoneAndroid,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        },
+                        trailingContent = {
+                            Switch(
+                                checked = rusBypass,
+                                enabled = !isScanning,
+                                onCheckedChange = { checked ->
+                                    rusBypass = checked
+                                    isScanning = true
+                                    scope.launch {
+                                        val found = withContext(Dispatchers.IO) {
+                                            io.nekohasekai.sfa.bg.AppChangeReceiver.setRussianBypass(checked)
+                                        }
+                                        if (checked) perAppProxyEnabled = true
+                                        isScanning = false
+                                        Toast.makeText(
+                                            context,
+                                            if (checked) "Мимо VPN идут российские приложения: $found" else "Российские приложения убраны из списка: $found",
+                                            Toast.LENGTH_LONG,
+                                        ).show()
+                                    }
+                                },
+                            )
+                        },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    )
+
+                    // Manage entry
+""",
+    "rus switch",
+)
+open(p, "w").write(s)
+print("override screen: Russian apps switch")

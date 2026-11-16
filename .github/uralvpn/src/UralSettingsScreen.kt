@@ -38,12 +38,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.nekohasekai.sfa.BuildConfig
-import io.nekohasekai.sfa.bg.AppChangeReceiver
 import io.nekohasekai.sfa.bg.UralTools
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material.icons.outlined.BugReport
 import io.nekohasekai.sfa.compose.topbar.LocalScaffoldPadding
@@ -62,8 +58,6 @@ fun SettingsScreen(navController: NavController) {
 
     val context = LocalContext.current
     var simBlock by remember { mutableStateOf(UralTools.simulateBlock) }
-    var rusBypass by remember { mutableStateOf(AppChangeReceiver.isRussianBypassOn()) }
-    var rusBusy by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val scaffoldPadding = LocalScaffoldPadding.current
 
@@ -109,31 +103,6 @@ fun SettingsScreen(navController: NavController) {
                                 scope.launch {
                                     val ok = UralTools.refreshNow()
                                     UralTools.toast(if (ok) "Готово. Отключите и снова включите VPN." else "Не удалось обновить подписку: проверьте сеть")
-                                }
-                            },
-                        )
-                    },
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                )
-                ListItem(
-                    headlineContent = { Text("Российские приложения мимо VPN", style = MaterialTheme.typography.bodyLarge) },
-                    supportingContent = { Text("Банки, Госуслуги, MAX, Яндекс, VK, магазины, такси и связь работают напрямую, остальное через VPN. Список можно поправить ниже.") },
-                    leadingContent = {
-                        Icon(Icons.Outlined.PhoneAndroid, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                    },
-                    trailingContent = {
-                        Switch(
-                            checked = rusBypass,
-                            enabled = !rusBusy,
-                            onCheckedChange = { value ->
-                                rusBypass = value
-                                rusBusy = true
-                                scope.launch {
-                                    val found = withContext(Dispatchers.IO) { AppChangeReceiver.setRussianBypass(value) }
-                                    rusBusy = false
-                                    UralTools.toast(
-                                        if (value) "Мимо VPN идут российские приложения: $found" else "Все приложения идут через VPN",
-                                    )
                                 }
                             },
                         )
