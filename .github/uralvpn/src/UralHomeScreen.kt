@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -485,12 +486,7 @@ private fun UralConnectButton(isOn: Boolean, startTime: Long?, onClick: () -> Un
         ) {
             if (isOn) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Filled.PowerSettingsNew,
-                        contentDescription = "Отключить",
-                        tint = textColor,
-                        modifier = Modifier.size(44.dp),
-                    )
+                    UralDeepIcon(tint = textColor, sizeDp = 44, contentDescription = "Отключить")
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text = "Подключён",
@@ -508,14 +504,34 @@ private fun UralConnectButton(isOn: Boolean, startTime: Long?, onClick: () -> Un
                     }
                 }
             } else {
-                Icon(
-                    imageVector = Icons.Filled.PowerSettingsNew,
-                    contentDescription = "Подключить",
-                    tint = textColor,
-                    modifier = Modifier.size(72.dp),
-                )
+                UralDeepIcon(tint = textColor, sizeDp = 72, contentDescription = "Подключить")
             }
         }
+    }
+}
+
+// Значок «утоплен» в кнопку: тёмная тень сверху-слева и светлый отблеск снизу-справа.
+@Composable
+private fun UralDeepIcon(tint: Color, sizeDp: Int, contentDescription: String) {
+    Box(contentAlignment = Alignment.Center) {
+        Icon(
+            imageVector = Icons.Filled.PowerSettingsNew,
+            contentDescription = null,
+            tint = Color(0x59F2F0FF),
+            modifier = Modifier.size(sizeDp.dp).offset(x = 1.dp, y = 1.5.dp),
+        )
+        Icon(
+            imageVector = Icons.Filled.PowerSettingsNew,
+            contentDescription = null,
+            tint = Color(0x66000000),
+            modifier = Modifier.size(sizeDp.dp).offset(x = (-0.5).dp, y = (-1).dp),
+        )
+        Icon(
+            imageVector = Icons.Filled.PowerSettingsNew,
+            contentDescription = contentDescription,
+            tint = tint,
+            modifier = Modifier.size(sizeDp.dp),
+        )
     }
 }
 
