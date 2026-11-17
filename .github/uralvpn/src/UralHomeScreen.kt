@@ -23,7 +23,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.lazy.stickyHeader
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -366,7 +365,7 @@ fun UralHomeScreen(
                         uiPrefs.edit().putBoolean("sort_by_ping", sortByPing).apply()
                     },
                 )
-                Spacer(Modifier.height(8.dp).onGloballyPositioned { panelBottom = it.boundsInWindow().bottom })
+                Spacer(Modifier.height(8.dp).onGloballyPositioned { panelBottom = it.positionInWindow().y + it.size.height })
             }
         }
         if (subStatus.isNotEmpty()) {
@@ -397,7 +396,7 @@ fun UralHomeScreen(
                 Modifier
                     .fillMaxWidth()
                     .onGloballyPositioned { coords ->
-                        val top = coords.boundsInWindow().top
+                        val top = coords.positionInWindow().y
                         val height = coords.size.height.toFloat().coerceAtLeast(1f)
                         under.floatValue = ((panelBottom - top) / height).coerceIn(0f, 1f)
                     }
