@@ -409,25 +409,25 @@ private fun UralConnectButton(isOn: Boolean, startTime: Long?, onClick: () -> Un
     val brush = if (isOn) {
         Brush.radialGradient(
             colorStops = arrayOf(
-                0.00f to Color(0xFFD6EE9E),
-                0.25f to Color(0xFFCAE68E),
-                0.50f to Color(0xFFB2D475),
-                0.70f to Color(0xFF8FB551),
-                0.85f to Color(0xFF6D9433),
-                0.95f to Color(0xFF51761E),
-                1.00f to Color(0xFF41610F),
+                0.00f to Color(0xFFB2CC77),
+                0.25f to Color(0xFFA6C068),
+                0.50f to Color(0xFF92AC4F),
+                0.70f to Color(0xFF728F31),
+                0.85f to Color(0xFF54731B),
+                0.95f to Color(0xFF3C590B),
+                1.00f to Color(0xFF2F4806),
             ),
         )
     } else {
         Brush.radialGradient(
             colorStops = arrayOf(
-                0.00f to Color(0xFF8A8895),
-                0.25f to Color(0xFF7F7D8A),
-                0.50f to Color(0xFF6E6C79),
-                0.70f to Color(0xFF565460),
-                0.85f to Color(0xFF3B3A44),
-                0.95f to Color(0xFF22212A),
-                1.00f to Color(0xFF0A0A11),
+                0.00f to Color(0xFF75737F),
+                0.25f to Color(0xFF6A6874),
+                0.50f to Color(0xFF5A5864),
+                0.70f to Color(0xFF44434D),
+                0.85f to Color(0xFF2D2C35),
+                0.95f to Color(0xFF18171E),
+                1.00f to Color(0xFF06060B),
             ),
         )
     }
@@ -449,7 +449,7 @@ private fun UralConnectButton(isOn: Boolean, startTime: Long?, onClick: () -> Un
         if (h > 0) String.format("%d:%02d:%02d", h, m, sec) else String.format("%02d:%02d", m, sec)
     }
     // Тёмный текст внутри кнопки в обоих состояниях: лаймовая поверхность светлая в любой теме.
-    val textColor = if (isOn) Color(0xFF1C2A00) else MaterialTheme.colorScheme.primary
+    val textColor = if (isOn) Color(0xFF1C2A00) else Color(0xFFE2E0EA)
     // Внешнее кольцо: у внутреннего края темнее, к наружному — светлее.
     val ringBase = MaterialTheme.colorScheme.surfaceContainerHighest
     val ringDark = lerp(ringBase, Color.Black, 0.45f)
