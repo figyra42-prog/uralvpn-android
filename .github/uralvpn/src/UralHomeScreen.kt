@@ -517,14 +517,14 @@ private fun UralDeepIcon(tint: Color, sizeDp: Int, contentDescription: String) {
         Icon(
             imageVector = Icons.Filled.PowerSettingsNew,
             contentDescription = null,
-            tint = Color(0x59F2F0FF),
-            modifier = Modifier.size(sizeDp.dp).offset(x = 1.dp, y = 1.5.dp),
+            tint = Color(0x73FFFFFF),
+            modifier = Modifier.size(sizeDp.dp).offset(x = 1.5.dp, y = 2.dp),
         )
         Icon(
             imageVector = Icons.Filled.PowerSettingsNew,
             contentDescription = null,
-            tint = Color(0x66000000),
-            modifier = Modifier.size(sizeDp.dp).offset(x = (-0.5).dp, y = (-1).dp),
+            tint = Color(0x8C000000),
+            modifier = Modifier.size(sizeDp.dp).offset(x = (-1).dp, y = (-1.5).dp),
         )
         Icon(
             imageVector = Icons.Filled.PowerSettingsNew,
@@ -548,10 +548,10 @@ private fun UralSubscriptionCard(
     onToggleSort: () -> Unit,
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 6.dp),
         shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surfaceContainerHighest,
-        shadowElevation = 9.dp,
+        shadowElevation = 18.dp,
         border = BorderStroke(1.dp, raisedRim()),
     ) {
         Column(Modifier.background(raisedBrush(MaterialTheme.colorScheme.surfaceContainerHighest)).padding(start = 8.dp, end = 8.dp, top = 2.dp, bottom = 10.dp)) {
@@ -742,18 +742,18 @@ private fun UralOtherProfileCard(modifier: Modifier = Modifier, title: String, i
 // Volume of the subscription card: light top edge, darker bottom.
 @Composable
 private fun raisedRim(): Brush =
-    Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.22f), Color.Black.copy(alpha = 0.25f)))
+    Brush.verticalGradient(listOf(Color(0x59FFFFFF), Color(0x66000000)))
 
 private fun raisedBrush(base: Color): Brush =
     Brush.verticalGradient(
         listOf(
             Color(
-                red = base.red + (1f - base.red) * 0.07f,
-                green = base.green + (1f - base.green) * 0.07f,
-                blue = base.blue + (1f - base.blue) * 0.07f,
+                red = base.red + (1f - base.red) * 0.12f,
+                green = base.green + (1f - base.green) * 0.12f,
+                blue = base.blue + (1f - base.blue) * 0.12f,
                 alpha = base.alpha,
             ),
-            Color(red = base.red * 0.93f, green = base.green * 0.93f, blue = base.blue * 0.93f, alpha = base.alpha),
+            Color(red = base.red * 0.88f, green = base.green * 0.88f, blue = base.blue * 0.88f, alpha = base.alpha),
         ),
     )
 
