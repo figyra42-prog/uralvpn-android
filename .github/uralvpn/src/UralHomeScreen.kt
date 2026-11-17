@@ -19,8 +19,11 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.stickyHeader
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -58,6 +61,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -71,6 +75,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -102,7 +108,7 @@ private data class LocationRow(val tag: String, val type: String, val delay: Int
 
 // UralVPN home screen in the style of the old uralvpn-app: big connect button, status line,
 // subscription card (traffic, expiry, panel announcement) and the list of locations.
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun UralHomeScreen(
     serviceStatus: Status,
@@ -307,8 +313,11 @@ fun UralHomeScreen(
         )
     }
 
+    val listState = rememberLazyListState()
+    var panelBottom by remember { mutableFloatStateOf(0f) }
     val scaffoldPadding = LocalScaffoldPadding.current
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxSize().padding(scaffoldPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 16.dp, bottom = if (showStatusBar) 84.dp else 24.dp),
@@ -342,7 +351,7 @@ fun UralHomeScreen(
             Spacer(Modifier.height(12.dp))
         }
         info?.let { value ->
-            item(key = "card") {
+            stickyHeader(key = "card") {
                 UralSubscriptionCard(
                     info = value,
                     fallbackTitle = profile?.name.orEmpty(),
@@ -357,7 +366,7 @@ fun UralHomeScreen(
                         uiPrefs.edit().putBoolean("sort_by_ping", sortByPing).apply()
                     },
                 )
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(8.dp).onGloballyPositioned { panelBottom = it.boundsInWindow().bottom })
             }
         }
         if (subStatus.isNotEmpty()) {
@@ -383,11 +392,29 @@ fun UralHomeScreen(
             }
         }
         items(rows, key = { it.tag }) { row ->
+            val under = remember { mutableFloatStateOf(0f) }
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned { coords ->
+                        val top = coords.boundsInWindow().top
+                        val height = coords.size.height.toFloat().coerceAtLeast(1f)
+                        under.floatValue = ((panelBottom - top) / height).coerceIn(0f, 1f)
+                    }
+                    .graphicsLayer {
+                        val p = under.floatValue
+                        scaleX = 1f - 0.12f * p
+                        scaleY = 1f - 0.12f * p
+                        alpha = (1f - 0.9f * p).coerceAtLeast(0.05f)
+                        transformOrigin = TransformOrigin(0.5f, 0f)
+                    },
+            ) {
             UralLocationRow(
                 row,
                 enabled = running && group != null,
             ) {
                 if (group != null) groupsViewModel.selectGroupItem(group.tag, row.tag)
+            }
             }
         }
         items(others, key = { "profile-${it.id}" }) { other ->
