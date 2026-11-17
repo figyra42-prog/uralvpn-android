@@ -18,8 +18,21 @@ for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
   fi
 done
 cp "$OLD/res/drawable/ic_launcher_foreground.xml" "$RES/drawable/ic_launcher_foreground.xml"
-cp "$OLD/res/drawable/ic_launcher_foreground.xml" "$RES/drawable/ic_launcher_monochrome.xml"
+# gradient background, separate monochrome silhouette and the adaptive-icon declarations
+if [ -f "$OLD/res/drawable/ic_launcher_background.xml" ]; then
+  cp "$OLD/res/drawable/ic_launcher_background.xml" "$RES/drawable/ic_launcher_background.xml"
+fi
+if [ -f "$OLD/res/drawable/ic_launcher_monochrome.xml" ]; then
+  cp "$OLD/res/drawable/ic_launcher_monochrome.xml" "$RES/drawable/ic_launcher_monochrome.xml"
+else
+  cp "$OLD/res/drawable/ic_launcher_foreground.xml" "$RES/drawable/ic_launcher_monochrome.xml"
+fi
 cp "$OLD/res/values/ic_launcher_background.xml" "$RES/values/ic_launcher_background.xml"
+if [ -d "$OLD/res/mipmap-anydpi-v26" ]; then
+  mkdir -p "$RES/mipmap-anydpi-v26"
+  cp "$OLD/res/mipmap-anydpi-v26/ic_launcher.xml" "$RES/mipmap-anydpi-v26/ic_launcher.xml"
+  cp "$OLD/res/mipmap-anydpi-v26/ic_launcher_round.xml" "$RES/mipmap-anydpi-v26/ic_launcher_round.xml"
+fi
 [ -f "$OLD/ic_launcher-web.png" ] && cp "$OLD/ic_launcher-web.png" "$SFA/app/src/main/ic_launcher-playstore.png"
 
 # App name (only the base string, translations of app_name are not used)
