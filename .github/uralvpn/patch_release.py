@@ -48,3 +48,12 @@ if "UralVPN keep" not in r:
 """
     open(rules, "w", encoding="utf-8").write(r)
 print("proguard rules added")
+
+# 4) update checks are on by default: a fresh install notices new releases without visiting the settings
+settings = root + "/app/src/main/java/io/nekohasekai/sfa/database/Settings.kt"
+s = open(settings, encoding="utf-8").read()
+old = 'var checkUpdateEnabled by dataStore.boolean(SettingsKey.CHECK_UPDATE_ENABLED) { false }'
+assert s.count(old) == 1, "checkUpdateEnabled default not found"
+s = s.replace(old, 'var checkUpdateEnabled by dataStore.boolean(SettingsKey.CHECK_UPDATE_ENABLED) { true }')
+open(settings, "w", encoding="utf-8").write(s)
+print("update checks are on by default")
