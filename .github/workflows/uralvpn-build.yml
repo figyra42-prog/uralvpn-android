@@ -91,8 +91,8 @@ jobs:
         run: |
           # UralVPN: версия вида 1.1.0 → 1.1.1 → 1.1.2 … (решение владельца 16.11.2026).
           # Публичный релиз = последний публичный тег + 1 в последней цифре (до 1.1.0 — ровно 1.1.0).
-          # Тестовая сборка = следующая версия с пометкой -testN. Код версии растёт с каждой сборкой,
-          # по нему приложение понимает, что вышло обновление.
+          # Тестовая сборка = пререлиз уже опубликованной версии (например, 1.1.5-test137): при публикации
+          # следующей версии тестеры видят обновление. Код версии растёт с каждой сборкой.
           CODE=$((1000 + ${{ github.run_number }}))
           LAST=$(gh api "repos/${{ github.repository }}/releases?per_page=100" \
             --jq '[.[] | select(.draft|not) | select(.prerelease|not) | .tag_name | select(startswith("v"))] | .[0] // "v0.0.0"')
@@ -105,8 +105,12 @@ jobs:
           fi
           if [ "${{ inputs.public_release }}" = "true" ]; then
             NAME="$NEXT"
-          else
+          elif [ "$LAST" = "0.0.0" ]; then
+            # до первого публичного релиза привязывать тестовую сборку не к чему
             NAME="$NEXT-test${{ github.run_number }}"
+          else
+            # пререлиз последней публичной версии: следующая публичная версия всегда старше
+            NAME="$LAST-test${{ github.run_number }}"
           fi
           echo "last public: $LAST, this build: $NAME (code $CODE)"
           sed -i "s/^VERSION_CODE=.*/VERSION_CODE=$CODE/; s/^VERSION_NAME=.*/VERSION_NAME=$NAME/" version.properties
