@@ -77,6 +77,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -684,8 +685,11 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
             )
             .clip(shape)
             .background(
-                if (row.selected) SolidColor(accent.copy(alpha = 0.12f))
-                else SolidColor(MaterialTheme.colorScheme.surfaceContainerHigh),
+                // непрозрачный фон: полупрозрачная заливка пропускала тень и давала полосу на светлой теме
+                SolidColor(
+                    if (row.selected) accent.copy(alpha = 0.12f).compositeOver(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    else MaterialTheme.colorScheme.surfaceContainerHigh,
+                ),
             )
             .then(
                 if (row.selected) Modifier.border(1.5.dp, accent.copy(alpha = 0.7f), shape)
