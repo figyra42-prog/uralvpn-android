@@ -714,8 +714,9 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
             }
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(10.dp))
+                    .width(44.dp)
+                    .height(30.dp)
+                    .clip(RoundedCornerShape(9.dp))
                     .background(MaterialTheme.colorScheme.surfaceContainerHighest),
                 contentAlignment = Alignment.Center,
             ) {
