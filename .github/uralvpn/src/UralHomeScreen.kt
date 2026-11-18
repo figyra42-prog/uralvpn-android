@@ -673,18 +673,25 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .padding(horizontal = 8.dp, vertical = 3.dp)
+            .shadow(
+                elevation = 9.dp,
+                shape = shape,
+                clip = false,
+                ambientColor = Color.Black.copy(alpha = 0.45f),
+                spotColor = Color.Black.copy(alpha = 0.55f),
+            )
             .clip(shape)
             .background(
-                if (row.selected) accent.copy(alpha = 0.10f)
-                else MaterialTheme.colorScheme.surfaceContainer,
+                if (row.selected) accent.copy(alpha = 0.12f)
+                else MaterialTheme.colorScheme.surfaceContainerHigh,
             )
             .then(
                 if (row.selected) Modifier.border(1.5.dp, accent.copy(alpha = 0.7f), shape)
                 else Modifier,
             )
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 9.dp),
+            .padding(horizontal = 10.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // Флаг — картинка (если есть PNG), иначе эмодзи из названия.
@@ -702,8 +709,8 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
             }
             Box(
                 modifier = Modifier
-                    .size(52.dp)
-                    .clip(RoundedCornerShape(13.dp))
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(11.dp))
                     .background(MaterialTheme.colorScheme.surfaceContainerHighest),
                 contentAlignment = Alignment.Center,
             ) {
@@ -715,10 +722,10 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
                         modifier = Modifier.fillMaxSize(),
                     )
                 } else {
-                    Text(text = head, fontSize = 27.sp, lineHeight = 32.sp, maxLines = 1)
+                    Text(text = head, fontSize = 23.sp, lineHeight = 28.sp, maxLines = 1)
                 }
             }
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(10.dp))
         }
         Column(Modifier.weight(1f)) {
             Text(
