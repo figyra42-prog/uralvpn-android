@@ -75,6 +75,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
@@ -683,7 +684,7 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
             )
             .clip(shape)
             .background(
-                if (row.selected) accent.copy(alpha = 0.12f)
+                if (row.selected) SolidColor(accent.copy(alpha = 0.12f))
                 else raisedBrush(MaterialTheme.colorScheme.surfaceContainerHigh),
             )
             .then(
