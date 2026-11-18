@@ -675,7 +675,7 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 2.dp)
+            .padding(horizontal = 8.dp, vertical = 3.dp)
             .shadow(
                 elevation = 9.dp,
                 shape = shape,
@@ -696,7 +696,7 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
                 else Modifier,
             )
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 5.dp),
+            .padding(horizontal = 10.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // Флаг — картинка (если есть PNG), иначе эмодзи из названия.
@@ -714,9 +714,9 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
             }
             Box(
                 modifier = Modifier
-                    .width(44.dp)
-                    .height(30.dp)
-                    .clip(RoundedCornerShape(9.dp))
+                    .width(46.dp)
+                    .height(34.dp)
+                    .clip(RoundedCornerShape(10.dp))
                     .background(MaterialTheme.colorScheme.surfaceContainerHighest),
                 contentAlignment = Alignment.Center,
             ) {
