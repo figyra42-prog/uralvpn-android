@@ -42,6 +42,7 @@ import io.nekohasekai.sfa.bg.UralTools
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material.icons.outlined.BugReport
+import androidx.compose.material.icons.outlined.BatteryChargingFull
 import io.nekohasekai.sfa.compose.topbar.LocalScaffoldPadding
 import io.nekohasekai.sfa.compose.topbar.OverrideTopBar
 
@@ -58,6 +59,15 @@ fun SettingsScreen(navController: NavController) {
 
     val context = LocalContext.current
     var simBlock by remember { mutableStateOf(UralTools.simulateBlock) }
+    var batteryIgnored by remember { mutableStateOf(true) }
+    val batteryLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(),
+    ) {
+        batteryIgnored = io.nekohasekai.sfa.bg.UralTools.batteryOptimizationIgnored(context)
+    }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        batteryIgnored = io.nekohasekai.sfa.bg.UralTools.batteryOptimizationIgnored(context)
+    }
     val scope = rememberCoroutineScope()
     val scaffoldPadding = LocalScaffoldPadding.current
 
@@ -78,18 +88,9 @@ fun SettingsScreen(navController: NavController) {
         ) {
             Column {
                 ListItem(
-                    headlineContent = { Text("Сервис", style = MaterialTheme.typography.bodyLarge) },
-                    leadingContent = {
-                        Icon(Icons.Outlined.Tune, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                    },
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                        .clickable { navController.navigate("settings/service") },
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                )
-                ListItem(
                     headlineContent = { Text("Имитировать блокировку прямых", style = MaterialTheme.typography.bodyLarge) },
                     supportingContent = { Text("Проверка автопилота: прямые серверы отключаются, работают только CDN. После проверки выключите.") },
+                    modifier = Modifier.clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
                     leadingContent = {
                         Icon(Icons.Outlined.BugReport, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     },
@@ -106,6 +107,32 @@ fun SettingsScreen(navController: NavController) {
                                 }
                             },
                         )
+                    },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                )
+                ListItem(
+                    headlineContent = { Text("Оптимизация батареи", style = MaterialTheme.typography.bodyLarge) },
+                    supportingContent = {
+                        Text(if (batteryIgnored) "Разрешение выдано: система не усыпляет VPN" else "Разрешите работу в фоне, иначе Android может отключать VPN")
+                    },
+                    leadingContent = {
+                        Icon(Icons.Outlined.BatteryChargingFull, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    },
+                    trailingContent = {
+                        if (!batteryIgnored) {
+                            androidx.compose.material3.TextButton(onClick = {
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                                    batteryLauncher.launch(
+                                        android.content.Intent(
+                                            android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                                            android.net.Uri.parse("package:" + context.packageName),
+                                        ),
+                                    )
+                                }
+                            }) { Text("Разрешить") }
+                        } else {
+                            Text("Включено", color = MaterialTheme.colorScheme.primary)
+                        }
                     },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )

@@ -113,4 +113,13 @@ object UralTools {
     fun toast(text: String) {
         Toast.makeText(Application.application, text, Toast.LENGTH_LONG).show()
     }
+
+    // Разрешение «не оптимизировать батарею»: без него Android может усыплять VPN.
+    fun batteryOptimizationIgnored(context: Context): Boolean =
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            val pm = context.getSystemService(android.os.PowerManager::class.java)
+            pm?.isIgnoringBatteryOptimizations(context.packageName) == true
+        } else {
+            true
+        }
 }

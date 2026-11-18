@@ -146,6 +146,9 @@ python3 -I "$HERE/patch_link.py" "$SFA"
 # Icons of the card follow the theme, no Ghostty config in the settings, theme switch.
 python3 -I "$HERE/patch_theme.py" "$SFA"
 
+# The service screen is gone; its battery-optimisation switch lives in the settings list.
+python3 -I "$HERE/patch_service.py" "$SFA"
+
 # The QR scan screen can also take a picture (gallery, screenshot).
 python3 -I "$HERE/patch_qrimage.py" "$SFA"
 
