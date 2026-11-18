@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -77,8 +78,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -664,42 +667,64 @@ private fun UralSubscriptionCard(
 @Composable
 private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val colors = LocalStatusColors.current
-    // a list with dividers (like in the old app); the selected location has an accent bar on the left
+    // Карточка локации: флаг в плитке, название с подписью, справа пинг.
     val accent = MaterialTheme.colorScheme.primary
-    val divider = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.22f)
+    val shape = RoundedCornerShape(18.dp)
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .drawBehind {
-                if (row.selected) {
-                    drawRect(accent.copy(alpha = 0.10f))
-                    drawRect(accent, size = androidx.compose.ui.geometry.Size(4.dp.toPx(), size.height))
-                }
-                drawLine(divider, androidx.compose.ui.geometry.Offset(16.dp.toPx(), size.height - 0.5.dp.toPx()), androidx.compose.ui.geometry.Offset(size.width - 16.dp.toPx(), size.height - 0.5.dp.toPx()), 1.dp.toPx())
-            }
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .clip(shape)
+            .background(
+                if (row.selected) accent.copy(alpha = 0.10f)
+                else MaterialTheme.colorScheme.surfaceContainer,
+            )
+            .then(
+                if (row.selected) Modifier.border(1.5.dp, accent.copy(alpha = 0.7f), shape)
+                else Modifier,
+            )
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 4.dp),
+            .padding(horizontal = 10.dp, vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // The leading emoji of the name (the flag) is drawn large over both lines, like in the old app.
-        // The flag is everything before the first letter or digit (some names have no space after it).
+        // Флаг — картинка (если есть PNG), иначе эмодзи из названия.
         val flagEnd = row.tag.indexOfFirst { it.isLetterOrDigit() }.let { if (it > 0) it else 0 }
         val head = row.tag.substring(0, flagEnd).trim()
         val hasFlag = head.isNotEmpty()
         if (hasFlag) {
-            Text(
-                text = head,
-                fontSize = 38.2.sp,
-                lineHeight = 44.sp,
-                modifier = Modifier.width(65.dp),
-                maxLines = 1,
-            )
+            val flagContext = LocalContext.current
+            val flagCodes = head.codePoints().toArray()
+            val flagRes = if (flagCodes.size == 2 && flagCodes.all { it in 0x1F1E6..0x1F1FF }) {
+                val code = String(CharArray(2) { ('a'.code + flagCodes[it] - 0x1F1E6).toChar() })
+                flagContext.resources.getIdentifier("flag_$code", "drawable", flagContext.packageName)
+            } else {
+                0
+            }
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(13.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (flagRes != 0) {
+                    Image(
+                        painter = painterResource(flagRes),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    Text(text = head, fontSize = 27.sp, lineHeight = 32.sp, maxLines = 1)
+                }
+            }
+            Spacer(Modifier.width(12.dp))
         }
         Column(Modifier.weight(1f)) {
             Text(
                 text = if (hasFlag) row.tag.substring(flagEnd).trim() else row.tag,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = if (row.selected) FontWeight.Bold else FontWeight.Normal,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = if (row.selected) FontWeight.Bold else FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -718,6 +743,7 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
         val delay = row.delay
         if (delay != null) {
             val failed = delay >= 65535
+            Spacer(Modifier.width(8.dp))
             Text(
                 text = if (delay <= 0) "—" else if (failed) "×" else "$delay ms",
                 style = MaterialTheme.typography.labelLarge,
