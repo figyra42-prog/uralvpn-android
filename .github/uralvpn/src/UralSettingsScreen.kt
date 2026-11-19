@@ -94,10 +94,12 @@ fun SettingsScreen(navController: NavController) {
                     val text = UralBackup.build()
                     val bytes = withContext(Dispatchers.IO) {
                         val data = text.toByteArray()
-                        context.contentResolver.openOutputStream(uri)?.use { it.write(data) }
-                        data.size
+                        val out = context.contentResolver.openOutputStream(uri, "wt")
+                            ?: throw IllegalStateException("нет доступа к выбранному файлу")
+                        out.use { it.write(data) }
+                        context.contentResolver.openFileDescriptor(uri, "r")?.use { it.statSize } ?: data.size.toLong()
                     }
-                    if (bytes == 0) throw IllegalArgumentException("файл не записался")
+                    if (bytes <= 0) throw IllegalStateException("файл не записался")
                     UralTools.toast("Резервная копия сохранена (${bytes} байт)")
                 }.onFailure { UralTools.toast("Не удалось сохранить: ${it.message}") }
             }
