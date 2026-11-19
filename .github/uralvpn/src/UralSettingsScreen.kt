@@ -42,6 +42,7 @@ import io.nekohasekai.sfa.bg.UralTools
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material.icons.outlined.BugReport
+import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.BatteryChargingFull
 import androidx.compose.material.icons.outlined.Shield
 import io.nekohasekai.sfa.compose.topbar.LocalScaffoldPadding
@@ -164,6 +165,28 @@ fun SettingsScreen(navController: NavController) {
                         )
                     },
                     modifier = Modifier.clickable { UralTools.openVpnSettings(context) },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                )
+                ListItem(
+                    headlineContent = { Text("Постоянная VPN (Always-On)", style = MaterialTheme.typography.bodyLarge) },
+                    supportingContent = {
+                        Text(
+                            when {
+                                alwaysOn.first && alwaysOn.second ->
+                                    "Включена: Android сам поднимает VPN, без него интернет заблокирован"
+                                alwaysOn.first ->
+                                    "Включена: Android сам поднимает VPN после сбоя и перезагрузки"
+                                else ->
+                                    "Пусть Android поднимает VPN сам. Включите «Постоянная VPN» и, при желании, «Блокировать соединения без VPN»"
+                            },
+                        )
+                    },
+                    leadingContent = {
+                        Icon(Icons.Outlined.Autorenew, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    },
+                    trailingContent = {
+                        TextButton(onClick = { UralTools.openVpnSettings(context) }) { Text("Настроить") }
+                    },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
                 ListItem(
