@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# UralVPN branding for SFA fork: icon, name, applicationId taken from uralvpn-app.
-# Usage: brand.sh <uralvpn-app/V2rayNG/app/src/main> <sfa-root>
+# UralVPN branding for SFA fork: icon, name, applicationId.
+# Icon assets live in .github/uralvpn/brand (copied from the old uralvpn-app repo 19.11.2026).
+# Usage: brand.sh <sfa-root>
 set -euo pipefail
-OLD=$1
-SFA=$2
+HERE=$(cd "$(dirname "$0")" && pwd)
+OLD="$HERE/brand"
+SFA=$1
 RES=$SFA/app/src/main/res
 
 # Launcher icons (png per density + adaptive foreground/background)
@@ -45,8 +47,7 @@ sed -i 's#base.archivesName.set("SFA-${versionName}")#base.archivesName.set("Ura
 # Only one separate APK, arm64 (the universal APK keeps the old 32-bit phones working)
 sed -i 's#include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")#include("arm64-v8a")#' "$G"
 
-# Brand colors and theme (Compose) from uralvpn-app, Material You disabled
-HERE=$(cd "$(dirname "$0")" && pwd)
+# Brand colors and theme (Compose), Material You disabled
 TH=$SFA/app/src/main/java/io/nekohasekai/sfa/compose/theme
 cp "$HERE/src/Color.kt" "$TH/Color.kt"
 cp "$HERE/src/Theme.kt" "$TH/Theme.kt"

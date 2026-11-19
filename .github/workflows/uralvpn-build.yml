@@ -35,12 +35,6 @@ jobs:
           ref: uralvpn
           path: sing-box
           submodules: recursive
-      - uses: actions/checkout@v5
-        with:
-          repository: figyra42-prog/uralvpn-app
-          ref: master
-          path: uralvpn-app
-          sparse-checkout: V2rayNG/app/src/main
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -119,7 +113,7 @@ jobs:
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
       - name: Apply UralVPN branding
         run: |
-          bash sing-box-for-android/.github/uralvpn/brand.sh uralvpn-app/V2rayNG/app/src/main sing-box-for-android
+          bash sing-box-for-android/.github/uralvpn/brand.sh sing-box-for-android
           python3 -I sing-box-for-android/.github/uralvpn/patch_release.py sing-box-for-android
       - name: Build APK
         working-directory: sing-box-for-android
