@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material.icons.outlined.AltRoute
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material3.AlertDialog
@@ -78,6 +79,8 @@ fun SettingsScreen(navController: NavController) {
     var dnsMode by remember { mutableStateOf(UralTools.dnsMode) }
     var dnsCustom by remember { mutableStateOf(UralTools.dnsCustom) }
     var showDnsDialog by remember { mutableStateOf(false) }
+    var routingTarget by remember { mutableStateOf<String?>(null) }
+    var routingText by remember { mutableStateOf("") }
     var batteryIgnored by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
     val batteryLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
@@ -318,6 +321,56 @@ fun SettingsScreen(navController: NavController) {
                     }) { Text("Сохранить") }
                 },
                 dismissButton = { TextButton(onClick = { showDnsDialog = false }) { Text("Отмена") } },
+            )
+        }
+
+        ListItem(
+            headlineContent = { Text("Маршрутизация", style = MaterialTheme.typography.bodyLarge) },
+            supportingContent = { Text("Свои сайты напрямую или всегда через VPN") },
+            leadingContent = {
+                Icon(Icons.Outlined.AltRoute, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            },
+            modifier = Modifier.padding(horizontal = 16.dp).clip(RoundedCornerShape(12.dp)).clickable {
+                routingTarget = "direct"
+                routingText = UralTools.directDomains
+            },
+            colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        )
+        if (routingTarget != null) {
+            val target = routingTarget!!
+            val title = if (target == "direct") "Сайты напрямую" else "Сайты только через VPN"
+            AlertDialog(
+                onDismissRequest = { routingTarget = null },
+                title = { Text(title) },
+                text = {
+                    Column {
+                        Text("По одному домену в строке, например: example.com", style = MaterialTheme.typography.bodySmall)
+                        OutlinedTextField(
+                            value = routingText,
+                            onValueChange = { routingText = it },
+                            minLines = 4,
+                            maxLines = 8,
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        )
+                        TextButton(onClick = {
+                            routingTarget = if (target == "direct") "proxy" else "direct"
+                            routingText = if (routingTarget == "direct") UralTools.directDomains else UralTools.proxyDomains
+                        }) {
+                            Text(if (target == "direct") "Указать сайты только через VPN →" else "← Указать сайты напрямую")
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        if (target == "direct") UralTools.directDomains = routingText else UralTools.proxyDomains = routingText
+                        routingTarget = null
+                        scope.launch {
+                            val ok = UralTools.refreshNow()
+                            UralTools.toast(if (ok) "Сохранено, подписка обновлена" else "Сохранено")
+                        }
+                    }) { Text("Сохранить") }
+                },
+                dismissButton = { TextButton(onClick = { routingTarget = null }) { Text("Отмена") } },
             )
         }
 

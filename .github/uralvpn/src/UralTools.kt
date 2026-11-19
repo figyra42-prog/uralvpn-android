@@ -73,6 +73,55 @@ object UralTools {
         else -> "tls" to "1.1.1.1"
     }
 
+    // UralVPN: свои правила маршрутизации — домены, которые всегда напрямую или всегда через VPN.
+    var directDomains: String
+        get() = prefs.getString("direct_domains", "") ?: ""
+        set(value) {
+            prefs.edit().putString("direct_domains", value).apply()
+        }
+
+    var proxyDomains: String
+        get() = prefs.getString("proxy_domains", "") ?: ""
+        set(value) {
+            prefs.edit().putString("proxy_domains", value).apply()
+        }
+
+    private fun splitDomains(value: String): List<String> =
+        value.split('\n', ',', ' ')
+            .map { it.trim().removePrefix("*.").removePrefix(".") }
+            .filter { it.isNotEmpty() && !it.contains('/') }
+            .distinct()
+
+    // Вставляет правила в начало route.rules: принудительно через VPN — раньше всего, затем напрямую.
+    fun applyRouting(content: String): String = runCatching {
+        val proxy = splitDomains(proxyDomains)
+        val direct = splitDomains(directDomains)
+        if (proxy.isEmpty() && direct.isEmpty()) return content
+        val root = JSONObject(content)
+        val route = root.optJSONObject("route") ?: JSONObject().also { root.put("route", it) }
+        val rules = route.optJSONArray("rules") ?: JSONArray().also { route.put("rules", it) }
+        val outbounds = root.optJSONArray("outbounds") ?: return content
+        var selector = ""
+        for (i in 0 until outbounds.length()) {
+            val item = outbounds.optJSONObject(i) ?: continue
+            if (item.optString("type") == "selector") {
+                selector = item.optString("tag")
+                break
+            }
+        }
+        if (selector.isEmpty()) return content
+        val merged = JSONArray()
+        if (proxy.isNotEmpty()) {
+            merged.put(JSONObject().put("domain_suffix", JSONArray(proxy)).put("outbound", selector))
+        }
+        if (direct.isNotEmpty()) {
+            merged.put(JSONObject().put("domain_suffix", JSONArray(direct)).put("outbound", "direct"))
+        }
+        for (i in 0 until rules.length()) merged.put(rules.get(i))
+        route.put("rules", merged)
+        root.toString()
+    }.getOrDefault(content)
+
     // Заменяет только сервер тега cf-dns: локальный DNS и правила маршрутизации не трогаются.
     // Для DoH/DoT с доменным именем нужен domain_resolver — берём локальный DNS профиля.
     fun applyDns(content: String): String = runCatching {
