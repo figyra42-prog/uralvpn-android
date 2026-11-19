@@ -222,14 +222,15 @@ fun SettingsScreen(navController: NavController) {
                 ListItem(
                     headlineContent = { Text("🏔UralVPN", style = MaterialTheme.typography.bodyLarge) },
                     supportingContent = { Text("Версия ${BuildConfig.VERSION_NAME}") },
-                    modifier = Modifier.clickable {
-                        versionTaps += 1
-                        if (versionTaps >= 7) {
-                            devMode = true
-                            UralTools.toast("Режим разработчика включён")
-                        }
-                    },
-                    modifier = Modifier.clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                        .clickable {
+                            versionTaps += 1
+                            if (versionTaps >= 7) {
+                                devMode = true
+                                UralTools.toast("Режим разработчика включён")
+                            }
+                        },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
                 ListItem(
