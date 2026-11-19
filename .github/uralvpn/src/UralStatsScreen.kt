@@ -19,10 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.nekohasekai.libbox.Status
+import io.nekohasekai.sfa.constant.Status
 import io.nekohasekai.sfa.compose.screen.connections.ConnectionsViewModel
 import io.nekohasekai.sfa.compose.topbar.LocalScaffoldPadding
 import io.nekohasekai.sfa.compose.topbar.OverrideTopBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBar
 import io.nekohasekai.sfa.compose.model.Connection
 import java.util.Locale
@@ -59,6 +60,7 @@ private fun formatBytes(value: Long): String {
     return String.format(Locale.US, if (size >= 100) "%.0f %s" else "%.1f %s", size, units[unit])
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UralStatsScreen(serviceStatus: Status) {
     OverrideTopBar {
