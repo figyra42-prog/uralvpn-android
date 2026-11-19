@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
-import androidx.compose.material.icons.outlined.AltRoute
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material3.AlertDialog
@@ -328,7 +327,7 @@ fun SettingsScreen(navController: NavController) {
             headlineContent = { Text("Маршрутизация", style = MaterialTheme.typography.bodyLarge) },
             supportingContent = { Text("Свои сайты напрямую или всегда через VPN") },
             leadingContent = {
-                Icon(Icons.Outlined.AltRoute, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Icon(Icons.Outlined.FilterAlt, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             },
             modifier = Modifier.padding(horizontal = 16.dp).clip(RoundedCornerShape(12.dp)).clickable {
                 routingTarget = "direct"
