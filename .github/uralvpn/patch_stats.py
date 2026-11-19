@@ -19,7 +19,7 @@ block = """        composable("ural/stats") {
 """
 s = s.replace(anchor, block + anchor, 1)
 
-imp = "import io.nekohasekai.sfa.compose.navigation.Screen\n"
+imp = "import io.nekohasekai.sfa.compose.screen.configuration.NewProfileScreen\n"
 assert s.count(imp) == 1, "import anchor"
 s = s.replace(imp, imp + "import io.nekohasekai.sfa.compose.screen.stats.UralStatsScreen\n", 1)
 open(path, "w", encoding="utf-8").write(s)
