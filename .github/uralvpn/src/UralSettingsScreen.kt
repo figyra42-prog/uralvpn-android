@@ -91,9 +91,8 @@ fun SettingsScreen(navController: NavController) {
         if (uri != null) {
             scope.launch {
                 runCatching {
-                    val text = UralBackup.build()
                     val bytes = withContext(Dispatchers.IO) {
-                        val data = text.toByteArray()
+                        val data = UralBackup.build().toByteArray()
                         val out = context.contentResolver.openOutputStream(uri, "wt")
                             ?: throw IllegalStateException("нет доступа к выбранному файлу")
                         out.use { it.write(data) }
@@ -115,7 +114,7 @@ fun SettingsScreen(navController: NavController) {
                         context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } ?: ""
                     }
                     if (text.isBlank()) throw IllegalArgumentException("файл пустой или недоступен")
-                    val added = UralBackup.restore(text)
+                    val added = withContext(Dispatchers.IO) { UralBackup.restore(text) }
                     UralTools.toast("Восстановлено профилей: $added")
                 }.onFailure { UralTools.toast("Не удалось восстановить: ${it.message}") }
             }
