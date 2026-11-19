@@ -14,6 +14,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.Dns
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Card
@@ -71,6 +75,9 @@ fun SettingsScreen(navController: NavController) {
     var devMode by remember { mutableStateOf(false) }
     var versionTaps by remember { mutableStateOf(0) }
     var alwaysOn by remember { mutableStateOf(false to false) }
+    var dnsMode by remember { mutableStateOf(UralTools.dnsMode) }
+    var dnsCustom by remember { mutableStateOf(UralTools.dnsCustom) }
+    var showDnsDialog by remember { mutableStateOf(false) }
     var batteryIgnored by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
     val batteryLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
@@ -241,6 +248,70 @@ fun SettingsScreen(navController: NavController) {
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
             }
+        }
+
+        ListItem(
+            headlineContent = { Text("DNS", style = MaterialTheme.typography.bodyLarge) },
+            supportingContent = {
+                Text(
+                    when (dnsMode) {
+                        "google" -> "Google 8.8.8.8"
+                        "quad9" -> "Quad9 9.9.9.9"
+                        "custom" -> dnsCustom.ifEmpty { "свой сервер" }
+                        else -> "Cloudflare 1.1.1.1 (по умолчанию)"
+                    },
+                )
+            },
+            leadingContent = {
+                Icon(Icons.Outlined.Dns, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            },
+            modifier = Modifier.padding(horizontal = 16.dp).clip(RoundedCornerShape(12.dp)).clickable { showDnsDialog = true },
+            colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        )
+        if (showDnsDialog) {
+            AlertDialog(
+                onDismissRequest = { showDnsDialog = false },
+                title = { Text("DNS для иностранных сайтов") },
+                text = {
+                    Column {
+                        listOf(
+                            "cloudflare" to "Cloudflare (1.1.1.1)",
+                            "google" to "Google (8.8.8.8)",
+                            "quad9" to "Quad9 (9.9.9.9)",
+                            "custom" to "Свой сервер",
+                        ).forEach { (value, label) ->
+                            androidx.compose.foundation.layout.Row(
+                                modifier = Modifier.fillMaxWidth().clickable { dnsMode = value },
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                            ) {
+                                RadioButton(selected = dnsMode == value, onClick = { dnsMode = value })
+                                Text(label, modifier = Modifier.padding(start = 8.dp))
+                            }
+                        }
+                        if (dnsMode == "custom") {
+                            OutlinedTextField(
+                                value = dnsCustom,
+                                onValueChange = { dnsCustom = it },
+                                label = { Text("Адрес (1.1.1.1, tls://dns.example, https://…)") },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        UralTools.dnsMode = dnsMode
+                        UralTools.dnsCustom = dnsCustom
+                        showDnsDialog = false
+                        scope.launch {
+                            val ok = UralTools.refreshNow()
+                            UralTools.toast(if (ok) "DNS сохранён, обновите подписку" else "DNS сохранён")
+                        }
+                    }) { Text("Сохранить") }
+                },
+                dismissButton = { TextButton(onClick = { showDnsDialog = false }) { Text("Отмена") } },
+            )
         }
 
         Text(

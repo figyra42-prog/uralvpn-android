@@ -43,6 +43,52 @@ object UralTools {
         (app == context.packageName) to (lockdown == "1")
     }.getOrDefault(false to false)
 
+    // UralVPN: DNS для иностранных сайтов (тег cf-dns в профиле подписки).
+    var dnsMode: String
+        get() = prefs.getString("dns_mode", "cloudflare") ?: "cloudflare"
+        set(value) {
+            prefs.edit().putString("dns_mode", value).apply()
+        }
+
+    var dnsCustom: String
+        get() = prefs.getString("dns_custom", "") ?: ""
+        set(value) {
+            prefs.edit().putString("dns_custom", value).apply()
+        }
+
+    fun dnsTarget(): Pair<String, String>? = when (dnsMode) {
+        "google" -> "tls" to "8.8.8.8"
+        "quad9" -> "tls" to "9.9.9.9"
+        "custom" -> {
+            val value = dnsCustom.trim()
+            when {
+                value.startsWith("https://") -> "https" to value
+                value.startsWith("tls://") -> "tls" to value.removePrefix("tls://")
+                value.startsWith("udp://") -> "udp" to value.removePrefix("udp://")
+                value.isNotEmpty() -> "udp" to value
+                else -> null
+            }
+        }
+        else -> "tls" to "1.1.1.1"
+    }
+
+    // Заменяет только сервер тега cf-dns: локальный DNS и правила маршрутизации не трогаются.
+    fun applyDns(content: String): String = runCatching {
+        val target = dnsTarget() ?: return content
+        val root = JSONObject(content)
+        val dns = root.optJSONObject("dns") ?: return content
+        val servers = dns.optJSONArray("servers") ?: return content
+        var changed = false
+        for (i in 0 until servers.length()) {
+            val item = servers.optJSONObject(i) ?: continue
+            if (item.optString("tag") != "cf-dns") continue
+            item.put("type", target.first)
+            item.put("server", target.second)
+            changed = true
+        }
+        if (changed) root.toString() else content
+    }.getOrDefault(content)
+
     fun openVpnSettings(context: Context) {
         runCatching {
             context.startActivity(android.content.Intent(android.provider.Settings.ACTION_VPN_SETTINGS))
