@@ -40,11 +40,16 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.nekohasekai.sfa.BuildConfig
 import io.nekohasekai.sfa.bg.UralTools
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import io.nekohasekai.sfa.bg.UralBackup
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.BatteryChargingFull
+import androidx.compose.material.icons.outlined.Restore
+import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Shield
 import io.nekohasekai.sfa.compose.topbar.LocalScaffoldPadding
 import io.nekohasekai.sfa.compose.topbar.OverrideTopBar
@@ -67,16 +72,46 @@ fun SettingsScreen(navController: NavController) {
     var versionTaps by remember { mutableStateOf(0) }
     var alwaysOn by remember { mutableStateOf(false to false) }
     var batteryIgnored by remember { mutableStateOf(true) }
+    val scope = rememberCoroutineScope()
     val batteryLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(),
     ) {
         batteryIgnored = io.nekohasekai.sfa.bg.UralTools.batteryOptimizationIgnored(context)
     }
+    val exportLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/json"),
+    ) { uri ->
+        if (uri != null) {
+            scope.launch {
+                runCatching {
+                    val text = UralBackup.build()
+                    withContext(Dispatchers.IO) {
+                        context.contentResolver.openOutputStream(uri)?.use { it.write(text.toByteArray()) }
+                    }
+                    UralTools.toast("Резервная копия сохранена")
+                }.onFailure { UralTools.toast("Не удалось сохранить: ${it.message}") }
+            }
+        }
+    }
+    val importLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri != null) {
+            scope.launch {
+                runCatching {
+                    val text = withContext(Dispatchers.IO) {
+                        context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } ?: ""
+                    }
+                    val added = UralBackup.restore(text)
+                    UralTools.toast("Восстановлено профилей: $added")
+                }.onFailure { UralTools.toast("Не удалось восстановить: ${it.message}") }
+            }
+        }
+    }
     androidx.compose.runtime.LaunchedEffect(Unit) {
         batteryIgnored = io.nekohasekai.sfa.bg.UralTools.batteryOptimizationIgnored(context)
         alwaysOn = UralTools.alwaysOnState(context)
     }
-    val scope = rememberCoroutineScope()
     val scaffoldPadding = LocalScaffoldPadding.current
 
     Column(
@@ -203,6 +238,41 @@ fun SettingsScreen(navController: NavController) {
                     modifier = Modifier
                         .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
                         .clickable { navController.navigate("settings/profile_override") },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                )
+            }
+        }
+
+        Text(
+            text = "Резервная копия",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 32.dp, vertical = 8.dp),
+        )
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        ) {
+            Column {
+                ListItem(
+                    headlineContent = { Text("Сохранить копию", style = MaterialTheme.typography.bodyLarge) },
+                    supportingContent = { Text("Подписки и настройки в один файл — пригодится после переустановки") },
+                    leadingContent = {
+                        Icon(Icons.Outlined.Save, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    },
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                        .clickable { exportLauncher.launch("uralvpn-backup.json") },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                )
+                ListItem(
+                    headlineContent = { Text("Восстановить из копии", style = MaterialTheme.typography.bodyLarge) },
+                    leadingContent = {
+                        Icon(Icons.Outlined.Restore, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    },
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
+                        .clickable { importLauncher.launch(arrayOf("application/json", "*/*")) },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
             }

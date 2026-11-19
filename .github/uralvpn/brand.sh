@@ -104,6 +104,7 @@ cp "$HERE/src/UralAutostart.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/bg/Ur
 cp "$HERE/src/UralTools.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/bg/UralTools.kt"
 cp "$HERE/src/UralExpiryWork.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/bg/UralExpiryWork.kt"
 cp "$HERE/src/UralWatchdog.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/bg/UralWatchdog.kt"
+cp "$HERE/src/UralBackup.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/bg/UralBackup.kt"
 # Short settings list (replaces the SFA SettingsScreen, same package and signature)
 cp "$HERE/src/UralSettingsScreen.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/compose/screen/settings/SettingsScreen.kt"
 python3 -I - "$SFA" <<'PY'
