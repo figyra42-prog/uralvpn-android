@@ -63,6 +63,8 @@ fun SettingsScreen(navController: NavController) {
     val context = LocalContext.current
     var simBlock by remember { mutableStateOf(UralTools.simulateBlock) }
     var killSwitch by remember { mutableStateOf(UralTools.killSwitch) }
+    var devMode by remember { mutableStateOf(false) }
+    var versionTaps by remember { mutableStateOf(0) }
     var alwaysOn by remember { mutableStateOf(false to false) }
     var batteryIgnored by remember { mutableStateOf(true) }
     val batteryLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
@@ -93,6 +95,7 @@ fun SettingsScreen(navController: NavController) {
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         ) {
             Column {
+                if (devMode) {
                 ListItem(
                     headlineContent = { Text("Имитировать блокировку прямых", style = MaterialTheme.typography.bodyLarge) },
                     supportingContent = { Text("Проверка автопилота: прямые серверы отключаются, работают только CDN. После проверки выключите.") },
@@ -116,8 +119,10 @@ fun SettingsScreen(navController: NavController) {
                     },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
+                }
                 ListItem(
                     headlineContent = { Text("Оптимизация батареи", style = MaterialTheme.typography.bodyLarge) },
+                    modifier = Modifier.clip(if (devMode) RoundedCornerShape(0.dp) else RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
                     supportingContent = {
                         Text(if (batteryIgnored) "Разрешение выдано: система не усыпляет VPN" else "Разрешите работу в фоне, иначе Android может отключать VPN")
                     },
@@ -217,6 +222,13 @@ fun SettingsScreen(navController: NavController) {
                 ListItem(
                     headlineContent = { Text("🏔UralVPN", style = MaterialTheme.typography.bodyLarge) },
                     supportingContent = { Text("Версия ${BuildConfig.VERSION_NAME}") },
+                    modifier = Modifier.clickable {
+                        versionTaps += 1
+                        if (versionTaps >= 7) {
+                            devMode = true
+                            UralTools.toast("Режим разработчика включён")
+                        }
+                    },
                     modifier = Modifier.clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
