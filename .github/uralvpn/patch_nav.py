@@ -12,6 +12,30 @@ bar = re.compile(r"(bottomBar = \{\s*)if \(!isSubScreen\) \{")
 assert len(bar.findall(s)) == 1, "bottomBar not found"
 s = bar.sub(lambda m: m.group(1) + "if (false) {", s)
 
+# 1b) the navigation rail (wide screens) keeps only the app's own sections
+rail_old = """        val railScreens =
+            buildList {
+                add(Screen.Dashboard)
+                if (showGroupsInNav) {
+                    add(Screen.Groups)
+                }
+                if (connectionsAvailable) {
+                    add(Screen.Connections)
+                }
+                add(Screen.Log)
+                add(Screen.Tools)
+                add(Screen.Settings)
+            }"""
+rail_new = """        val railScreens =
+            buildList {
+                add(Screen.Dashboard)
+                add(Screen.Log)
+                add(Screen.Settings)
+            }"""
+assert s.count(rail_old) == 1, "rail screens not found"
+s = s.replace(rail_old, rail_new, 1)
+print("navigation rail trimmed")
+
 # 2) the whole scaffold lives inside the drawer host
 head = "        CompositionLocalProvider(LocalTopBarController provides topBarController) {\n"
 assert s.count(head) == 1, "topbar provider not found"
