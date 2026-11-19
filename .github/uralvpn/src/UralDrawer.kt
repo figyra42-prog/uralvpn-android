@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
@@ -72,6 +73,7 @@ private val drawerTop = listOf(
     DrawerEntry(Icons.Default.Add, "Добавить подписку", "ural/add"),
     DrawerEntry(Icons.Default.Apps, "Приложения (обход VPN)", "settings/profile_override"),
     DrawerEntry(Icons.Default.Description, "Логи", Screen.Log.route),
+    DrawerEntry(Icons.Default.Speed, "Статистика", "ural/stats"),
     DrawerEntry(Icons.Default.Settings, "Настройки", Screen.Settings.route),
 )
 
