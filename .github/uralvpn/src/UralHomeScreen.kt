@@ -93,6 +93,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.nekohasekai.libbox.Libbox
+import io.nekohasekai.sfa.bg.UralTools
 import io.nekohasekai.sfa.compose.component.qr.QRScanSheet
 import io.nekohasekai.sfa.compose.navigation.NewProfileArgs
 import io.nekohasekai.sfa.compose.screen.qrscan.QRScanResult
@@ -221,6 +222,7 @@ fun UralHomeScreen(
     var collapsed by remember { mutableStateOf(false) }
     val uiPrefs = remember { io.nekohasekai.sfa.Application.application.getSharedPreferences("ural_ui", android.content.Context.MODE_PRIVATE) }
     var sortByPing by remember { mutableStateOf(uiPrefs.getBoolean("sort_by_ping", false)) }
+    var showKillDialog by remember { mutableStateOf(false) }
     val first = allRows.firstOrNull()
     val rest = allRows.drop(1).let { others ->
         if (sortByPing) others.sortedBy { r -> r.delay?.takeIf { it in 1..65534 } ?: Int.MAX_VALUE } else others
@@ -334,12 +336,33 @@ fun UralHomeScreen(
                 onClick = {
                     if (profile == null) {
                         onOpenNewProfile(NewProfileArgs())
+                    } else if (
+                        UralTools.killSwitch &&
+                        (serviceStatus == Status.Started || serviceStatus == Status.Starting)
+                    ) {
+                        showKillDialog = true
                     } else {
                         dashboardViewModel.toggleService()
                     }
                 },
             )
             Spacer(Modifier.height(4.dp))
+            if (showKillDialog) {
+                AlertDialog(
+                    onDismissRequest = { showKillDialog = false },
+                    title = { Text("Отключить VPN?") },
+                    text = { Text("Включена защита от утечек: после отключения трафик пойдёт напрямую, без VPN.") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showKillDialog = false
+                            dashboardViewModel.toggleService()
+                        }) { Text("Отключить") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showKillDialog = false }) { Text("Отмена") }
+                    },
+                )
+            }
             val statusText = when (serviceStatus) {
                 Status.Started -> if (group != null && group.selected.isNotEmpty()) "Подключено · ${group.selected}" else "Подключено"
                 Status.Starting -> "Подключение…"

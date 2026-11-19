@@ -43,6 +43,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.BatteryChargingFull
+import androidx.compose.material.icons.outlined.Shield
 import io.nekohasekai.sfa.compose.topbar.LocalScaffoldPadding
 import io.nekohasekai.sfa.compose.topbar.OverrideTopBar
 
@@ -59,6 +60,8 @@ fun SettingsScreen(navController: NavController) {
 
     val context = LocalContext.current
     var simBlock by remember { mutableStateOf(UralTools.simulateBlock) }
+    var killSwitch by remember { mutableStateOf(UralTools.killSwitch) }
+    var alwaysOn by remember { mutableStateOf(false to false) }
     var batteryIgnored by remember { mutableStateOf(true) }
     val batteryLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(),
@@ -67,6 +70,7 @@ fun SettingsScreen(navController: NavController) {
     }
     androidx.compose.runtime.LaunchedEffect(Unit) {
         batteryIgnored = io.nekohasekai.sfa.bg.UralTools.batteryOptimizationIgnored(context)
+        alwaysOn = UralTools.alwaysOnState(context)
     }
     val scope = rememberCoroutineScope()
     val scaffoldPadding = LocalScaffoldPadding.current
@@ -134,6 +138,32 @@ fun SettingsScreen(navController: NavController) {
                             Text("Включено", color = MaterialTheme.colorScheme.primary)
                         }
                     },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                )
+                ListItem(
+                    headlineContent = { Text("Защита от утечек (kill switch)", style = MaterialTheme.typography.bodyLarge) },
+                    supportingContent = {
+                        Text(
+                            if (alwaysOn.first && alwaysOn.second) {
+                                "Системная защита включена: без VPN интернет заблокирован"
+                            } else {
+                                "Спрашивать подтверждение перед отключением VPN. Для полной защиты включите в настройках Android «Постоянная VPN» и «Блокировать соединения без VPN»"
+                            },
+                        )
+                    },
+                    leadingContent = {
+                        Icon(Icons.Outlined.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    },
+                    trailingContent = {
+                        Switch(
+                            checked = killSwitch,
+                            onCheckedChange = { value ->
+                                killSwitch = value
+                                UralTools.killSwitch = value
+                            },
+                        )
+                    },
+                    modifier = Modifier.clickable { UralTools.openVpnSettings(context) },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
                 ListItem(

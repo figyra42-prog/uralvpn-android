@@ -28,6 +28,27 @@ object UralTools {
             prefs.edit().putBoolean("simulate_block", value).apply()
         }
 
+    // UralVPN: просим подтверждение перед отключением, чтобы трафик не ушёл напрямую.
+    var killSwitch: Boolean
+        get() = prefs.getBoolean("kill_switch", false)
+        set(value) {
+            prefs.edit().putBoolean("kill_switch", value).apply()
+        }
+
+    // Системная защита Android: «постоянная VPN» и «блокировать соединения без VPN».
+    fun alwaysOnState(context: Context): Pair<Boolean, Boolean> = runCatching {
+        val resolver = context.contentResolver
+        val app = android.provider.Settings.Secure.getString(resolver, "always_on_vpn_app")
+        val lockdown = android.provider.Settings.Secure.getString(resolver, "always_on_vpn_lockdown")
+        (app == context.packageName) to (lockdown == "1")
+    }.getOrDefault(false to false)
+
+    fun openVpnSettings(context: Context) {
+        runCatching {
+            context.startActivity(android.content.Intent(android.provider.Settings.ACTION_VPN_SETTINGS))
+        }
+    }
+
     // The link of the bot button "Add to UralVPN" (uralvpn://install-sub?url=<subscription link>) is
     // turned into the link of the import dialog that the app already understands.
     fun normalizeLink(uri: Uri): Uri {
