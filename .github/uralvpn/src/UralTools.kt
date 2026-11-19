@@ -73,17 +73,33 @@ object UralTools {
     }
 
     // Заменяет только сервер тега cf-dns: локальный DNS и правила маршрутизации не трогаются.
+    // Для DoH/DoT с доменным именем нужен domain_resolver — берём локальный DNS профиля.
     fun applyDns(content: String): String = runCatching {
         val target = dnsTarget() ?: return content
+        var type = target.first
+        var server = target.second
+        var path: String? = null
+        if (server.startsWith("https://")) {
+            val uri = android.net.Uri.parse(server)
+            server = uri.host ?: return content
+            path = uri.path?.takeIf { it.isNotEmpty() } ?: "/dns-query"
+            type = "https"
+        } else if (server.startsWith("tls://")) {
+            server = server.removePrefix("tls://")
+            type = "tls"
+        }
         val root = JSONObject(content)
         val dns = root.optJSONObject("dns") ?: return content
         val servers = dns.optJSONArray("servers") ?: return content
+        val isIp = Regex("^[0-9]{1,3}(\\.[0-9]{1,3}){3}$").matches(server) || server.contains(':')
         var changed = false
         for (i in 0 until servers.length()) {
             val item = servers.optJSONObject(i) ?: continue
             if (item.optString("tag") != "cf-dns") continue
-            item.put("type", target.first)
-            item.put("server", target.second)
+            item.put("type", type)
+            item.put("server", server)
+            if (path != null) item.put("path", path) else item.remove("path")
+            if (!isIp) item.put("domain_resolver", "local") else item.remove("domain_resolver")
             changed = true
         }
         if (changed) root.toString() else content
