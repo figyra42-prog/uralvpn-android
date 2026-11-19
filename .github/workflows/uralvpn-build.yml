@@ -156,9 +156,7 @@ jobs:
             gh release create "draft-${{ github.run_number }}" "$D/UralVPN-universal.apk" "$D/UralVPN-arm64-v8a.apk" SFA-version-metadata.json \
               --draft --prerelease --target "${{ github.sha }}" \
               --title "Тестовая сборка UralVPN #${{ github.run_number }} (${{ steps.ver.outputs.name }})" \
-              --notes "Тестовая сборка (${{ github.sha }}). Для проверки, не для распространения.
-
-Ставится поверх предыдущей версии, данные сохраняются. Если не знаете, какой APK выбрать — берите универсальный (universal)."
+              --notes "Тестовая сборка (${{ github.sha }}). Для проверки, не для распространения. Ставится поверх предыдущей версии, данные сохраняются. Если не знаете, какой APK выбрать — берите универсальный (universal)."
           fi
       - name: Public release with the APK
         if: ${{ inputs.public_release && github.ref == 'refs/heads/uralvpn' }}
@@ -172,6 +170,4 @@ jobs:
           gh release create "v${{ steps.ver.outputs.name }}" "$D/UralVPN-universal.apk" "$D/UralVPN-arm64-v8a.apk" SFA-version-metadata.json \
             --latest --target "${{ github.sha }}" \
             --title "UralVPN ${{ steps.ver.outputs.name }}" \
-            --notes "Версия ${{ steps.ver.outputs.name }}.
-
-Устанавливается поверх предыдущей версии — данные и подписка сохраняются. Если не знаете, какой APK выбрать, берите универсальный (universal). Приложение само проверяет обновления: Настройки → Приложение."
+            --notes "Версия ${{ steps.ver.outputs.name }}. Устанавливается поверх предыдущей версии — данные и подписка сохраняются. Если не знаете, какой APK выбрать, берите универсальный (universal). Приложение само проверяет обновления: Настройки → Приложение."
