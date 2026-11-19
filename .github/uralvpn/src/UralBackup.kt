@@ -37,7 +37,7 @@ object UralBackup {
             array.put(item)
         }
         val settings = JSONObject()
-        settings.put("theme_mode", prefs().getString("theme_mode", "auto"))
+        settings.put("theme_mode", prefs().getInt("theme_mode", 0))
         settings.put("autostart", prefs().getBoolean("autostart", false))
         settings.put("kill_switch", prefs().getBoolean("kill_switch", false))
         settings.put("sort_by_ping", prefs().getBoolean("sort_by_ping", false))
@@ -59,7 +59,7 @@ object UralBackup {
         val settings = root.optJSONObject("settings")
         if (settings != null) {
             val editor = prefs().edit()
-            settings.optString("theme_mode", "").takeIf { it.isNotEmpty() }?.let { editor.putString("theme_mode", it) }
+            if (settings.has("theme_mode")) editor.putInt("theme_mode", settings.optInt("theme_mode", 0))
             if (settings.has("autostart")) editor.putBoolean("autostart", settings.getBoolean("autostart"))
             if (settings.has("kill_switch")) editor.putBoolean("kill_switch", settings.getBoolean("kill_switch"))
             if (settings.has("sort_by_ping")) editor.putBoolean("sort_by_ping", settings.getBoolean("sort_by_ping"))
