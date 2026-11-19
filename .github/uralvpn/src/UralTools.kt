@@ -59,6 +59,7 @@ object UralTools {
     fun dnsTarget(): Pair<String, String>? = when (dnsMode) {
         "google" -> "tls" to "8.8.8.8"
         "quad9" -> "tls" to "9.9.9.9"
+        "adguard" -> "https" to "https://dns.adguard-dns.com/dns-query"
         "custom" -> {
             val value = dnsCustom.trim()
             when {

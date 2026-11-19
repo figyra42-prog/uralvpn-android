@@ -262,6 +262,7 @@ fun SettingsScreen(navController: NavController) {
                     when (dnsMode) {
                         "google" -> "Google 8.8.8.8"
                         "quad9" -> "Quad9 9.9.9.9"
+                        "adguard" -> "AdGuard с блокировкой рекламы"
                         "custom" -> dnsCustom.ifEmpty { "свой сервер" }
                         else -> "Cloudflare 1.1.1.1 (по умолчанию)"
                     },
@@ -283,6 +284,7 @@ fun SettingsScreen(navController: NavController) {
                             "cloudflare" to "Cloudflare (1.1.1.1)",
                             "google" to "Google (8.8.8.8)",
                             "quad9" to "Quad9 (9.9.9.9)",
+                            "adguard" to "AdGuard — с блокировкой рекламы",
                             "custom" to "Свой сервер",
                         ).forEach { (value, label) ->
                             androidx.compose.foundation.layout.Row(
