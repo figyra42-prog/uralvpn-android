@@ -92,10 +92,13 @@ fun SettingsScreen(navController: NavController) {
             scope.launch {
                 runCatching {
                     val text = UralBackup.build()
-                    withContext(Dispatchers.IO) {
-                        context.contentResolver.openOutputStream(uri)?.use { it.write(text.toByteArray()) }
+                    val bytes = withContext(Dispatchers.IO) {
+                        val data = text.toByteArray()
+                        context.contentResolver.openOutputStream(uri)?.use { it.write(data) }
+                        data.size
                     }
-                    UralTools.toast("Резервная копия сохранена")
+                    if (bytes == 0) throw IllegalArgumentException("файл не записался")
+                    UralTools.toast("Резервная копия сохранена (${bytes} байт)")
                 }.onFailure { UralTools.toast("Не удалось сохранить: ${it.message}") }
             }
         }
@@ -109,6 +112,7 @@ fun SettingsScreen(navController: NavController) {
                     val text = withContext(Dispatchers.IO) {
                         context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } ?: ""
                     }
+                    if (text.isBlank()) throw IllegalArgumentException("файл пустой или недоступен")
                     val added = UralBackup.restore(text)
                     UralTools.toast("Восстановлено профилей: $added")
                 }.onFailure { UralTools.toast("Не удалось восстановить: ${it.message}") }
