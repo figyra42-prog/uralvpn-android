@@ -189,7 +189,7 @@ fun UralHomeScreen(
     var subStatus by remember(profileId) { mutableStateOf("") }
     LaunchedEffect(profileId, remoteUrl, uiState.updatedProfileId, uiState.isLoading) {
         if (remoteUrl.isNotEmpty()) {
-            descriptions = withContext(Dispatchers.IO) { readDescriptions(remoteUrl) }
+            descriptions = withContext(Dispatchers.IO) { readDescriptions(remoteUrl).mapKeys { it.key.trim() } }
             subStatus = withContext(Dispatchers.IO) { readStatus(remoteUrl) }
         }
     }
@@ -212,9 +212,9 @@ fun UralHomeScreen(
     val group = groupsState.groups.firstOrNull { it.selectable }
     val running = serviceStatus == Status.Started
     val baseRows = if (running && group != null) {
-        group.items.map { LocationRow(it.tag, it.displayType, it.urlTestDelay, it.tag == group.selected, descriptions[it.tag].orEmpty()) }
+        group.items.map { LocationRow(it.tag, it.displayType, it.urlTestDelay, it.tag == group.selected, descriptions[it.tag.trim()].orEmpty()) }
     } else {
-        offlineNames.map { LocationRow(it, "", null, false, descriptions[it].orEmpty()) }
+        offlineNames.map { LocationRow(it, "", null, false, descriptions[it.trim()].orEmpty()) }
     }
     val allRows = baseRows
     // The autopilot is the first entry: it stays on top, the rest can be sorted by ping, and a
