@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -82,6 +83,14 @@ fun UralStatsScreen(serviceStatus: Status) {
         val computed = aggregate(state.allConnections.ifEmpty { state.connections })
         if (computed.isNotEmpty()) rows = computed
     }
+    val context = LocalContext.current
+    val labels = remember { HashMap<String, String>() }
+    fun appLabel(name: String): String = labels.getOrPut(name) {
+        runCatching {
+            val pm = context.packageManager
+            pm.getApplicationLabel(pm.getApplicationInfo(name, 0)).toString()
+        }.getOrDefault(name)
+    }
     val padding = LocalScaffoldPadding.current
     Column(
         modifier = Modifier
@@ -99,7 +108,7 @@ fun UralStatsScreen(serviceStatus: Status) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(rows, key = { it.name }) { row ->
                 ListItem(
-                    headlineContent = { Text(row.name, style = MaterialTheme.typography.bodyLarge) },
+                    headlineContent = { Text(appLabel(row.name), style = MaterialTheme.typography.bodyLarge) },
                     supportingContent = {
                         Text("↓ ${formatBytes(row.download)} · ↑ ${formatBytes(row.upload)}")
                     },
