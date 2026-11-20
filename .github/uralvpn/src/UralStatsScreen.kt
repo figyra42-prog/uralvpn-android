@@ -15,6 +15,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -73,8 +75,12 @@ fun UralStatsScreen(serviceStatus: Status) {
         viewModel.setVisible(true)
         onDispose { viewModel.setVisible(false) }
     }
-    val rows = remember(state.allConnections, state.connections) {
-        aggregate(state.allConnections.ifEmpty { state.connections })
+    // Модель периодически отдаёт только активные соединения (малые счётчики);
+    // держим последнюю непустую сводку, чтобы цифры не «сбрасывались».
+    var rows by remember { mutableStateOf(listOf<AppTraffic>()) }
+    LaunchedEffect(state.allConnections, state.connections) {
+        val computed = aggregate(state.allConnections.ifEmpty { state.connections })
+        if (computed.isNotEmpty()) rows = computed
     }
     val padding = LocalScaffoldPadding.current
     Column(
