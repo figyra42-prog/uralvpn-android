@@ -76,12 +76,20 @@ fun UralStatsScreen(serviceStatus: Status) {
         viewModel.setVisible(true)
         onDispose { viewModel.setVisible(false) }
     }
-    // Модель периодически отдаёт только активные соединения (малые счётчики);
-    // держим последнюю непустую сводку, чтобы цифры не «сбрасывались».
+    // Модель периодически отдаёт только активные соединения (малые счётчики).
+    // Держим накопленные максимумы за сессию: цифры только растут и не сбрасываются.
     var rows by remember { mutableStateOf(listOf<AppTraffic>()) }
+    val totals = remember { HashMap<String, LongArray>() }
     LaunchedEffect(state.allConnections, state.connections) {
         val computed = aggregate(state.allConnections.ifEmpty { state.connections })
-        if (computed.isNotEmpty()) rows = computed
+        if (computed.isEmpty()) return@LaunchedEffect
+        for (row in computed) {
+            val acc = totals.getOrPut(row.name) { LongArray(2) }
+            acc[0] = maxOf(acc[0], row.upload)
+            acc[1] = maxOf(acc[1], row.download)
+        }
+        rows = totals.map { (name, value) -> AppTraffic(name, value[0], value[1]) }
+            .sortedByDescending { it.total }
     }
     val context = LocalContext.current
     val labels = remember { HashMap<String, String>() }
