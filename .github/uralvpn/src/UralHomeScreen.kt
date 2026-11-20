@@ -719,7 +719,7 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
                 else Modifier,
             )
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 7.dp),
+            .padding(horizontal = 10.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // Флаг — картинка (если есть PNG), иначе эмодзи из названия.
