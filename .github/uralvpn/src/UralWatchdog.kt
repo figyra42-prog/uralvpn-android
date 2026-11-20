@@ -23,7 +23,7 @@ import java.net.Socket
 // и перезагружает сервис, если соединение зависло: при смене сети, при включении
 // экрана и раз в 2 минуты в фоне.
 object UralWatchdog {
-    private const val CHECK_INTERVAL_MS = 120_000L
+    private const val CHECK_INTERVAL_MS = 300_000L
     private const val GRACE_MS = 20_000L
     private const val SCREEN_DELAY_MS = 1_500L
     private const val NETWORK_DELAY_MS = 6_000L
