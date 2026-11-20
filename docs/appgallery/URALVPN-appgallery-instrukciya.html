@@ -1,0 +1,187 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UralVPN — AppGallery: инструкция</title>
+<style>
+body{background:#101114;color:#e8e8ea;font:16px/1.6 -apple-system,Roboto,Segoe UI,sans-serif;margin:0;padding:20px 16px 60px}
+h1,h2,h3{color:#c6ff3d;line-height:1.25;margin:26px 0 10px}
+h1{font-size:24px}h2{font-size:20px}h3{font-size:17px}
+a{color:#8fd0ff}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}
+th,td{border:1px solid #2b2d33;padding:8px;text-align:left;vertical-align:top}
+th{background:#1a1c21}
+code{background:#1a1c21;padding:2px 5px;border-radius:5px;font-size:14px}
+blockquote{border-left:3px solid #c6ff3d;margin:14px 0;padding:6px 12px;color:#b9bcc4;background:#16181c}
+ul,ol{padding-left:22px}
+</style></head><body><h1>UralVPN → Huawei AppGallery: пошаговая инструкция</h1>
+<p>Обновлено 20.11.2026. Все нужные файлы — в папке <code>docs/appgallery</code> репозитория <code>uralvpn-android</code>
+(иконка 512, 4 скриншота 450×800, тексты <code>description.md</code>).</p>
+<hr />
+<h2>0. Что подготовлено заранее</h2>
+<table>
+<thead>
+<tr>
+<th>Что</th>
+<th>Где взять</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>APK</td>
+<td>релиз <strong>v1.1.11</strong> → <code>UralVPN-universal.apk</code> (github.com/figyra42-prog/uralvpn-android/releases)</td>
+</tr>
+<tr>
+<td>Иконка 512×512</td>
+<td><code>docs/appgallery/icon-512.png</code></td>
+</tr>
+<tr>
+<td>Скриншоты 450×800 (4 шт.)</td>
+<td><code>docs/appgallery/screen-1.png</code> … <code>screen-4.png</code></td>
+</tr>
+<tr>
+<td>Тексты карточки (RU + EN)</td>
+<td><code>docs/appgallery/description.md</code></td>
+</tr>
+<tr>
+<td>Политика конфиденциальности</td>
+<td>https://servisbot.staryi.org/legal.html</td>
+</tr>
+<tr>
+<td>Поддержка</td>
+<td>https://t.me/uralvpn_mybot</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Регистрация и подтверждение личности</h2>
+<ol>
+<li>Открыть <strong>https://developer.huawei.com</strong> → «Зарегистрироваться», создать <strong>HUAWEI ID</strong>.</li>
+<li>Если регистрация по телефону выдаёт ошибку — регистрироваться <strong>по email</strong> и с включённым VPN (не российский IP).</li>
+<li>Войти в кабинет, открыть <strong>AppGallery Connect</strong>: https://developer.huawei.com/consumer/en/service/josp/agc/index.html</li>
+<li>Кабинет попросит <strong>«Подтвердите личность, чтобы начать»</strong> — нажать и пройти:</li>
+<li>тип: <strong>Индивидуальный разработчик</strong> (потом не меняется);</li>
+<li>паспорт, селфи, при запросе — банковская карта для сверки имени.</li>
+<li>Статус «Выполняется подтверждение личности…» — ждать <strong>1–2 рабочих дня</strong>, ответ на email.</li>
+</ol>
+<blockquote>
+<p>Пока подтверждение не одобрено, создание приложения недоступно — это нормально.</p>
+</blockquote>
+<hr />
+<h2>2. Создание приложения</h2>
+<ol>
+<li>После одобрения: AppGallery Connect → <strong>My apps</strong> («Мои приложения»):
+   https://developer.huawei.com/consumer/en/service/josp/agc/index.html#/myApp</li>
+<li>Кнопка <strong>New app</strong> («Создать приложение»).</li>
+<li>Заполнить:</li>
+<li><strong>Package name:</strong> <code>app.uralvpn.next</code> — точно, после создания изменить нельзя;</li>
+<li><strong>App name:</strong> <code>UralVPN — быстрый VPN</code>;</li>
+<li><strong>Category:</strong> Tools / Инструменты;</li>
+<li><strong>Default language:</strong> русский;</li>
+<li><strong>Platform:</strong> Android.</li>
+<li>Сохранить — откроется карточка приложения с левым меню.</li>
+</ol>
+<blockquote>
+<p>На странице «Сертификаты, ID приложения и профили» создавать <strong>ID приложения HarmonyOS не нужно</strong>:
+наш APK — Android. «Устройства» и «Профили» тоже не нужны — APK подписан нашим ключом.</p>
+</blockquote>
+<hr />
+<h2>3. App information (карточка)</h2>
+<p>Слева <strong>App information</strong> → заполнить все вкладки:</p>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Иконка</td>
+<td><code>icon-512.png</code> (512×512)</td>
+</tr>
+<tr>
+<td>Скриншоты</td>
+<td><code>screen-1.png</code> … <code>screen-4.png</code> (450×800)</td>
+</tr>
+<tr>
+<td>Короткое описание</td>
+<td>«Стабильный VPN: Автопилот, 25 локаций, российские приложения работают напрямую»</td>
+</tr>
+<tr>
+<td>Полное описание</td>
+<td>из <code>description.md</code> (RU)</td>
+</tr>
+<tr>
+<td>Что нового</td>
+<td>«Описания локаций; улучшенная статистика трафика; плитки локаций»</td>
+</tr>
+<tr>
+<td>Политика конфиденциальности</td>
+<td>https://servisbot.staryi.org/legal.html</td>
+</tr>
+<tr>
+<td>Возрастной рейтинг</td>
+<td>3+</td>
+</tr>
+<tr>
+<td>Страны</td>
+<td>Россия, Беларусь, Казахстан, Армения, Кыргызстан, Узбекистан</td>
+</tr>
+<tr>
+<td>Языки</td>
+<td>русский (основной), английский</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Не писать</strong> в названии и описании: «обход блокировок», «обход запретов», «доступ к заблокированным сайтам».
+Использовать: «стабильный VPN», «защищённое соединение», «быстрый доступ».</p>
+<p><strong>Про оплату:</strong> не упоминать продажу подписки внутри приложения (это вызовет требование встроенных
+покупок Huawei). Нейтрально: «Подписка оформляется на сайте сервиса».</p>
+<hr />
+<h2>4. Загрузка APK и отправка на проверку</h2>
+<ol>
+<li>Слева <strong>Release → App Release</strong> → <strong>Upload</strong> → выбрать <code>UralVPN-universal.apk</code>.</li>
+<li>versionCode должен быть больше предыдущего (у нас он растёт автоматически).</li>
+<li>Заполнить «что нового» (из <code>description.md</code>).</li>
+<li><strong>Submit for review</strong> («Отправить на проверку»).</li>
+</ol>
+<p>Срок модерации — обычно 1–3 рабочих дня.</p>
+<hr />
+<h2>5. Если откажут</h2>
+<p>Частые причины и что делать:</p>
+<table>
+<thead>
+<tr>
+<th>Причина</th>
+<th>Что сделать</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>«VPN/обход блокировок» в описании</td>
+<td>переписать нейтрально, убрать эти слова</td>
+</tr>
+<tr>
+<td>Продажа цифровых товаров вне IAP</td>
+<td>убрать упоминание покупки в приложении</td>
+</tr>
+<tr>
+<td>Нет политики конфиденциальности</td>
+<td>указать <code>https://servisbot.staryi.org/legal.html</code></td>
+</tr>
+<tr>
+<td>Несовпадение названия с APK</td>
+<td>название в карточке = название приложения</td>
+</tr>
+<tr>
+<td>Скриншоты не того размера</td>
+<td>взять из <code>docs/appgallery</code> (450×800)</td>
+</tr>
+</tbody>
+</table>
+<p>После исправления — снова <strong>Submit for review</strong>.</p>
+<hr />
+<h2>6. После публикации</h2>
+<ul>
+<li>Обновления: загружать новый APK в <strong>App Release</strong>, versionCode растёт.</li>
+<li>Ссылка на приложение в AppGallery появится в кабинете (App information → App link).</li>
+<li>Её можно добавить на сайт и в бота рядом со ссылкой на APK.</li>
+</ul></body></html>
