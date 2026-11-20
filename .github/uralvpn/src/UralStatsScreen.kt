@@ -69,6 +69,10 @@ fun UralStatsScreen(serviceStatus: Status) {
     val viewModel: ConnectionsViewModel = viewModel()
     val state by viewModel.uiState.collectAsState()
     LaunchedEffect(serviceStatus) { viewModel.updateServiceStatus(serviceStatus) }
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        viewModel.setVisible(true)
+        onDispose { viewModel.setVisible(false) }
+    }
     val rows = remember(state.allConnections, state.connections) {
         aggregate(state.allConnections.ifEmpty { state.connections })
     }
