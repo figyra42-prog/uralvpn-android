@@ -31,6 +31,25 @@ import androidx.compose.material3.TopAppBar
 import io.nekohasekai.sfa.compose.model.Connection
 import java.util.Locale
 
+// Накопление живёт вне Compose: экран может пересоздаваться, цифры за сессию сохраняются.
+private object UralStatsStore {
+    private val totals = HashMap<String, LongArray>()
+
+    @Synchronized
+    fun add(rows: List<AppTraffic>) {
+        for (row in rows) {
+            val acc = totals.getOrPut(row.name) { LongArray(2) }
+            acc[0] = maxOf(acc[0], row.upload)
+            acc[1] = maxOf(acc[1], row.download)
+        }
+    }
+
+    @Synchronized
+    fun snapshot(): List<AppTraffic> =
+        totals.map { (name, value) -> AppTraffic(name, value[0], value[1]) }
+            .sortedByDescending { it.total }
+}
+
 // UralVPN: трафик по приложениям за текущую сессию (данные соединений ядра).
 private data class AppTraffic(val name: String, val upload: Long, val download: Long) {
     val total: Long get() = upload + download
@@ -78,18 +97,12 @@ fun UralStatsScreen(serviceStatus: Status) {
     }
     // Модель периодически отдаёт только активные соединения (малые счётчики).
     // Держим накопленные максимумы за сессию: цифры только растут и не сбрасываются.
-    var rows by remember { mutableStateOf(listOf<AppTraffic>()) }
-    val totals = remember { HashMap<String, LongArray>() }
+    var rows by remember { mutableStateOf(UralStatsStore.snapshot()) }
     LaunchedEffect(state.allConnections, state.connections) {
         val computed = aggregate(state.allConnections.ifEmpty { state.connections })
         if (computed.isEmpty()) return@LaunchedEffect
-        for (row in computed) {
-            val acc = totals.getOrPut(row.name) { LongArray(2) }
-            acc[0] = maxOf(acc[0], row.upload)
-            acc[1] = maxOf(acc[1], row.download)
-        }
-        rows = totals.map { (name, value) -> AppTraffic(name, value[0], value[1]) }
-            .sortedByDescending { it.total }
+        UralStatsStore.add(computed)
+        rows = UralStatsStore.snapshot()
     }
     val context = LocalContext.current
     val labels = remember { HashMap<String, String>() }
