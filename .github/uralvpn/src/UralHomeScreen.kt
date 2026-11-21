@@ -50,6 +50,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -210,6 +211,7 @@ fun UralHomeScreen(
     }
 
     val group = groupsState.groups.firstOrNull { it.selectable }
+    val testing = group != null && group.tag in groupsState.testingGroups
     val running = serviceStatus == Status.Started
     val baseRows = if (running && group != null) {
         group.items.map { LocationRow(it.tag, it.displayType, it.urlTestDelay, it.tag == group.selected, descriptions[it.tag.trim()].orEmpty()) }
@@ -440,6 +442,7 @@ fun UralHomeScreen(
             UralLocationRow(
                 row,
                 enabled = running && group != null,
+                testing = testing,
             ) {
                 if (group != null) groupsViewModel.selectGroupItem(group.tag, row.tag)
             }
@@ -690,7 +693,7 @@ private fun UralSubscriptionCard(
 }
 
 @Composable
-private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+private fun UralLocationRow(row: LocationRow, enabled: Boolean, testing: Boolean = false, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val colors = LocalStatusColors.current
     // Карточка локации: флаг в плитке, название с подписью, справа пинг.
     val accent = MaterialTheme.colorScheme.primary
@@ -779,7 +782,14 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
         val delay = row.delay
         if (delay != null) {
             Spacer(Modifier.width(8.dp))
-            Text(
+            if (testing && (delay <= 0 || delay >= 65535)) {
+                // Happ-style: while the ping test runs, a location without an answer shows a spinner.
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    strokeWidth = 1.5.dp,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            } else Text(
                 text = when {
                     delay <= 0 -> "—"
                     delay >= 65535 -> "н/д"
