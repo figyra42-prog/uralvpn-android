@@ -82,13 +82,75 @@ class HTTPClient : Closeable {
         return response.content.unwrap
     }
 
+    // The plain connection through the phone's own network, not through the VPN: it reaches the
+    // panel even when the selected location is dead and the tunnel carries nothing.
+    private fun fetchOutside(url: String, userAgent: String): String {
+        val manager = Application.application.getSystemService(android.content.Context.CONNECTIVITY_SERVICE)
+            as? android.net.ConnectivityManager
+        var network: android.net.Network? = null
+        if (manager != null) {
+            for (candidate in manager.allNetworks) {
+                val capabilities = manager.getNetworkCapabilities(candidate) ?: continue
+                if (capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_VPN)) continue
+                if (!capabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)) continue
+                if (!capabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_NOT_VPN)) continue
+                network = candidate
+                break
+            }
+        }
+        val underlying = network
+        val connection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && underlying != null) {
+            underlying.openConnection(java.net.URL(url))
+        } else {
+            java.net.URL(url).openConnection()
+        } as java.net.HttpURLConnection
+        try {
+            connection.connectTimeout = 15_000
+            connection.readTimeout = 30_000
+            connection.instanceFollowRedirects = true
+            connection.setRequestProperty("User-Agent", userAgent)
+            if (isSubscriptionHost(url)) {
+                connection.setRequestProperty("x-hwid", hwid)
+                connection.setRequestProperty("x-device-os", "Android")
+                connection.setRequestProperty("x-ver-os", Build.VERSION.RELEASE)
+                connection.setRequestProperty("x-device-model", Build.MODEL)
+            }
+            val code = connection.responseCode
+            val stream = if (code in 200..299) connection.inputStream else connection.errorStream
+            val text = stream?.bufferedReader()?.use { it.readText() }.orEmpty()
+            if (code !in 200..299) throw java.io.IOException("HTTP $code")
+            return text
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    // The subscription is fetched outside the tunnel first: a dead location then cannot lock the
+    // profile, and an update does not depend on the tunnel at all. The tunnel is the fallback, for
+    // networks where the panel's domain is blocked on the way out; a third try covers a lost packet.
+    private fun fetchSubscription(url: String, userAgent: String): String {
+        var lastError: Throwable? = null
+        for (attempt in 0 until 3) {
+            try {
+                return if (attempt == 1) fetch(url, userAgent) else fetchOutside(url, userAgent)
+            } catch (error: Throwable) {
+                lastError = error
+                Log.w(TAG, "subscription attempt ${attempt + 1} (${if (attempt == 1) "tunnel" else "outside"})", error)
+                if (attempt < 2 && android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
+                    Thread.sleep(400)
+                }
+            }
+        }
+        throw lastError ?: java.io.IOException("subscription is not reachable")
+    }
+
     fun getString(url: String): String {
-        val content = fetch(url, userAgent)
+        val content = if (isSubscriptionHost(url)) fetchSubscription(url, userAgent) else fetch(url, userAgent)
         if (!isSubscriptionHost(url) || !isSingBoxProfile(content)) {
             return content
         }
         val merged = runCatching {
-            val xray = fetch(url, XRAY_USER_AGENT)
+            val xray = fetchSubscription(url, XRAY_USER_AGENT)
             runCatching { saveDescriptions(url, Libbox.uralvpnDescriptions(xray)) }
             Libbox.uralvpnMergeSubscription(content, xray)
         }
