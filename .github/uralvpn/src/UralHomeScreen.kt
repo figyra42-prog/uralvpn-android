@@ -110,22 +110,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private data class LocationRow(val tag: String, val type: String, val delay: Int?, val selected: Boolean, val description: String = "", val stale: Boolean = false)
-
-// A failed test must not wipe the ping a location showed a moment ago: on a busy network the number
-// stays (dimmed) until a new measurement replaces it.
-private object UralPings {
-    private val last = HashMap<String, Int>()
-
-    fun shown(tag: String, delay: Int): Pair<Int, Boolean> {
-        if (delay in 1..65534) {
-            last[tag] = delay
-            return delay to false
-        }
-        val known = last[tag]
-        return if (known != null) known to true else delay to false
-    }
-}
+private data class LocationRow(val tag: String, val type: String, val delay: Int?, val selected: Boolean, val description: String = "")
 
 // UralVPN home screen in the style of the old uralvpn-app: big connect button, status line,
 // subscription card (traffic, expiry, panel announcement) and the list of locations.
@@ -227,10 +212,7 @@ fun UralHomeScreen(
     val group = groupsState.groups.firstOrNull { it.selectable }
     val running = serviceStatus == Status.Started
     val baseRows = if (running && group != null) {
-        group.items.map {
-            val (delay, stale) = UralPings.shown(it.tag, it.urlTestDelay)
-            LocationRow(it.tag, it.displayType, delay, it.tag == group.selected, descriptions[it.tag.trim()].orEmpty(), stale)
-        }
+        group.items.map { LocationRow(it.tag, it.displayType, it.urlTestDelay, it.tag == group.selected, descriptions[it.tag.trim()].orEmpty()) }
     } else {
         offlineNames.map { LocationRow(it, "", null, false, descriptions[it.trim()].orEmpty()) }
     }
@@ -805,7 +787,6 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifi
                 },
                 style = MaterialTheme.typography.labelLarge,
                 color = when {
-                    row.stale -> MaterialTheme.colorScheme.onSurfaceVariant
                     delay <= 0 -> MaterialTheme.colorScheme.onSurfaceVariant
                     delay >= 65535 || delay >= 800 -> colors.bad
                     delay >= 400 -> colors.medium
