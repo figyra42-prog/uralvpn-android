@@ -294,6 +294,7 @@ private fun GroupsCardContent(
                                     isSelectable = group.selectable,
                                     isLast = rowIndex == rowItems.lastIndex,
                                     palette = palette,
+                                    testingItems = uiState.testingItems,
                                     onItemSelected = { itemTag -> onItemSelected(group.tag, itemTag) },
                                     onItemUrlTest = onItemUrlTest,
                                     modifier = Modifier.animateItem(),
@@ -502,6 +503,7 @@ private fun GroupItemRow(
     isSelectable: Boolean,
     isLast: Boolean,
     palette: UrlTestPalette,
+    testingItems: Set<String>,
     onItemSelected: (String) -> Unit,
     onItemUrlTest: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -529,6 +531,7 @@ private fun GroupItemRow(
                     item = item,
                     isSelected = item.tag == selectedTag,
                     isSelectable = isSelectable,
+                    isTesting = testingItems.contains(item.tag),
                     palette = palette,
                     onClick = { onItemSelected(item.tag) },
                     onUrlTest = { onItemUrlTest(item.tag) },
@@ -548,6 +551,7 @@ private fun ProxyChip(
     item: GroupItem,
     isSelected: Boolean,
     isSelectable: Boolean,
+    isTesting: Boolean,
     palette: UrlTestPalette,
     onClick: () -> Unit,
     onUrlTest: () -> Unit,
@@ -605,13 +609,28 @@ private fun ProxyChip(
                             MaterialTheme.colorScheme.onSurfaceVariant
                         },
                     )
-                    if (item.urlTestDelay > 0) {
-                        Text(
-                            text = "${item.urlTestDelay}ms",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = palette.forDelay(item.urlTestDelay),
-                        )
+                    when {
+                        isTesting -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(12.dp),
+                                strokeWidth = 1.5.dp,
+                                color =
+                                if (isSelected) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.primary
+                                },
+                            )
+                        }
+
+                        item.urlTestDelay > 0 -> {
+                            Text(
+                                text = "${item.urlTestDelay}ms",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = palette.forDelay(item.urlTestDelay),
+                            )
+                        }
                     }
                 }
             }
