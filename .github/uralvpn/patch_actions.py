@@ -60,8 +60,22 @@ s = swap(
 )
 s = swap(
     s,
-    "                    onPing = { group?.let { groupsViewModel.urlTestGroup(it.tag) } },\n",
-    "                    onPing = { group?.let { groupsViewModel.urlTestGroup(it.tag) } },\n"
+    "                    onPing = { group?.let { current ->\n"
+    "                        pingVisible = true\n"
+    "                        groupsViewModel.urlTestGroup(current.tag)\n"
+    "                        scope.launch {\n"
+    "                            delay(1500)\n"
+    "                            pingVisible = false\n"
+    "                        }\n"
+    "                    } },\n",
+    "                    onPing = { group?.let { current ->\n"
+    "                        pingVisible = true\n"
+    "                        groupsViewModel.urlTestGroup(current.tag)\n"
+    "                        scope.launch {\n"
+    "                            delay(1500)\n"
+    "                            pingVisible = false\n"
+    "                        }\n"
+    "                    } },\n"
     "                    refreshEnabled = profile != null && remoteUrl.isNotEmpty(),\n"
     "                    onRefresh = {\n"
     "                        if (profile != null) {\n"

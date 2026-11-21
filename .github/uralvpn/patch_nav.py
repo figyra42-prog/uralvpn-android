@@ -171,7 +171,7 @@ h = swap(h, "    val scaffoldPadding = LocalScaffoldPadding.current\n    LazyCol
 
     val scaffoldPadding = LocalScaffoldPadding.current
     LazyColumn(""", "scaffold padding")
-h = swap(h, "            UralLocationRow(\n                row,\n                enabled = running && group != null,\n                testing = row.tag in groupsState.testingItems,\n            ) {",
+h = swap(h, "            UralLocationRow(\n                row,\n                enabled = running && group != null,\n                testing = testing,\n            ) {",
          "            UralLocationRow(\n                row,\n                enabled = running && group != null,\n                testing = testing,\n                onLongClick = { configTag = row.tag },\n            ) {",
          "location row call")
 h = swap(h, "@Composable\nprivate fun UralLocationRow(row: LocationRow, enabled: Boolean, testing: Boolean = false, modifier: Modifier = Modifier, onClick: () -> Unit) {",
