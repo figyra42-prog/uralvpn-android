@@ -391,6 +391,7 @@ fun UralHomeScreen(
                     collapsed = collapsed,
                     sortByPing = sortByPing,
                     pingEnabled = running && group != null,
+                    testing = testing,
                     onToggleCollapse = { collapsed = !collapsed },
                     onOpenLink = openLink,
                     onPing = { group?.let { groupsViewModel.urlTestGroup(it.tag) } },
@@ -603,6 +604,7 @@ private fun UralSubscriptionCard(
     collapsed: Boolean,
     sortByPing: Boolean,
     pingEnabled: Boolean,
+    testing: Boolean = false,
     onToggleCollapse: () -> Unit,
     onOpenLink: (String) -> Unit,
     onPing: () -> Unit,
@@ -642,8 +644,12 @@ private fun UralSubscriptionCard(
                         Icon(Icons.Default.Info, contentDescription = "Страница подписки", modifier = Modifier.size(22.dp))
                     }
                 }
-                IconButton(onClick = onPing, enabled = pingEnabled, modifier = Modifier.size(36.dp)) {
-                    Icon(Icons.Default.Speed, contentDescription = "Проверить пинг всех", modifier = Modifier.size(22.dp))
+                IconButton(onClick = onPing, enabled = pingEnabled && !testing, modifier = Modifier.size(36.dp)) {
+                    if (testing) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                    } else {
+                        Icon(Icons.Default.Speed, contentDescription = "Проверить пинг всех", modifier = Modifier.size(22.dp))
+                    }
                 }
                 IconButton(onClick = onToggleSort, modifier = Modifier.size(36.dp)) {
                     Icon(
@@ -785,7 +791,7 @@ private fun UralLocationRow(row: LocationRow, enabled: Boolean, testing: Boolean
         val delay = row.delay
         if (delay != null) {
             Spacer(Modifier.width(8.dp))
-            if (testing && (delay <= 0 || delay >= 65535)) {
+            if (testing) {
                 // Happ-style: while the ping test runs, a location without an answer shows a spinner.
                 CircularProgressIndicator(
                     modifier = Modifier.size(16.dp),
