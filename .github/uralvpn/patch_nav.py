@@ -171,11 +171,11 @@ h = swap(h, "    val scaffoldPadding = LocalScaffoldPadding.current\n    LazyCol
 
     val scaffoldPadding = LocalScaffoldPadding.current
     LazyColumn(""", "scaffold padding")
-h = swap(h, "            UralLocationRow(\n                row,\n                enabled = running && group != null,\n            ) {",
-         "            UralLocationRow(\n                row,\n                enabled = running && group != null,\n                onLongClick = { configTag = row.tag },\n            ) {",
+h = swap(h, "            UralLocationRow(\n                row,\n                enabled = running && group != null,\n                testing = testing,\n            ) {",
+         "            UralLocationRow(\n                row,\n                enabled = running && group != null,\n                testing = testing,\n                onLongClick = { configTag = row.tag },\n            ) {",
          "location row call")
-h = swap(h, "@Composable\nprivate fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {",
-         "@OptIn(ExperimentalFoundationApi::class)\n@Composable\nprivate fun UralLocationRow(row: LocationRow, enabled: Boolean, modifier: Modifier = Modifier, onLongClick: () -> Unit = {}, onClick: () -> Unit) {",
+h = swap(h, "@Composable\nprivate fun UralLocationRow(row: LocationRow, enabled: Boolean, testing: Boolean = false, modifier: Modifier = Modifier, onClick: () -> Unit) {",
+         "@OptIn(ExperimentalFoundationApi::class)\n@Composable\nprivate fun UralLocationRow(row: LocationRow, enabled: Boolean, testing: Boolean = false, modifier: Modifier = Modifier, onLongClick: () -> Unit = {}, onClick: () -> Unit) {",
          "location row signature")
 h = swap(h, ".clickable(enabled = enabled, onClick = onClick)",
          ".combinedClickable(onClick = { if (enabled) onClick() }, onLongClick = onLongClick)",
