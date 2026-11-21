@@ -365,7 +365,10 @@ fun UralHomeScreen(
                     },
                 )
             }
-            val statusText = when (serviceStatus) {
+            val statusText = if (testing) {
+                // The ping test is visible on the button too, like in Happ.
+                "Идёт пинг"
+            } else when (serviceStatus) {
                 Status.Started -> if (group != null && group.selected.isNotEmpty()) "Подключено · ${group.selected}" else "Подключено"
                 Status.Starting -> "Подключение…"
                 Status.Stopping -> "Отключение…"
@@ -442,7 +445,7 @@ fun UralHomeScreen(
             UralLocationRow(
                 row,
                 enabled = running && group != null,
-                testing = testing,
+                testing = row.tag in groupsState.testingItems,
             ) {
                 if (group != null) groupsViewModel.selectGroupItem(group.tag, row.tag)
             }
