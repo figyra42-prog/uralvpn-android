@@ -211,7 +211,10 @@ fun UralHomeScreen(
     }
 
     val group = groupsState.groups.firstOrNull { it.selectable }
-    val testing = group != null && group.tag in groupsState.testingGroups
+    // The test itself can finish within one frame: keep the indicator on screen for a moment,
+    // otherwise the user never sees that a check ran.
+    var pingVisible by remember { mutableStateOf(false) }
+    val testing = pingVisible || (group != null && group.tag in groupsState.testingGroups)
     val running = serviceStatus == Status.Started
     val baseRows = if (running && group != null) {
         group.items.map { LocationRow(it.tag, it.displayType, it.urlTestDelay, it.tag == group.selected, descriptions[it.tag.trim()].orEmpty()) }
@@ -394,7 +397,14 @@ fun UralHomeScreen(
                     testing = testing,
                     onToggleCollapse = { collapsed = !collapsed },
                     onOpenLink = openLink,
-                    onPing = { group?.let { groupsViewModel.urlTestGroup(it.tag) } },
+                    onPing = { group?.let { current ->
+                        pingVisible = true
+                        groupsViewModel.urlTestGroup(current.tag)
+                        scope.launch {
+                            delay(1500)
+                            pingVisible = false
+                        }
+                    } },
                     onToggleSort = {
                         sortByPing = !sortByPing
                         uiPrefs.edit().putBoolean("sort_by_ping", sortByPing).apply()
@@ -446,7 +456,7 @@ fun UralHomeScreen(
             UralLocationRow(
                 row,
                 enabled = running && group != null,
-                testing = row.tag in groupsState.testingItems,
+                testing = testing,
             ) {
                 if (group != null) groupsViewModel.selectGroupItem(group.tag, row.tag)
             }
