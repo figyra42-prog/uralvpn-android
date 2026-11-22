@@ -161,7 +161,7 @@ class HTTPClient : Closeable {
         merged.onSuccess {
             saveStatus(url, if (it.contains("CDN")) "" else "В подписке нет CDN-серверов (панель их не отдала)")
         }
-        return io.nekohasekai.sfa.bg.UralTools.applyRouting(io.nekohasekai.sfa.bg.UralTools.applyDns(io.nekohasekai.sfa.bg.UralTools.applySimulation(merged.getOrDefault(content))))
+        return io.nekohasekai.sfa.bg.UralTools.applyIpv6(io.nekohasekai.sfa.bg.UralTools.applyRouting(io.nekohasekai.sfa.bg.UralTools.applyDns(io.nekohasekai.sfa.bg.UralTools.applySimulation(merged.getOrDefault(content)))))
     }
 
     override fun close() {

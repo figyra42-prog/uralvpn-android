@@ -155,6 +155,50 @@ object UralTools {
         if (changed) root.toString() else content
     }.getOrDefault(content)
 
+    // UralVPN: IPv6 в туннеле по умолчанию выключен. У большинства нод нет выхода в IPv6, и
+    // приложения получают адреса, по которым соединение виснет до таймаута.
+    var ipv6Enabled: Boolean
+        get() = prefs.getBoolean("ipv6_enabled", false)
+        set(value) {
+            prefs.edit().putBoolean("ipv6_enabled", value).apply()
+        }
+
+    fun applyIpv6(content: String): String {
+        if (ipv6Enabled) return content
+        return runCatching {
+            val root = JSONObject(content)
+            var changed = false
+            root.optJSONArray("inbounds")?.let { inbounds ->
+                for (i in 0 until inbounds.length()) {
+                    val tun = inbounds.optJSONObject(i) ?: continue
+                    if (tun.optString("type") != "tun") continue
+                    if (tun.has("inet6_address")) {
+                        tun.remove("inet6_address")
+                        changed = true
+                    }
+                    val address = tun.optJSONArray("address") ?: continue
+                    val keep = JSONArray()
+                    for (j in 0 until address.length()) {
+                        val value = address.optString(j)
+                        if (value.contains(':')) changed = true else keep.put(value)
+                    }
+                    if (changed) tun.put("address", keep)
+                }
+            }
+            root.optJSONObject("dns")?.optJSONArray("servers")?.let { servers ->
+                for (i in 0 until servers.length()) {
+                    val server = servers.optJSONObject(i) ?: continue
+                    if (server.optString("type") != "fakeip") continue
+                    if (server.has("inet6_range")) {
+                        server.remove("inet6_range")
+                        changed = true
+                    }
+                }
+            }
+            if (changed) root.toString() else content
+        }.getOrDefault(content)
+    }
+
     fun openVpnSettings(context: Context) {
         runCatching {
             context.startActivity(android.content.Intent(android.provider.Settings.ACTION_VPN_SETTINGS))

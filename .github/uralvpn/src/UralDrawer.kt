@@ -73,7 +73,6 @@ private val drawerTop = listOf(
     DrawerEntry(Icons.Default.Add, "Добавить подписку", "ural/add"),
     DrawerEntry(Icons.Default.Apps, "Приложения (обход VPN)", "settings/profile_override"),
     DrawerEntry(Icons.Default.Description, "Логи", Screen.Log.route),
-    DrawerEntry(Icons.Default.Speed, "Статистика", "ural/stats"),
     DrawerEntry(Icons.Default.Settings, "Настройки", Screen.Settings.route),
 )
 

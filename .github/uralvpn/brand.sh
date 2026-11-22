@@ -105,8 +105,6 @@ cp "$HERE/src/UralTools.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/bg/UralTo
 cp "$HERE/src/UralExpiryWork.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/bg/UralExpiryWork.kt"
 cp "$HERE/src/UralWatchdog.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/bg/UralWatchdog.kt"
 cp "$HERE/src/UralBackup.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/bg/UralBackup.kt"
-mkdir -p "$SFA/app/src/main/java/io/nekohasekai/sfa/compose/screen/stats"
-cp "$HERE/src/UralStatsScreen.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/compose/screen/stats/UralStatsScreen.kt"
 # Short settings list (replaces the SFA SettingsScreen, same package and signature)
 cp "$HERE/src/UralSettingsScreen.kt" "$SFA/app/src/main/java/io/nekohasekai/sfa/compose/screen/settings/SettingsScreen.kt"
 python3 -I - "$SFA" <<'PY'
@@ -176,6 +174,3 @@ python3 -I "$HERE/patch_rusapps.py" "$SFA"
 
 # Dead-tunnel watchdog: checks traffic through the VPN on network change, screen unlock and every 2 minutes.
 python3 -I "$HERE/patch_watchdog.py" "$SFA"
-
-# App traffic stats screen ("Трафик по приложениям").
-python3 -I "$HERE/patch_stats.py" "$SFA"

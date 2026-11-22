@@ -76,6 +76,7 @@ fun SettingsScreen(navController: NavController) {
     var versionTaps by remember { mutableStateOf(0) }
     var alwaysOn by remember { mutableStateOf(false to false) }
     var dnsMode by remember { mutableStateOf(UralTools.dnsMode) }
+    var ipv6Enabled by remember { mutableStateOf(UralTools.ipv6Enabled) }
     var dnsCustom by remember { mutableStateOf(UralTools.dnsCustom) }
     var showDnsDialog by remember { mutableStateOf(false) }
     var routingTarget by remember { mutableStateOf<String?>(null) }
@@ -323,6 +324,28 @@ fun SettingsScreen(navController: NavController) {
             )
         }
 
+        ListItem(
+            headlineContent = { Text("IPv6 в туннеле", style = MaterialTheme.typography.bodyLarge) },
+            supportingContent = { Text(if (ipv6Enabled) "Включён" else "Выключен (рекомендуется)") },
+            leadingContent = {
+                Icon(Icons.Outlined.Dns, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            },
+            trailingContent = {
+                Switch(
+                    checked = ipv6Enabled,
+                    onCheckedChange = { value ->
+                        ipv6Enabled = value
+                        UralTools.ipv6Enabled = value
+                        scope.launch {
+                            val ok = UralTools.refreshNow()
+                            UralTools.toast(if (ok) "Настройка сохранена, подписка обновлена" else "Настройка сохранена")
+                        }
+                    },
+                )
+            },
+            modifier = Modifier.padding(horizontal = 16.dp).clip(RoundedCornerShape(12.dp)),
+            colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        )
         ListItem(
             headlineContent = { Text("Маршрутизация", style = MaterialTheme.typography.bodyLarge) },
             supportingContent = { Text("Свои сайты напрямую или всегда через VPN") },
