@@ -125,17 +125,17 @@ class HTTPClient : Closeable {
         }
     }
 
-    // The subscription is fetched outside the tunnel first: a dead location then cannot lock the
-    // profile, and an update does not depend on the tunnel at all. The tunnel is the fallback, for
-    // networks where the panel's domain is blocked on the way out; a third try covers a lost packet.
+    // The subscription goes through the tunnel first: in Russia the panel's domain is often blocked
+    // on the way out, and the tunnel is the usual working path. The plain connection outside the
+    // tunnel is the fallback, for a tunnel stuck on a dead location; a third try covers a lost packet.
     private fun fetchSubscription(url: String, userAgent: String): String {
         var lastError: Throwable? = null
         for (attempt in 0 until 3) {
             try {
-                return if (attempt == 1) fetch(url, userAgent) else fetchOutside(url, userAgent)
+                return if (attempt == 1) fetchOutside(url, userAgent) else fetch(url, userAgent)
             } catch (error: Throwable) {
                 lastError = error
-                Log.w(TAG, "subscription attempt ${attempt + 1} (${if (attempt == 1) "tunnel" else "outside"})", error)
+                Log.w(TAG, "subscription attempt ${attempt + 1} (${if (attempt == 1) "outside" else "tunnel"})", error)
                 if (attempt < 2 && android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
                     Thread.sleep(400)
                 }
