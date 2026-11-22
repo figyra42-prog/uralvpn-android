@@ -175,15 +175,20 @@ fun UralHomeScreen(
         }
     }
 
-    // "Updated N locations" pop-up message after the subscription refresh (like in the old app).
-    // A Toast disappears by itself (about 3.5 s); the key is not reset, so nothing cancels it.
-    val toastContext = LocalContext.current
+    // "Updated N locations" after the subscription refresh: a large card at the top of the list with
+    // the list scrolled to it — a small system toast was easy to miss.
+    var updatedBanner by remember { mutableStateOf("") }
     LaunchedEffect(uiState.updatedProfileId) {
         val id = uiState.updatedProfileId ?: return@LaunchedEffect
         val path = uiState.profiles.firstOrNull { it.id == id }?.typed?.path.orEmpty()
         if (path.isEmpty()) return@LaunchedEffect
         val count = (withContext(Dispatchers.IO) { readSelectorNames(path) }.size - 1).coerceAtLeast(0)
-        android.widget.Toast.makeText(toastContext, ural_updatedText(count), android.widget.Toast.LENGTH_LONG).show()
+        updatedBanner = ural_updatedText(count)
+    }
+    LaunchedEffect(updatedBanner) {
+        if (updatedBanner.isEmpty()) return@LaunchedEffect
+        delay(4000)
+        updatedBanner = ""
     }
 
     var descriptions by remember(profileId) { mutableStateOf(emptyMap<String, String>()) }
@@ -326,6 +331,9 @@ fun UralHomeScreen(
     }
 
     val listState = rememberLazyListState()
+    LaunchedEffect(updatedBanner) {
+        if (updatedBanner.isNotEmpty()) listState.animateScrollToItem(0)
+    }
     var panelBottom by remember { mutableFloatStateOf(0f) }
     val scaffoldPadding = LocalScaffoldPadding.current
     LazyColumn(
@@ -334,6 +342,9 @@ fun UralHomeScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 16.dp, bottom = if (showStatusBar) 84.dp else 24.dp),
     ) {
+        if (updatedBanner.isNotEmpty()) {
+            item(key = "updated-banner") { UralUpdatedBanner(updatedBanner) }
+        }
         item(key = "connect") {
             UralConnectButton(
                 isOn = serviceStatus == Status.Started || serviceStatus == Status.Starting,
@@ -877,6 +888,24 @@ private fun raisedBrush(base: Color): Brush =
             Color(red = base.red * 0.88f, green = base.green * 0.88f, blue = base.blue * 0.88f, alpha = base.alpha),
         ),
     )
+
+@Composable
+private fun UralUpdatedBanner(text: String) {
+    Surface(
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 18.dp),
+        )
+    }
+}
 
 private fun ural_updatedText(n: Int): String {
     val m10 = n % 10
