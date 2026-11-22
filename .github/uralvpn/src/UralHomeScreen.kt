@@ -395,6 +395,16 @@ fun UralHomeScreen(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            if (serviceStatus == Status.Started && !testing) {
+                // Live speed: the first thing a user checks to see the tunnel actually carries traffic.
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = "↓ ${uiState.downlink}   ↑ ${uiState.uplink}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                )
+            }
             Spacer(Modifier.height(12.dp))
         }
         info?.let { value ->
