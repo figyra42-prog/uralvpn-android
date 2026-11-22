@@ -105,8 +105,8 @@ class HTTPClient : Closeable {
             java.net.URL(url).openConnection()
         } as java.net.HttpURLConnection
         try {
-            connection.connectTimeout = 15_000
-            connection.readTimeout = 30_000
+            connection.connectTimeout = 8_000
+            connection.readTimeout = 12_000
             connection.instanceFollowRedirects = true
             connection.setRequestProperty("User-Agent", userAgent)
             if (isSubscriptionHost(url)) {
