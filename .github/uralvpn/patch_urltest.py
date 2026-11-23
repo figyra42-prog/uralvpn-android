@@ -25,7 +25,7 @@ retry_old = "delay, testErr := urlTestLinks(testCtx, links, detour) //H"
 retry_new = """var delay uint16 //UralVPN: one retry, own limit per try
 \t\t\t\t\tvar testErr error
 \t\t\t\t\tfor attempt := 0; attempt < 2; attempt++ {
-\t\t\t\t\t\tattemptCtx, attemptCancel := context.WithTimeout(testCtx, 7*time.Second)
+\t\t\t\t\t\tattemptCtx, attemptCancel := context.WithTimeout(testCtx, 10*time.Second)
 \t\t\t\t\t\tdelay, testErr = urlTestLinks(attemptCtx, links, detour)
 \t\t\t\t\t\tattemptCancel()
 \t\t\t\t\t\tif testErr == nil || testCtx.Err() != nil {
