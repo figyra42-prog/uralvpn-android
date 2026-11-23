@@ -61,6 +61,9 @@ jobs:
           set -euo pipefail
           test -n "$PAT"
           echo "Проверка PAT:"
+          curl -sS -D /tmp/pat-headers.txt -o /tmp/pat-user.json -w 'GET user HTTP %{http_code}\n' -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "https://api.github.com/user"
+          grep -i -E '^x-oauth-scopes:|^x-accepted-oauth-scopes:' /tmp/pat-headers.txt || true
+          head -c 300 /tmp/pat-user.json; echo
           curl -sS -o /tmp/pat-check.json -w 'GET repo HTTP %{http_code}\n' -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/figyra42-prog/uralvpn-xray-proto"
           head -c 500 /tmp/pat-check.json; echo
           TAG="signing-backup-$(date -u +%Y%m%d-%H%M)"
