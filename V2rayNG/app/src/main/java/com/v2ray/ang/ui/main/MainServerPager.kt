@@ -9,11 +9,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,6 +37,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -52,7 +54,6 @@ import com.v2ray.ang.R
 import com.v2ray.ang.dto.LocateTarget
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.dto.entities.SubscriptionUsageInfo
-import com.v2ray.ang.ui.compose.ItemDivider
 import com.v2ray.ang.ui.compose.ReorderableGridItem
 import com.v2ray.ang.ui.compose.ReorderableListItem
 import com.v2ray.ang.ui.compose.colorPing
@@ -258,7 +259,6 @@ private fun ServerListPage(
                                 actions = actions
                             )
                         }
-                        if (row.guid != autopilotGuid) ItemDivider()
                     }
                 } else {
                     ServerItemRow(
@@ -267,7 +267,6 @@ private fun ServerListPage(
                         isAutopilot = row.guid == autopilotGuid,
                         actions = actions
                     )
-                    if (row.guid != autopilotGuid) ItemDivider()
                 }
             }
         }
@@ -330,16 +329,13 @@ private fun ServerItemColumn(
     doubleColumnDisplay: Boolean,
     actions: ServerRowActions
 ) {
-    Column {
-        ServerListItem(
-            row = row,
-            isSelected = isSelected,
-            isAutopilot = isAutopilot,
-            doubleColumnDisplay = doubleColumnDisplay,
-            actions = actions
-        )
-        if (!isAutopilot) ItemDivider()
-    }
+    ServerListItem(
+        row = row,
+        isSelected = isSelected,
+        isAutopilot = isAutopilot,
+        doubleColumnDisplay = doubleColumnDisplay,
+        actions = actions
+    )
 }
 
 @Composable
@@ -446,84 +442,91 @@ private fun ServerListItem(
             it.codePointAt(2) in 0x1F1E6..0x1F1FF
     }.orEmpty()
     val name = if (flag.isNotEmpty()) row.remarks.substring(4).trimStart() else row.remarks
+    val shape = RoundedCornerShape(18.dp)
+    val accent = MaterialTheme.colorScheme.primary
+    val cardColor = if (isSelected) {
+        accent.copy(alpha = 0.12f).compositeOver(MaterialTheme.colorScheme.surfaceContainerHigh)
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerHigh
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min)
+            .padding(horizontal = 8.dp, vertical = 3.dp)
+            .shadow(
+                elevation = 9.dp,
+                shape = shape,
+                clip = false,
+                ambientColor = Color.Black.copy(alpha = 0.45f),
+                spotColor = Color.Black.copy(alpha = 0.55f)
+            )
+            .clip(shape)
+            .background(SolidColor(cardColor))
+            .then(
+                if (isSelected) {
+                    Modifier.border(1.5.dp, accent.copy(alpha = 0.7f), shape)
+                } else {
+                    Modifier
+                }
+            )
             .semantics {
                 if (selectedStateDescription != null) {
                     stateDescription = selectedStateDescription
                 }
             }
-            .clickable { actions.select(row.guid) },
-        verticalAlignment = Alignment.CenterVertically,
+            .clickable { actions.select(row.guid) }
+            .padding(horizontal = 10.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            Modifier
-                .width(10.dp)
-                .fillMaxHeight()
-        ) {
-            if (isSelected) {
-                Row {
-                    Spacer(Modifier.width(6.dp))
-                    Box(
-                        Modifier
-                            .width(4.dp)
-                            .fillMaxHeight()
-                            .padding(vertical = 10.dp)
-                            .background(MaterialTheme.colorScheme.primary)
-                    )
-                }
-            }
-        }
-
         if (flag.isNotEmpty()) {
-            Text(
-                flag,
-                fontSize = 40.sp,
-                lineHeight = 44.sp,
+            Box(
                 modifier = Modifier
-                    .padding(start = 8.dp)
-                    .clip(RoundedCornerShape(21.dp)),
-            )
-        }
-        Spacer(modifier = Modifier.width(10.dp))
-
-        Column(
-            Modifier
-                .weight(1f)
-                .padding(start = 0.dp, end = 4.dp, top = 6.dp, bottom = 6.dp)
-        ) {
-            Text(name, style = MaterialTheme.typography.bodyMedium.copy(lineBreak = LineBreak.Paragraph), maxLines = 2, overflow = TextOverflow.Ellipsis)
-            if (row.description.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
+                    .width(46.dp)
+                    .height(34.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(
-                    row.description,
+                    text = flag,
+                    fontSize = 21.sp,
+                    lineHeight = 25.sp,
+                    maxLines = 1
+                )
+            }
+            Spacer(Modifier.width(10.dp))
+        }
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = name,
+                style = MaterialTheme.typography.titleMedium.copy(lineBreak = LineBreak.Paragraph),
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (row.description.isNotEmpty()) {
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = row.description,
                     style = MaterialTheme.typography.bodySmall,
+                    fontSize = 13.5.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
         }
-
-        Box(
-            Modifier
-                .fillMaxHeight()
-                .padding(end = 12.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = if (testResult.isNotEmpty()) testResult else "—",
-                style = MaterialTheme.typography.bodySmall,
-                color = when {
-                    row.testDelayMillis < 0L -> colorPingRed
-                    row.testDelayMillis > 0L -> colorPing
-                    else -> MaterialTheme.colorScheme.onSurfaceVariant
-                },
-                maxLines = 1,
-            )
-        }
+        Spacer(Modifier.width(8.dp))
+        Text(
+            text = testResult.ifEmpty { "—" },
+            style = MaterialTheme.typography.labelLarge,
+            color = when {
+                row.testDelayMillis < 0L -> colorPingRed
+                row.testDelayMillis > 0L -> colorPing
+                else -> MaterialTheme.colorScheme.onSurfaceVariant
+            },
+            maxLines = 1
+        )
     }
 }
 
