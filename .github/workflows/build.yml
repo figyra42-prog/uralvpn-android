@@ -9,6 +9,7 @@ on:
   push:
     branches:
       - master
+      - xray-proto
 
 permissions:
   contents: write
