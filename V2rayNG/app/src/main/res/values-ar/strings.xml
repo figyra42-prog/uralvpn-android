@@ -238,6 +238,13 @@
     <string name="summary_pref_prefer_ipv6">تفضيل عناوين IPv6 عند حل أسماء النطاقات</string>
 
     <string name="title_pref_remote_dns">DNS البعيد (UDP/TCP/HTTPS/QUIC، اختياري)</string>
+    <string name="title_pref_dns_preset">DNS للمواقع الأجنبية</string>
+    <string name="dns_preset_cloudflare">Cloudflare (1.1.1.1)</string>
+    <string name="dns_preset_google">Google (8.8.8.8)</string>
+    <string name="dns_preset_quad9">Quad9 (9.9.9.9)</string>
+    <string name="dns_preset_adguard">AdGuard مع حظر الإعلانات</string>
+    <string name="dns_preset_custom">خادم مخصص</string>
+    <string name="title_pref_custom_dns">خادم DNS مخصص</string>
     <string name="summary_pref_remote_dns" translatable="false">DNS</string>
 
     <string name="title_pref_vpn_dns">VPN DNS (IPv4/IPv6 فقط)</string>

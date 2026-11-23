@@ -36,6 +36,7 @@ import com.v2ray.ang.R
 import com.v2ray.ang.extension.toastError
 import com.v2ray.ang.handler.AlwaysOnVpnState
 import com.v2ray.ang.handler.AppLocaleManager
+import com.v2ray.ang.handler.DnsPreset
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.MmkvManager.rememberMmkvBool
 import com.v2ray.ang.handler.MmkvManager.rememberMmkvString
@@ -173,6 +174,9 @@ fun SettingsScreen(
     var sniffingEnabled by rememberMmkvBool(AppConfig.PREF_SNIFFING_ENABLED, true)
     var routeOnlyEnabled by rememberMmkvBool(AppConfig.PREF_ROUTE_ONLY_ENABLED, false)
     var remoteDns by rememberMmkvString(AppConfig.PREF_REMOTE_DNS, "")
+    var dnsCustomSelected by rememberSaveable {
+        mutableStateOf(DnsPreset.keyFor(remoteDns) == DnsPreset.CUSTOM)
+    }
     var domesticDns by rememberMmkvString(AppConfig.PREF_DOMESTIC_DNS, "")
     var dnsHosts by rememberMmkvString(AppConfig.PREF_DNS_HOSTS, "")
     var coreLogLevel by rememberMmkvString(AppConfig.PREF_LOGLEVEL, "warning")
@@ -211,6 +215,20 @@ fun SettingsScreen(
     val observatoryLeastLoadMethodValues = stringArrayResource(R.array.observatory_least_load_method).toList()
     val modeEntries = stringArrayResource(R.array.mode_entries).toList()
     val modeValues = stringArrayResource(R.array.mode_value).toList()
+    val dnsPresetEntries = listOf(
+        stringResource(R.string.dns_preset_cloudflare),
+        stringResource(R.string.dns_preset_google),
+        stringResource(R.string.dns_preset_quad9),
+        stringResource(R.string.dns_preset_adguard),
+        stringResource(R.string.dns_preset_custom)
+    )
+    val dnsPresetValues = listOf(
+        DnsPreset.CLOUDFLARE,
+        DnsPreset.GOOGLE,
+        DnsPreset.QUAD9,
+        DnsPreset.ADGUARD,
+        DnsPreset.CUSTOM
+    )
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -323,6 +341,32 @@ fun SettingsScreen(
                     checked = preferIpv6,
                     onCheckedChange = { preferIpv6 = it }
                 )
+                SettingsListItem(
+                    title = stringResource(R.string.title_pref_dns_preset),
+                    entries = dnsPresetEntries,
+                    values = dnsPresetValues,
+                    selectedValue = if (dnsCustomSelected) {
+                        DnsPreset.CUSTOM
+                    } else {
+                        DnsPreset.keyFor(remoteDns)
+                    },
+                    onSelected = { key ->
+                        if (key == DnsPreset.CUSTOM) {
+                            dnsCustomSelected = true
+                        } else {
+                            DnsPreset.addressFor(key)?.let { remoteDns = it }
+                            dnsCustomSelected = false
+                        }
+                        localDns = true
+                    }
+                )
+                if (dnsCustomSelected) {
+                    SettingsEditItem(
+                        title = stringResource(R.string.title_pref_custom_dns),
+                        value = remoteDns,
+                        onValueChanged = { remoteDns = it }
+                    )
+                }
                 SettingsSwitchItem(
                     title = stringResource(R.string.title_pref_local_dns_enabled),
                     summary = stringResource(R.string.summary_pref_local_dns_enabled),
@@ -475,11 +519,7 @@ fun SettingsScreen(
                     enabled = effectiveLocalProxy,
                     onCheckedChange = { socksEnableUdp = it }
                 )
-                SettingsEditItem(
-                    title = stringResource(R.string.title_pref_remote_dns),
-                    value = remoteDns,
-                    onValueChanged = { remoteDns = it }
-                )
+                // Remote DNS is selected in the VPN settings group above.
                 SettingsEditItem(
                     title = stringResource(R.string.title_pref_domestic_dns),
                     value = domesticDns,

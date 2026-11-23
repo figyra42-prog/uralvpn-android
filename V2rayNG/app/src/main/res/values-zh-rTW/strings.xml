@@ -238,6 +238,13 @@
     <string name="summary_pref_prefer_ipv6">解析網域名稱時優先使用 IPv6 位址</string>
 
     <string name="title_pref_remote_dns">遠端 DNS（UDP/TCP/HTTPS/QUIC，可選）</string>
+    <string name="title_pref_dns_preset">國外網站 DNS</string>
+    <string name="dns_preset_cloudflare">Cloudflare (1.1.1.1)</string>
+    <string name="dns_preset_google">Google (8.8.8.8)</string>
+    <string name="dns_preset_quad9">Quad9 (9.9.9.9)</string>
+    <string name="dns_preset_adguard">AdGuard，攔截廣告</string>
+    <string name="dns_preset_custom">自訂伺服器</string>
+    <string name="title_pref_custom_dns">自訂 DNS 伺服器</string>
     <string name="summary_pref_remote_dns" translatable="false">DNS</string>
 
     <string name="title_pref_vpn_dns">VPN DNS（僅支援 IPv4/IPv6）</string>

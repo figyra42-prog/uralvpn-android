@@ -238,6 +238,13 @@
     <string name="summary_pref_prefer_ipv6">Ưu tiên địa chỉ IPv6 khi phân giải tên miền</string>
 
     <string name="title_pref_remote_dns">DNS từ xa (UDP/TCP/HTTPS/QUIC) (không bắt buộc)</string>
+    <string name="title_pref_dns_preset">DNS cho trang nước ngoài</string>
+    <string name="dns_preset_cloudflare">Cloudflare (1.1.1.1)</string>
+    <string name="dns_preset_google">Google (8.8.8.8)</string>
+    <string name="dns_preset_quad9">Quad9 (9.9.9.9)</string>
+    <string name="dns_preset_adguard">AdGuard có chặn quảng cáo</string>
+    <string name="dns_preset_custom">Máy chủ tùy chỉnh</string>
+    <string name="title_pref_custom_dns">Máy chủ DNS tùy chỉnh</string>
     <string name="summary_pref_remote_dns" translatable="false">DNS</string>
 
     <string name="title_pref_vpn_dns">VPN DNS (chỉ IPv4/IPv6)</string>
