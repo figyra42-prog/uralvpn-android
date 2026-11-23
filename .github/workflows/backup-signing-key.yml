@@ -1,0 +1,50 @@
+name: Backup signing key
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build encrypted backup
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KS_KEY_PASS: ${{ secrets.ANDROID_KEY_PASS }}
+          BACKUP_PASS: ${{ secrets.SIGNING_BACKUP_PASS }}
+        run: |
+          set -euo pipefail
+          test -n "$KS_B64"
+          test -n "$BACKUP_PASS"
+          mkdir -p /tmp/signing-backup
+          echo "$KS_B64" | base64 -d > /tmp/signing-backup/release.keystore
+          printf '%s\n' "$KS_PASS" > /tmp/signing-backup/pass.txt
+          printf '%s\n' "$KS_ALIAS" > /tmp/signing-backup/alias.txt
+          printf '%s\n' "$KS_KEY_PASS" > /tmp/signing-backup/key-pass.txt
+          cat > /tmp/signing-backup/README.txt <<'EOF2'
+          UralVPN signing key backup.
+          release.keystore — signing keystore
+          pass.txt — keystore password
+          alias.txt — key alias
+          key-pass.txt — key password
+          Encrypted with AES-256-CBC; password is SIGNING_BACKUP_PASS in uralvpn-android secrets.
+          EOF2
+          tar -C /tmp/signing-backup -czf /tmp/signing-backup.tar.gz .
+          openssl enc -aes-256-cbc -a -pbkdf2 -iter 200000 -salt -pass env:BACKUP_PASS -in /tmp/signing-backup.tar.gz -out /tmp/UralVPN-signing-backup.enc
+          sha256sum /tmp/UralVPN-signing-backup.enc
+      - name: Upload to private repo
+        env:
+          PAT: ${{ secrets.XRAY_REPO_PAT }}
+        run: |
+          set -euo pipefail
+          test -n "$PAT"
+          TAG="signing-backup-$(date -u +%Y%m%d-%H%M)"
+          API="https://api.github.com/repos/figyra42-prog/uralvpn-xray-proto"
+          RID=$(curl -sS -X POST -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "$API/releases" -d "{\"tag_name\":\"$TAG\",\"name\":\"UralVPN signing key backup $TAG\",\"draft\":true,\"prerelease\":true}" | python3 -c "import sys,json;print(json.load(sys.stdin)['id'])")
+          curl -sS -X POST -H "Authorization: Bearer $PAT" -H "Content-Type: application/octet-stream" --data-binary @/tmp/UralVPN-signing-backup.enc "https://uploads.github.com/repos/figyra42-prog/uralvpn-xray-proto/releases/$RID/assets?name=UralVPN-signing-backup.enc" > /dev/null
+          echo "Зашифрованный бэкап загружен в приватный черновик: $TAG"
