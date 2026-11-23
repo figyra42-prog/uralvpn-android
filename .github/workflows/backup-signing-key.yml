@@ -60,6 +60,9 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$PAT"
+          echo "Проверка PAT:"
+          curl -sS -o /tmp/pat-check.json -w 'GET repo HTTP %{http_code}\n' -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/figyra42-prog/uralvpn-xray-proto"
+          head -c 500 /tmp/pat-check.json; echo
           TAG="signing-backup-$(date -u +%Y%m%d-%H%M)"
           API="https://api.github.com/repos/figyra42-prog/uralvpn-xray-proto"
           RESP=$(curl -sS -X POST -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "$API/releases" -d "{\"tag_name\":\"$TAG\",\"name\":\"UralVPN signing key backup $TAG\",\"draft\":true,\"prerelease\":true}")
