@@ -184,6 +184,17 @@
     <string name="title_system_vpn_settings">Sistem VPN tənzimləmələri</string>
     <string name="summary_system_vpn_settings">Bu cihaz dəstəkləyirsə, Həmişə açıq VPN-i konfiqurasiya etmək üçün Android VPN tənzimləmələrini açın.</string>
     <string name="toast_system_vpn_settings_unavailable">Sistem VPN tənzimləmələri əlçatmazdır.</string>
+    <string name="title_pref_kill_switch">Sızma qorunması</string>
+    <string name="summary_pref_kill_switch">VPN-i söndürməzdən əvvəl təsdiq istə. Tam qorunma üçün Android ayarlarında «Həmişə açıq VPN» və «VPN olmadan bağlantıları blokla» seçimlərini aktivləşdir.</string>
+    <string name="summary_pref_kill_switch_lockdown">Sistem qorunması aktivdir: VPN olmadan internet bloklanır.</string>
+    <string name="title_pref_always_on_vpn">Həmişə açıq VPN</string>
+    <string name="summary_always_on_vpn_off">Aktiv deyil. Android ayarlarını açın və UralVPN üçün həmişə açıq VPN-i aktivləşdirin.</string>
+    <string name="summary_always_on_vpn_on">Aktivdir: Android nasazlıqdan və yenidən başlatmadan sonra VPN-i özü qaldırır.</string>
+    <string name="summary_always_on_vpn_lockdown">Bloklama ilə aktivdir: VPN olmadan internet işləmir.</string>
+    <string name="summary_always_on_vpn_other">Həmişə açıq VPN başqa tətbiq üçün qurulub.</string>
+    <string name="dialog_kill_switch_title">VPN söndürülsün?</string>
+    <string name="dialog_kill_switch_message">Sızma qorunması aktivdir: söndürdükdən sonra trafik VPN-siz birbaşa gedəcək.</string>
+    <string name="action_disconnect">Söndür</string>
 
 
     <string name="subscription_updater_job_tips">Tapşırıq arxa fonda icra olunacaq və gedişat məlumatı bildirişdə göstəriləcək.</string>

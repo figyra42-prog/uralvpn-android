@@ -33,9 +33,12 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.v2ray.ang.R
 import com.v2ray.ang.dto.entities.ProfileItem
+import com.v2ray.ang.ui.compose.ConfirmDialog
 import com.v2ray.ang.ui.compose.QRCodeDialog
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -68,6 +71,7 @@ fun MainScreen(
         mutableStateOf<ServerDeleteTarget?>(null)
     }
 
+    var showStopConfirm by rememberSaveable { mutableStateOf(false) }
     var shareTarget by remember { mutableStateOf<Triple<String, ProfileItem, Boolean>?>(null) }
     val removeServer: (String, String) -> Unit = { guid, profileName ->
         if (confirmRemove) {
@@ -100,6 +104,10 @@ fun MainScreen(
         }
     }
 
+    LaunchedEffect(isRunning) {
+        if (!isRunning) showStopConfirm = false
+    }
+
     val latestGroups by rememberUpdatedState(groups)
 
     LaunchedEffect(pagerState) {
@@ -127,6 +135,17 @@ fun MainScreen(
         onDismissRemove = { showRemoveConfirm = null },
         onConfirmRemove = { guid -> showRemoveConfirm = null; onAction(MainAction.RemoveServer(guid)) }
     )
+
+    if (showStopConfirm) {
+        ConfirmDialog(
+            title = stringResource(R.string.dialog_kill_switch_title),
+            message = stringResource(R.string.dialog_kill_switch_message),
+            confirmText = stringResource(R.string.action_disconnect),
+            dismissText = stringResource(R.string.action_cancel),
+            onConfirm = { onAction(MainAction.ToggleService) },
+            onDismiss = { showStopConfirm = false }
+        )
+    }
 
     if (shareTarget != null) {
         val (guid, profile, more) = shareTarget!!
@@ -206,7 +225,13 @@ fun MainScreen(
                 ) {
                     ConnectButton(
                         isRunning = isRunning,
-                        onClick = { onAction(MainAction.ToggleService) },
+                        onClick = {
+                            if (isRunning && uiState.killSwitch) {
+                                showStopConfirm = true
+                            } else {
+                                onAction(MainAction.ToggleService)
+                            }
+                        },
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(

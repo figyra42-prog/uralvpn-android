@@ -184,6 +184,17 @@
     <string name="title_system_vpn_settings">Cài đặt VPN hệ thống</string>
     <string name="summary_system_vpn_settings">Mở cài đặt VPN của Android để cấu hình VPN luôn bật, nếu thiết bị này hỗ trợ.</string>
     <string name="toast_system_vpn_settings_unavailable">Không có cài đặt VPN hệ thống.</string>
+    <string name="title_pref_kill_switch">Bảo vệ chống rò rỉ</string>
+    <string name="summary_pref_kill_switch">Hỏi xác nhận trước khi ngắt VPN. Để bảo vệ đầy đủ, hãy bật «VPN luôn bật» và «Chặn kết nối khi không có VPN» trong cài đặt Android.</string>
+    <string name="summary_pref_kill_switch_lockdown">Bảo vệ hệ thống đang bật: không có VPN thì không có internet.</string>
+    <string name="title_pref_always_on_vpn">VPN luôn bật</string>
+    <string name="summary_always_on_vpn_off">Chưa bật. Mở cài đặt Android và bật VPN luôn bật cho UralVPN.</string>
+    <string name="summary_always_on_vpn_on">Đã bật: Android tự khởi động VPN sau sự cố và khởi động lại.</string>
+    <string name="summary_always_on_vpn_lockdown">Đã bật kèm khóa: không có VPN thì internet không hoạt động.</string>
+    <string name="summary_always_on_vpn_other">VPN luôn bật đang được cấu hình cho ứng dụng khác.</string>
+    <string name="dialog_kill_switch_title">Ngắt VPN?</string>
+    <string name="dialog_kill_switch_message">Bảo vệ chống rò rỉ đang bật: sau khi ngắt, lưu lượng sẽ đi trực tiếp, không qua VPN.</string>
+    <string name="action_disconnect">Ngắt</string>
 
 
     <string name="subscription_updater_job_tips">Tác vụ sẽ chạy trong nền và thông tin tiến độ sẽ hiển thị trong thông báo.</string>

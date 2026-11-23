@@ -184,6 +184,17 @@
     <string name="title_system_vpn_settings">سامووا VPN سیستوم</string>
     <string name="summary_system_vpn_settings">سامووا VPN من Android ن وا کۊنین سی ساموو کردن VPN همیشه ره وست، ٱر دسگا زس پشتیبانی اکونه.</string>
     <string name="toast_system_vpn_settings_unavailable">سامووا VPN سیستوم من دسرس نین.</string>
+    <string name="title_pref_kill_switch">محافظت از نشت</string>
+    <string name="summary_pref_kill_switch">قبل از قطع VPN تأیید بگیر. برای محافظت کامل، در تنظیمات Android «VPN همیشه روشن» و «بستن اتصال بی VPN» را فعال کن.</string>
+    <string name="summary_pref_kill_switch_lockdown">محافظت سیستم فعاله: بی VPN اینترنت بسته می‌شه.</string>
+    <string name="title_pref_always_on_vpn">VPN همیشه روشن</string>
+    <string name="summary_always_on_vpn_off">فعال نیس. تنظیمات Android را باز کن و برای UralVPN VPN همیشه روشن را فعال کن.</string>
+    <string name="summary_always_on_vpn_on">فعاله: Android بعد از خرابی و ریستارت خودش VPN را بالا می‌آورد.</string>
+    <string name="summary_always_on_vpn_lockdown">با قفل فعاله: بی VPN اینترنت کار نمی‌کند.</string>
+    <string name="summary_always_on_vpn_other">VPN همیشه روشن برای برنامه دیگری تنظیم شده.</string>
+    <string name="dialog_kill_switch_title">VPN قطع بشه؟</string>
+    <string name="dialog_kill_switch_message">محافظت از نشت فعاله: بعد از قطع، ترافیک مستقیم و بی VPN می‌ره.</string>
+    <string name="action_disconnect">قطع</string>
 
 
     <string name="subscription_updater_job_tips">ای کار من پس زمینه ره اوۊفته وو پؽش رئڌن هو منه وارسۊوی نشووݩ داڌه ابۊ.</string>

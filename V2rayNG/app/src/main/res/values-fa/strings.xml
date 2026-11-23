@@ -184,6 +184,17 @@
     <string name="title_system_vpn_settings">تنظیمات VPN سیستم</string>
     <string name="summary_system_vpn_settings">تنظیمات VPN در Android را برای پیکربندی VPN همیشه‌روشن باز کنید، اگر دستگاه از آن پشتیبانی می‌کند.</string>
     <string name="toast_system_vpn_settings_unavailable">تنظیمات VPN سیستم در دسترس نیست.</string>
+    <string name="title_pref_kill_switch">محافظت در برابر نشت</string>
+    <string name="summary_pref_kill_switch">پیش از قطع VPN تأیید بگیرید. برای محافظت کامل، در تنظیمات Android «VPN همیشه روشن» و «مسدود کردن اتصال بدون VPN» را فعال کنید.</string>
+    <string name="summary_pref_kill_switch_lockdown">محافظت سیستم فعال است: بدون VPN اینترنت مسدود می‌شود.</string>
+    <string name="title_pref_always_on_vpn">VPN همیشه روشن</string>
+    <string name="summary_always_on_vpn_off">فعال نیست. تنظیمات Android را باز کنید و VPN همیشه روشن را برای UralVPN فعال کنید.</string>
+    <string name="summary_always_on_vpn_on">فعال است: Android پس از خطا و راه‌اندازی مجدد VPN را خودکار بالا می‌آورد.</string>
+    <string name="summary_always_on_vpn_lockdown">با قفل فعال است: بدون VPN اینترنت کار نمی‌کند.</string>
+    <string name="summary_always_on_vpn_other">VPN همیشه روشن برای برنامه دیگری تنظیم شده است.</string>
+    <string name="dialog_kill_switch_title">قطع VPN؟</string>
+    <string name="dialog_kill_switch_message">محافظت در برابر نشت فعال است: پس از قطع، ترافیک مستقیماً و بدون VPN می‌رود.</string>
+    <string name="action_disconnect">قطع</string>
 
 
     <string name="subscription_updater_job_tips">این کار در پس‌زمینه اجرا می‌شود و پیشرفت آن در اعلان نمایش داده خواهد شد.</string>

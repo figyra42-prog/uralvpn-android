@@ -184,6 +184,17 @@
     <string name="title_system_vpn_settings">系統 VPN 設定</string>
     <string name="summary_system_vpn_settings">開啟 Android VPN 設定，設定永遠開啟的 VPN（若此裝置支援）。</string>
     <string name="toast_system_vpn_settings_unavailable">系統 VPN 設定無法使用。</string>
+    <string name="title_pref_kill_switch">防洩漏保護</string>
+    <string name="summary_pref_kill_switch">中斷 VPN 前詢問確認。若要完整保護，請在 Android 設定中啟用「永遠開啟的 VPN」和「無 VPN 時封鎖連線」。</string>
+    <string name="summary_pref_kill_switch_lockdown">系統保護已開啟：沒有 VPN 時無法存取網際網路。</string>
+    <string name="title_pref_always_on_vpn">永遠開啟的 VPN</string>
+    <string name="summary_always_on_vpn_off">未啟用。請開啟 Android 設定並為 UralVPN 啟用永遠開啟的 VPN。</string>
+    <string name="summary_always_on_vpn_on">已啟用：Android 會在故障和重新開機後自動啟動 VPN。</string>
+    <string name="summary_always_on_vpn_lockdown">已啟用並鎖定：沒有 VPN 時網際網路無法使用。</string>
+    <string name="summary_always_on_vpn_other">永遠開啟的 VPN 已設定給其他應用程式。</string>
+    <string name="dialog_kill_switch_title">中斷 VPN？</string>
+    <string name="dialog_kill_switch_message">防洩漏保護已開啟：中斷後流量將直接連線，不經過 VPN。</string>
+    <string name="action_disconnect">中斷</string>
 
 
     <string name="subscription_updater_job_tips">任務將在背景執行，通知中會顯示進度資訊。</string>

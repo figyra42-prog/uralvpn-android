@@ -34,6 +34,7 @@ import com.v2ray.ang.AppConfig
 import com.v2ray.ang.AppConfig.VPN
 import com.v2ray.ang.R
 import com.v2ray.ang.extension.toastError
+import com.v2ray.ang.handler.AlwaysOnVpnState
 import com.v2ray.ang.handler.AppLocaleManager
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.MmkvManager.rememberMmkvBool
@@ -62,7 +63,7 @@ class SettingsActivity : BaseComponentActivity() {
         super.onCreate(savedInstanceState)
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                viewModel.refreshSystemVpnSettingsAvailability()
+                viewModel.refreshSystemVpnSettings()
             }
         }
     }
@@ -84,8 +85,10 @@ class SettingsActivity : BaseComponentActivity() {
 
     @Composable
     override fun ScreenContent() {
+        val alwaysOnState by viewModel.alwaysOnState.collectAsStateWithLifecycle()
         SettingsScreen(
             viewModel = viewModel,
+            alwaysOnState = alwaysOnState,
             onBackClick = { finish() },
             onModeHelpClicked = { Utils.openUri(this, AppConfig.APP_WIKI_MODE) },
             onSystemVpnSettingsClicked = ::openSystemVpnSettings
@@ -97,6 +100,7 @@ class SettingsActivity : BaseComponentActivity() {
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel,
+    alwaysOnState: AlwaysOnVpnState,
     onBackClick: () -> Unit,
     onModeHelpClicked: () -> Unit,
     onSystemVpnSettingsClicked: () -> Unit
@@ -113,6 +117,7 @@ fun SettingsScreen(
     var advancedSettingsExpanded by rememberSaveable { mutableStateOf(true) }
     var modeSettingsExpanded by rememberSaveable { mutableStateOf(true) }
 
+    var killSwitch by rememberMmkvBool(AppConfig.PREF_KILL_SWITCH, false)
     var localDns by rememberMmkvBool(AppConfig.PREF_LOCAL_DNS_ENABLED, false)
     var fakeDns by rememberMmkvBool(AppConfig.PREF_FAKE_DNS_ENABLED, false)
     var appendHttpProxy by rememberMmkvBool(AppConfig.PREF_APPEND_HTTP_PROXY, false)
@@ -279,6 +284,33 @@ fun SettingsScreen(
                 onExpandedChange = { vpnSettingsExpanded = it }
             )
             if (vpnSettingsExpanded) {
+                SettingsSwitchItem(
+                    title = stringResource(R.string.title_pref_kill_switch),
+                    summary = stringResource(
+                        if (alwaysOnState == AlwaysOnVpnState.LOCKDOWN) {
+                            R.string.summary_pref_kill_switch_lockdown
+                        } else {
+                            R.string.summary_pref_kill_switch
+                        }
+                    ),
+                    checked = killSwitch,
+                    onCheckedChange = { killSwitch = it }
+                )
+                if (systemVpnSettingsAvailable) {
+                    SettingsMenuItem(
+                        title = stringResource(R.string.title_pref_always_on_vpn),
+                        subtitle = stringResource(
+                            when (alwaysOnState) {
+                                AlwaysOnVpnState.LOCKDOWN -> R.string.summary_always_on_vpn_lockdown
+                                AlwaysOnVpnState.ON -> R.string.summary_always_on_vpn_on
+                                AlwaysOnVpnState.OTHER_APP -> R.string.summary_always_on_vpn_other
+                                AlwaysOnVpnState.OFF,
+                                AlwaysOnVpnState.UNAVAILABLE -> R.string.summary_always_on_vpn_off
+                            }
+                        ),
+                        onClick = onSystemVpnSettingsClicked
+                    )
+                }
                 SettingsSwitchItem(
                     title = stringResource(R.string.title_pref_ipv6_enabled),
                     summary = stringResource(R.string.summary_pref_ipv6_enabled),
@@ -614,13 +646,7 @@ fun SettingsScreen(
                     checked = isBooted,
                     onCheckedChange = { isBooted = it }
                 )
-                if (systemVpnSettingsAvailable) {
-                    SettingsMenuItem(
-                        title = stringResource(R.string.title_system_vpn_settings),
-                        subtitle = stringResource(R.string.summary_system_vpn_settings),
-                        onClick = onSystemVpnSettingsClicked
-                    )
-                }
+                // Always-on VPN lives in the VPN settings group above.
                 SettingsEditItem(
                     title = stringResource(R.string.title_pref_delay_test_url),
                     value = delayTestUrl,

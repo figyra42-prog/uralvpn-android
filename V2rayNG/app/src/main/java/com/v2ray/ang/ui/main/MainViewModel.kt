@@ -84,6 +84,7 @@ class MainViewModel(
             selectedGuid = dataSource.getSelectServer(),
             confirmRemove = dataSource.getConfirmRemove(),
             doubleColumnDisplay = dataSource.getDoubleColumnDisplay(),
+            killSwitch = dataSource.getKillSwitch(),
             sortByPing = dataSource.isSortByPingEnabled()
         )
     )
@@ -344,6 +345,7 @@ class MainViewModel(
             it.copy(
                 confirmRemove = dataSource.getConfirmRemove(),
                 doubleColumnDisplay = dataSource.getDoubleColumnDisplay(),
+                killSwitch = dataSource.getKillSwitch(),
                 sortByPing = dataSource.isSortByPingEnabled()
             )
         }

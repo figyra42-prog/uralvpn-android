@@ -184,6 +184,17 @@
     <string name="title_system_vpn_settings">সিস্টেমের VPN সেটিংস</string>
     <string name="summary_system_vpn_settings">ডিভাইসে সমর্থিত হলে সর্বদা চালু VPN কনফিগার করতে Android-এর VPN সেটিংস খুলুন।</string>
     <string name="toast_system_vpn_settings_unavailable">সিস্টেমের VPN সেটিংস উপলভ্য নয়।</string>
+    <string name="title_pref_kill_switch">লিক সুরক্ষা</string>
+    <string name="summary_pref_kill_switch">VPN বন্ধ করার আগে নিশ্চিতকরণ চাইবে। সম্পূর্ণ সুরক্ষার জন্য Android সেটিংসে «সর্বদা চালু VPN» এবং «VPN ছাড়া সংযোগ ব্লক করুন» চালু করুন।</string>
+    <string name="summary_pref_kill_switch_lockdown">সিস্টেম সুরক্ষা চালু: VPN ছাড়া ইন্টারনেট বন্ধ থাকে।</string>
+    <string name="title_pref_always_on_vpn">সর্বদা চালু VPN</string>
+    <string name="summary_always_on_vpn_off">চালু নেই। Android সেটিংস খুলে UralVPN-এর জন্য সর্বদা চালু VPN চালু করুন।</string>
+    <string name="summary_always_on_vpn_on">চালু: ব্যর্থতা ও রিবুটের পরে Android নিজেই VPN চালু করে।</string>
+    <string name="summary_always_on_vpn_lockdown">লকডাউনসহ চালু: VPN ছাড়া ইন্টারনেট কাজ করে না।</string>
+    <string name="summary_always_on_vpn_other">সর্বদা চালু VPN অন্য অ্যাপের জন্য কনফিগার করা।</string>
+    <string name="dialog_kill_switch_title">VPN বন্ধ করবেন?</string>
+    <string name="dialog_kill_switch_message">লিক সুরক্ষা চালু: বন্ধ করার পরে ট্রাফিক VPN ছাড়া সরাসরি যাবে।</string>
+    <string name="action_disconnect">বন্ধ করুন</string>
 
 
     <string name="subscription_updater_job_tips">কাজটি ব্যাকগ্রাউন্ডে চলবে এবং অগ্রগতির তথ্য বিজ্ঞপ্তিতে দেখানো হবে।</string>

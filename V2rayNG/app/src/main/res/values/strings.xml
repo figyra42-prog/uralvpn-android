@@ -185,6 +185,17 @@
     <string name="title_system_vpn_settings">System VPN settings</string>
     <string name="summary_system_vpn_settings">Open Android VPN settings to configure Always-on VPN, if supported by this device.</string>
     <string name="toast_system_vpn_settings_unavailable">System VPN settings are unavailable.</string>
+    <string name="title_pref_kill_switch">Leak protection</string>
+    <string name="summary_pref_kill_switch">Ask for confirmation before disconnecting the VPN. For full protection, enable Always-on VPN and Block connections without VPN in Android settings.</string>
+    <string name="summary_pref_kill_switch_lockdown">System protection is on: without the VPN, internet access is blocked.</string>
+    <string name="title_pref_always_on_vpn">Always-on VPN</string>
+    <string name="summary_always_on_vpn_off">Not enabled. Open Android settings and enable Always-on VPN for UralVPN.</string>
+    <string name="summary_always_on_vpn_on">Enabled: Android starts the VPN after a failure and reboot.</string>
+    <string name="summary_always_on_vpn_lockdown">Enabled with lockdown: internet does not work without the VPN.</string>
+    <string name="summary_always_on_vpn_other">Always-on VPN is configured for another app.</string>
+    <string name="dialog_kill_switch_title">Disconnect VPN?</string>
+    <string name="dialog_kill_switch_message">Leak protection is on: after disconnecting, traffic goes directly without the VPN.</string>
+    <string name="action_disconnect">Disconnect</string>
 
 
     <string name="subscription_updater_job_tips">The task will run in the background, and progress information will be displayed in the notification.</string>

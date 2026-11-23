@@ -185,6 +185,17 @@
     <string name="title_system_vpn_settings">Системные настройки VPN</string>
     <string name="summary_system_vpn_settings">Открыть настройки VPN в Android для включения постоянного VPN-подключения, если устройство его поддерживает</string>
     <string name="toast_system_vpn_settings_unavailable">Системные настройки VPN недоступны.</string>
+    <string name="title_pref_kill_switch">Защита от утечек</string>
+    <string name="summary_pref_kill_switch">Спрашивать подтверждение перед отключением VPN. Для полной защиты включите в Android «Постоянная VPN» и «Блокировать соединения без VPN».</string>
+    <string name="summary_pref_kill_switch_lockdown">Системная защита включена: без VPN интернет заблокирован.</string>
+    <string name="title_pref_always_on_vpn">Постоянная VPN (Always-On)</string>
+    <string name="summary_always_on_vpn_off">Не включена. Откройте настройки Android и включите постоянную VPN для UralVPN.</string>
+    <string name="summary_always_on_vpn_on">Включена: Android сам поднимает VPN после сбоя и перезагрузки.</string>
+    <string name="summary_always_on_vpn_lockdown">Включена с блокировкой: без VPN интернет не работает.</string>
+    <string name="summary_always_on_vpn_other">Постоянная VPN настроена для другого приложения.</string>
+    <string name="dialog_kill_switch_title">Отключить VPN?</string>
+    <string name="dialog_kill_switch_message">Включена защита от утечек: после отключения трафик пойдёт напрямую, без VPN.</string>
+    <string name="action_disconnect">Отключить</string>
 
 
     <string name="subscription_updater_job_tips">Задача будет выполняться в фоновом режиме, информация о ходе выполнения будет отображаться в уведомлении.</string>

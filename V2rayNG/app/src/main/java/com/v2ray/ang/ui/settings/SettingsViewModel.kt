@@ -5,6 +5,8 @@ import android.content.Intent
 import android.provider.Settings
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
+import com.v2ray.ang.handler.AlwaysOnVpn
+import com.v2ray.ang.handler.AlwaysOnVpnState
 import com.v2ray.ang.root.RootManager
 import com.v2ray.ang.ui.base.BaseViewModel
 import kotlinx.coroutines.Dispatchers
@@ -17,10 +19,17 @@ class SettingsViewModel(application: Application) : BaseViewModel(application) {
     private val _systemVpnSettingsAvailable = MutableStateFlow(false)
     val systemVpnSettingsAvailable = _systemVpnSettingsAvailable.asStateFlow()
 
-    suspend fun refreshSystemVpnSettingsAvailability() {
+    private val _alwaysOnState = MutableStateFlow(AlwaysOnVpnState.UNAVAILABLE)
+    val alwaysOnState = _alwaysOnState.asStateFlow()
+
+    suspend fun refreshSystemVpnSettings() {
+        val application = getApplication<Application>()
         _systemVpnSettingsAvailable.value = withContext(Dispatchers.IO) {
             // Android exposes the VPN page, not a direct link to the Always-on VPN switch.
-            Intent(Settings.ACTION_VPN_SETTINGS).resolveActivity(getApplication<Application>().packageManager) != null
+            Intent(Settings.ACTION_VPN_SETTINGS).resolveActivity(application.packageManager) != null
+        }
+        _alwaysOnState.value = withContext(Dispatchers.IO) {
+            AlwaysOnVpn.read(application)
         }
     }
 

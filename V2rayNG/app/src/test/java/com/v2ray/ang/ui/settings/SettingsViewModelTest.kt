@@ -5,6 +5,7 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.provider.Settings
+import com.v2ray.ang.handler.AlwaysOnVpnState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -29,15 +30,16 @@ class SettingsViewModelTest {
         }.use {
             val viewModel = SettingsViewModel(application)
             assertFalse(viewModel.systemVpnSettingsAvailable.value)
-            viewModel.refreshSystemVpnSettingsAvailability()
+            assertEquals(AlwaysOnVpnState.UNAVAILABLE, viewModel.alwaysOnState.value)
+            viewModel.refreshSystemVpnSettings()
             assertFalse(viewModel.systemVpnSettingsAvailable.value)
 
             activity = mock<ComponentName>()
-            viewModel.refreshSystemVpnSettingsAvailability()
+            viewModel.refreshSystemVpnSettings()
             assertTrue(viewModel.systemVpnSettingsAvailable.value)
 
             activity = null
-            viewModel.refreshSystemVpnSettingsAvailability()
+            viewModel.refreshSystemVpnSettings()
             assertFalse(viewModel.systemVpnSettingsAvailable.value)
         }
     }

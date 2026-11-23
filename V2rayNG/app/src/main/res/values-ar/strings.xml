@@ -184,6 +184,17 @@
     <string name="title_system_vpn_settings">إعدادات VPN للنظام</string>
     <string name="summary_system_vpn_settings">فتح إعدادات VPN في Android لإعداد VPN الدائم، إذا كان الجهاز يدعمه.</string>
     <string name="toast_system_vpn_settings_unavailable">إعدادات VPN للنظام غير متاحة.</string>
+    <string name="title_pref_kill_switch">حماية من التسريب</string>
+    <string name="summary_pref_kill_switch">اطلب التأكيد قبل قطع VPN. للحماية الكاملة، فعّل «VPN دائم التشغيل» و«حظر الاتصالات بدون VPN» في إعدادات Android.</string>
+    <string name="summary_pref_kill_switch_lockdown">حماية النظام مفعّلة: بدون VPN لا يعمل الإنترنت.</string>
+    <string name="title_pref_always_on_vpn">VPN دائم التشغيل</string>
+    <string name="summary_always_on_vpn_off">غير مفعّل. افتح إعدادات Android وفعّل VPN دائم التشغيل لتطبيق UralVPN.</string>
+    <string name="summary_always_on_vpn_on">مفعّل: يشغّل Android VPN تلقائياً بعد الأعطال وإعادة التشغيل.</string>
+    <string name="summary_always_on_vpn_lockdown">مفعّل مع الحظر: لا يعمل الإنترنت بدون VPN.</string>
+    <string name="summary_always_on_vpn_other">VPN دائم التشغيل مُعدّ لتطبيق آخر.</string>
+    <string name="dialog_kill_switch_title">قطع VPN؟</string>
+    <string name="dialog_kill_switch_message">حماية التسريب مفعّلة: بعد القطع يمرّ الاتصال مباشرةً بدون VPN.</string>
+    <string name="action_disconnect">قطع</string>
 
 
     <string name="subscription_updater_job_tips">ستعمل المهمة في الخلفية، وسيُعرض تقدمها في الإشعار.</string>

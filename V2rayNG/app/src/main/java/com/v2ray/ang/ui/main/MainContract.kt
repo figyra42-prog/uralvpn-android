@@ -27,6 +27,7 @@ data class MainUiState(
     val confirmRemove: Boolean = false,
     val doubleColumnDisplay: Boolean = false,
     val sortByPing: Boolean = false,
+    val killSwitch: Boolean = false,
     val shareQRCodeBitmap: android.graphics.Bitmap? = null
 )
 
