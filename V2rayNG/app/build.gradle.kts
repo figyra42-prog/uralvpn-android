@@ -1,8 +1,21 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.jaredsburrows.license")
+}
+
+fun getProps(propName: String): String {
+    val propsFile = rootProject.file("local.properties")
+    if (propsFile.exists()) {
+        val props = Properties()
+        props.load(FileInputStream(propsFile))
+        props.getProperty(propName)?.let { return it }
+    }
+    return ""
 }
 
 android {
@@ -39,14 +52,11 @@ android {
     }
 
     signingConfigs {
-        // Fixed key committed to the repo so every CI build has the same signature and can be
-        // updated in place. Beta only — for Play Store use a separate secret keystore.
         create("release") {
-            storeFile = file("keystore/uralvpn-release.p12")
-            storePassword = "uralvpn"
-            keyAlias = "uralvpn"
-            keyPassword = "uralvpn"
-            storeType = "PKCS12"
+            storeFile = file("release.keystore")
+            storePassword = getProps("KEYSTORE_PASS")
+            keyAlias = getProps("ALIAS_NAME")
+            keyPassword = getProps("ALIAS_PASS")
         }
     }
 

@@ -86,12 +86,28 @@ jobs:
         distribution: 'temurin'
         java-version: '21'
 
-    # UralVPN: первая тестовая сборка — debug-подпись, без секретов.
-    # Для релиза в Play Market позже добавить keystore-секреты и вернуть assembleRelease.
     - name: Build APK (debug)
+      env:
+        KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+        KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        KS_KEY_PASS: ${{ secrets.ANDROID_KEY_PASS }}
       run: |
         cd ${{ github.workspace }}/V2rayNG
         echo "sdk.dir=${ANDROID_HOME}" > local.properties
+        if [ -n "$KS_B64" ]; then
+          echo "$KS_B64" | base64 -d > app/release.keystore
+          echo "signing: production key"
+        else
+          cp app/keystore/uralvpn-release.p12 app/release.keystore
+          KS_PASS=uralvpn; KS_ALIAS=uralvpn; KS_KEY_PASS=uralvpn
+          echo "signing: committed beta key (secrets not set)"
+        fi
+        {
+          echo "KEYSTORE_PASS=$KS_PASS"
+          echo "ALIAS_NAME=$KS_ALIAS"
+          echo "ALIAS_PASS=$KS_KEY_PASS"
+        } >> local.properties
         chmod 755 gradlew
         ./gradlew assemblePlaystoreDebug
     
