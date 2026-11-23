@@ -95,33 +95,23 @@ jobs:
         chmod 755 gradlew
         ./gradlew assemblePlaystoreDebug
     
-    - name: Upload arm64-v8a APK
-      uses: actions/upload-artifact@v7
-      if: ${{  success() }}
-      with:
-        name: arm64-v8a
-        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/debug/*arm64-v8a*.apk
-
-    - name: Upload armeabi-v7a APK
-      uses: actions/upload-artifact@v7
-      if: ${{  success() }}
-      with:
-        name: armeabi-v7a
-        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/debug/*armeabi-v7a*.apk
-
-    - name: Upload x86 APK
-      uses: actions/upload-artifact@v7
-      if: ${{  success() }}
-      with:
-        name: x86-apk
-        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/debug/*x86*.apk
-
-    - name: Upload universal APK
-      uses: actions/upload-artifact@v7
+    - name: Draft release with APK
       if: ${{ success() }}
-      with:
-        name: universal-apk
-        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/debug/*universal*.apk
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        D=$(dirname "$(ls ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/debug/*arm64-v8a*.apk | head -1)")
+        ls -l "$D"
+        cp "$D"/*arm64-v8a*.apk UralVPN-Xray-arm64-v8a.apk
+        ASSETS="UralVPN-Xray-arm64-v8a.apk"
+        if ls "$D"/*universal*.apk >/dev/null 2>&1; then
+          cp "$D"/*universal*.apk UralVPN-Xray-universal.apk
+          ASSETS="$ASSETS UralVPN-Xray-universal.apk"
+        fi
+        gh release create "xray-proto-${{ github.run_number }}-${{ github.run_attempt }}" $ASSETS \
+          --draft --prerelease --target "${{ github.sha }}" \
+          --title "UralVPN Xray prototype #${{ github.run_number }}" \
+          --notes "Тестовая сборка прототипа UralVPN на Xray. Пакет app.uralvpn.xray, ставится рядом с UralVPN. Добавьте подписку и сравните с основным приложением."
 
   sign-and-release:
     needs: build
