@@ -345,10 +345,10 @@ private fun UnderSubscriptionCard(
             .onGloballyPositioned { coords ->
                 val top = coords.positionInWindow().y
                 val height = coords.size.height.toFloat().coerceAtLeast(1f)
-                under.floatValue = ((panelBottom - top) / height).coerceIn(0f, 1f)
+                under = ((panelBottom - top) / height).coerceIn(0f, 1f)
             }
             .graphicsLayer {
-                val p = under.floatValue
+                val p = under
                 scaleX = 1f - 0.12f * p
                 scaleY = 1f - 0.12f * p
                 alpha = (1f - 0.9f * p).coerceAtLeast(0.05f)
