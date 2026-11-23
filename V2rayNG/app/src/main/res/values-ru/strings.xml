@@ -577,4 +577,7 @@
     <string name="sub_info_download" translatable="false">↓ %1$s</string>
     <string name="sub_info_upload" translatable="false">↑ %1$s</string>
 
+    <string name="sub_info_status_active">СТАТУС ПОДПИСКИ | ✅ АКТИВНА</string>
+    <string name="sub_info_status_expired">СТАТУС ПОДПИСКИ | ❌ ИСТЕКЛА</string>
+    <string name="sub_info_remaining">Осталось: %1$d дн.</string>
 </resources>

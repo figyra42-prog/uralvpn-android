@@ -1,5 +1,10 @@
 package com.v2ray.ang.ui.main
 
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -112,6 +117,7 @@ fun GroupPagerPage(
     }
     ServerListPage(
         rows = visibleRows,
+        autopilotGuid = autopilotGuid,
         selectedGuid = selectedGuid,
         locateTarget = locateTarget?.takeIf { it.groupId == groupId },
         canReorder = canReorder,
@@ -154,6 +160,7 @@ private class ServerRowActions(
 @Composable
 private fun ServerListPage(
     rows: List<ServerRowUiModel>,
+    autopilotGuid: String?,
     selectedGuid: String?,
     locateTarget: LocateTarget?,
     canReorder: Boolean,
@@ -192,6 +199,7 @@ private fun ServerListPage(
                     ServerItemColumn(
                         row = row,
                         isSelected = row.guid == selectedGuid,
+                        isAutopilot = row.guid == autopilotGuid,
                         doubleColumnDisplay = true,
                         actions = actions
                     )
@@ -246,18 +254,20 @@ private fun ServerListPage(
                             ServerItemRow(
                                 row = row,
                                 isSelected = row.guid == selectedGuid,
+                                isAutopilot = row.guid == autopilotGuid,
                                 actions = actions
                             )
                         }
-                        ItemDivider()
+                        if (row.guid != autopilotGuid) ItemDivider()
                     }
                 } else {
                     ServerItemRow(
                         row = row,
                         isSelected = row.guid == selectedGuid,
+                        isAutopilot = row.guid == autopilotGuid,
                         actions = actions
                     )
-                    ItemDivider()
+                    if (row.guid != autopilotGuid) ItemDivider()
                 }
             }
         }
@@ -300,11 +310,13 @@ private fun LocateTargetEffect(
 private fun ServerItemRow(
     row: ServerRowUiModel,
     isSelected: Boolean,
+    isAutopilot: Boolean,
     actions: ServerRowActions
 ) {
     ServerListItem(
         row = row,
         isSelected = isSelected,
+        isAutopilot = isAutopilot,
         doubleColumnDisplay = false,
         actions = actions
     )
@@ -314,6 +326,7 @@ private fun ServerItemRow(
 private fun ServerItemColumn(
     row: ServerRowUiModel,
     isSelected: Boolean,
+    isAutopilot: Boolean,
     doubleColumnDisplay: Boolean,
     actions: ServerRowActions
 ) {
@@ -321,10 +334,82 @@ private fun ServerItemColumn(
         ServerListItem(
             row = row,
             isSelected = isSelected,
+            isAutopilot = isAutopilot,
             doubleColumnDisplay = doubleColumnDisplay,
             actions = actions
         )
-        ItemDivider()
+        if (!isAutopilot) ItemDivider()
+    }
+}
+
+@Composable
+private fun AutopilotCard(
+    row: ServerRowUiModel,
+    testResult: String,
+    selectedStateDescription: String?,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(18.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.55f), shape)
+            .clickable(onClick = onClick)
+            .semantics(mergeDescendants = true) {
+                if (selectedStateDescription != null) {
+                    stateDescription = selectedStateDescription
+                }
+            }
+            .padding(horizontal = 12.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painterResource(R.drawable.ic_flash_on_24dp),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(22.dp),
+            )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = row.remarks,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (row.description.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = row.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+        Text(
+            text = testResult.ifEmpty { "—" },
+            style = MaterialTheme.typography.bodySmall,
+            color = when {
+                row.testDelayMillis < 0L -> colorPingRed
+                row.testDelayMillis > 0L -> colorPing
+                else -> MaterialTheme.colorScheme.onSurfaceVariant
+            },
+            maxLines = 1,
+        )
     }
 }
 
@@ -332,6 +417,7 @@ private fun ServerItemColumn(
 private fun ServerListItem(
     row: ServerRowUiModel,
     isSelected: Boolean,
+    isAutopilot: Boolean,
     doubleColumnDisplay: Boolean,
     actions: ServerRowActions
 ) {
@@ -344,6 +430,15 @@ private fun ServerListItem(
         stringResource(R.string.acc_selected_server)
     } else {
         null
+    }
+    if (isAutopilot) {
+        AutopilotCard(
+            row = row,
+            testResult = testResult,
+            selectedStateDescription = selectedStateDescription,
+            onClick = { actions.select(row.guid) },
+        )
+        return
     }
     val flag = row.remarks.take(4).takeIf {
         it.length >= 4 &&

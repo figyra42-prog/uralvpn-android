@@ -38,6 +38,7 @@ import com.v2ray.ang.handler.SubscriptionInfoParser
 import com.v2ray.ang.util.Utils
 
 private const val MILLIS_PER_SECOND = 1000L
+private const val MILLIS_PER_DAY = 86_400_000L
 private const val EXPIRY_DATE_PATTERN = "yyyy-MM-dd"
 private const val NO_EXPIRY_SYMBOL = "∞"
 private const val CARD_ALPHA = 0.97f
@@ -57,6 +58,8 @@ internal data class SubscriptionInfoUiModel(
     /** Expiry in epoch milliseconds; null when the subscription never expires. */
     val expireMillis: Long?,
     val expired: Boolean,
+    /** Whole days until expiry; null when the subscription never expires. */
+    val remainingDays: Long? = null,
     val supportUrl: String?,
     val webPageUrl: String?,
     /** Panel status message (Remnawave `announce` header), may be multi-line. */
@@ -84,6 +87,9 @@ internal fun buildSubscriptionInfoUiModel(
         trafficFraction = if (unlimited) null else (info.used.toDouble() / info.total).toFloat().coerceIn(0f, 1f),
         expireMillis = expireMillis,
         expired = expireMillis != null && expireMillis <= nowMillis,
+        remainingDays = expireMillis?.let {
+            ((it - nowMillis).coerceAtLeast(0L) + MILLIS_PER_DAY - 1) / MILLIS_PER_DAY
+        },
         supportUrl = info.supportUrl,
         webPageUrl = info.webPageUrl,
         announce = info.announce,
@@ -189,6 +195,32 @@ internal fun SubscriptionInfoCard(
                     .semantics(mergeDescendants = true) {}
             ) {
                 StatsRow(model)
+                Spacer(Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = stringResource(
+                            if (model.expired) R.string.sub_info_status_expired
+                            else R.string.sub_info_status_active
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (model.expired) MaterialTheme.colorScheme.error
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                    )
+                    if (!model.expired) {
+                        model.remainingDays?.let { days ->
+                            Text(
+                                text = stringResource(R.string.sub_info_remaining, days),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                            )
+                        }
+                    }
+                }
                 model.trafficFraction?.let { fraction ->
                     Spacer(Modifier.height(4.dp))
                     LinearProgressIndicator(

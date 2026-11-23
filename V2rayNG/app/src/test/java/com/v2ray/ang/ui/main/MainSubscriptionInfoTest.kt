@@ -47,4 +47,17 @@ class MainSubscriptionInfoTest {
         assertNull(model.expireMillis)
         assertFalse(model.expired)
     }
+
+    @Test
+    fun remainingDaysAreWholeDaysUntilExpiry() {
+        val threeDays = buildSubscriptionInfoUiModel(
+            SubscriptionUsageInfo(expire = now / 1000 + 3 * 86_400), now
+        )
+        assertEquals(3L, threeDays.remainingDays)
+        assertNull(buildSubscriptionInfoUiModel(SubscriptionUsageInfo(expire = 0), now).remainingDays)
+        assertEquals(
+            0L,
+            buildSubscriptionInfoUiModel(SubscriptionUsageInfo(expire = now / 1000 - 1), now).remainingDays
+        )
+    }
 }
