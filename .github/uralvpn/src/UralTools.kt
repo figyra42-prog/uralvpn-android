@@ -168,8 +168,23 @@ object UralTools {
         return runCatching {
             val root = JSONObject(content)
             var changed = false
-            // The TUN keeps its IPv6 address on purpose: without it the apps' IPv6 traffic leaves
-            // the VPN directly, which leaks the real address. The blocking happens inside the tunnel.
+            root.optJSONArray("inbounds")?.let { inbounds ->
+                for (i in 0 until inbounds.length()) {
+                    val tun = inbounds.optJSONObject(i) ?: continue
+                    if (tun.optString("type") != "tun") continue
+                    if (tun.has("inet6_address")) {
+                        tun.remove("inet6_address")
+                        changed = true
+                    }
+                    val address = tun.optJSONArray("address") ?: continue
+                    val keep = JSONArray()
+                    for (j in 0 until address.length()) {
+                        val value = address.optString(j)
+                        if (value.contains(':')) changed = true else keep.put(value)
+                    }
+                    if (changed) tun.put("address", keep)
+                }
+            }
             root.optJSONObject("dns")?.optJSONArray("servers")?.let { servers ->
                 for (i in 0 until servers.length()) {
                     val server = servers.optJSONObject(i) ?: continue
@@ -178,21 +193,6 @@ object UralTools {
                         server.remove("inet6_range")
                         changed = true
                     }
-                }
-            }
-            val route = root.optJSONObject("route")
-            if (route != null) {
-                val rules = route.optJSONArray("rules") ?: JSONArray().also { route.put("rules", it) }
-                var blocked = false
-                for (i in 0 until rules.length()) {
-                    val rule = rules.optJSONObject(i) ?: continue
-                    if (rule.optString("action") != "reject") continue
-                    val cidr = rule.optJSONArray("ip_cidr") ?: continue
-                    for (j in 0 until cidr.length()) if (cidr.optString(j) == "::/0") blocked = true
-                }
-                if (!blocked) {
-                    rules.put(JSONObject().put("action", "reject").put("ip_cidr", JSONArray().put("::/0")))
-                    changed = true
                 }
             }
             if (changed) root.toString() else content
