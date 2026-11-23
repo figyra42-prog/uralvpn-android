@@ -167,6 +167,8 @@ fun MainScreen(
         drawerContent = {
             MainDrawerContent(
                 drawerState = drawerState,
+                startOnBoot = uiState.startOnBoot,
+                onStartOnBootChange = { onAction(MainAction.SetStartOnBoot(it)) },
                 onNavigate = { route ->
                     scope.launch { drawerState.close() }
                     onNavigate(route)

@@ -85,6 +85,7 @@ class MainViewModel(
             confirmRemove = dataSource.getConfirmRemove(),
             doubleColumnDisplay = dataSource.getDoubleColumnDisplay(),
             killSwitch = dataSource.getKillSwitch(),
+            startOnBoot = dataSource.getStartOnBoot(),
             sortByPing = dataSource.isSortByPingEnabled()
         )
     )
@@ -280,6 +281,7 @@ class MainViewModel(
             MainAction.RemoveInvalidServers -> removeInvalidServerAsync()
             MainAction.SortByTestResults -> sortByTestResultsAsync()
             MainAction.ToggleSortByPing -> toggleSortByPing()
+            is MainAction.SetStartOnBoot -> setStartOnBoot(action.enabled)
             MainAction.UpdateSubscriptions -> importConfigViaSub(uiState.value.selectedGroupId)
             is MainAction.UpdateGroupSubscription -> importConfigViaSub(action.groupId)
             MainAction.ExportAll -> exportAllAsync()
@@ -346,6 +348,7 @@ class MainViewModel(
                 confirmRemove = dataSource.getConfirmRemove(),
                 doubleColumnDisplay = dataSource.getDoubleColumnDisplay(),
                 killSwitch = dataSource.getKillSwitch(),
+                startOnBoot = dataSource.getStartOnBoot(),
                 sortByPing = dataSource.isSortByPingEnabled()
             )
         }
@@ -724,6 +727,11 @@ class MainViewModel(
             listOf(uiState.value.selectedGroupId)
         }
         subs.forEach { dataSource.sortByTestResultsForSub(it) }
+    }
+
+    private fun setStartOnBoot(enabled: Boolean) {
+        dataSource.setStartOnBoot(enabled)
+        _uiState.update { it.copy(startOnBoot = enabled) }
     }
 
     private fun toggleSortByPing() {

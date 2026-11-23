@@ -125,6 +125,12 @@ class MainRepository(
     override fun getKillSwitch(): Boolean =
         MmkvManager.decodeSettingsBool(AppConfig.PREF_KILL_SWITCH, false)
 
+    override fun getStartOnBoot(): Boolean = MmkvManager.decodeStartOnBoot()
+
+    override fun setStartOnBoot(enabled: Boolean) {
+        MmkvManager.encodeStartOnBoot(enabled)
+    }
+
     override fun isSortByPingEnabled(): Boolean =
         MmkvManager.decodeSettingsBool(AppConfig.PREF_SORT_BY_PING, false)
 

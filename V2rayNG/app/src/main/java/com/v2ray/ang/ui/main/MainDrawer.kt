@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.v2ray.ang.R
 import com.v2ray.ang.ui.compose.AppDivider
+import com.v2ray.ang.ui.compose.SettingsSwitchItem
 import com.v2ray.ang.ui.compose.verticalScrollbar
 
 enum class MainDestination(@DrawableRes val iconRes: Int, @StringRes val labelRes: Int) {
@@ -56,7 +57,12 @@ private val drawerItems = primaryDrawerItems + listOf(
 )
 
 @Composable
-fun MainDrawerContent(drawerState: DrawerState, onNavigate: (MainDestination) -> Unit) {
+fun MainDrawerContent(
+    drawerState: DrawerState,
+    startOnBoot: Boolean,
+    onStartOnBootChange: (Boolean) -> Unit,
+    onNavigate: (MainDestination) -> Unit
+) {
     val drawerScrollState = rememberScrollState()
 
     ModalDrawerSheet(
@@ -88,6 +94,13 @@ fun MainDrawerContent(drawerState: DrawerState, onNavigate: (MainDestination) ->
                     )
                 }
             }
+            SettingsSwitchItem(
+                title = stringResource(R.string.title_pref_is_booted),
+                summary = stringResource(R.string.summary_pref_is_booted),
+                checked = startOnBoot,
+                onCheckedChange = onStartOnBootChange
+            )
+            AppDivider()
             drawerItems.forEachIndexed { index, item ->
                 if (index == primaryDrawerItems.size) AppDivider()
                 NavigationDrawerItem(

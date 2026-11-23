@@ -28,6 +28,7 @@ data class MainUiState(
     val doubleColumnDisplay: Boolean = false,
     val sortByPing: Boolean = false,
     val killSwitch: Boolean = false,
+    val startOnBoot: Boolean = false,
     val shareQRCodeBitmap: android.graphics.Bitmap? = null
 )
 
@@ -47,6 +48,7 @@ sealed interface MainAction {
     data object RemoveInvalidServers : MainAction
     data object SortByTestResults : MainAction
     data object ToggleSortByPing : MainAction
+    data class SetStartOnBoot(val enabled: Boolean) : MainAction
     data object UpdateSubscriptions : MainAction
     data class UpdateGroupSubscription(val groupId: String) : MainAction
     data object ExportAll : MainAction
