@@ -174,6 +174,9 @@
 
     <!-- Preferences -->
     <string name="title_settings">الإعدادات</string>
+    <string name="main_speed_format">↓ %1$s   ↑ %2$s</string>
+    <string name="other_subscriptions_title">اشتراكات أخرى</string>
+    <string name="other_subscription_switch">اضغط للتبديل</string>
     <string name="menu_home">الرئيسية</string>
     <string name="menu_add_subscription">إضافة اشتراك</string>
     <string name="menu_my_subscription">اشتراكي</string>

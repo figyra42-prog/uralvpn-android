@@ -22,6 +22,8 @@ data class MainUiState(
     val selectedGuid: String? = null,
     val isRunning: Boolean = false,
     val serviceStartTime: Long? = null,
+    val uplink: Long = 0,
+    val downlink: Long = 0,
     val isTesting: Boolean = false,
     val status: MainStatus = MainStatus.Disconnected,
     val locateTarget: LocateTarget? = null,

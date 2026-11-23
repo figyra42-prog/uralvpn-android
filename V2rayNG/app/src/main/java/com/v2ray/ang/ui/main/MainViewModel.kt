@@ -30,6 +30,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -114,6 +115,12 @@ class MainViewModel(
     private val testRequests = MainTestRequests()
     private var bulkTestJob: Job? = null
 
+    // ---------- Live speed ----------
+    private var trafficStatsJob: Job? = null
+    private var lastTrafficAt = 0L
+    private var lastTrafficUp = 0L
+    private var lastTrafficDown = 0L
+
     private val initialPageReady = CompletableDeferred<Unit>()
 
     // ---------- Service events ----------
@@ -149,6 +156,23 @@ class MainViewModel(
             }
 
             MainServiceEvent.StateStopSuccess -> updateRunningState(false)
+            is MainServiceEvent.TrafficStats -> {
+                if (!uiState.value.isRunning) return
+                val now = System.currentTimeMillis()
+                TrafficSpeed.calculate(
+                    previousUp = lastTrafficUp,
+                    previousDown = lastTrafficDown,
+                    previousAt = lastTrafficAt,
+                    up = event.uplink,
+                    down = event.downlink,
+                    now = now
+                )?.let { (up, down) ->
+                    _uiState.update { it.copy(uplink = up, downlink = down) }
+                }
+                lastTrafficUp = event.uplink
+                lastTrafficDown = event.downlink
+                lastTrafficAt = now
+            }
             is MainServiceEvent.MeasureDelayResult -> {
                 if (!uiState.value.isRunning || !testRequests.completeCurrent(event.requestId)) return
                 _uiState.update { it.copy(isTesting = testRequests.isTesting, status = MainStatus.ConnectionTest(event.result)) }
@@ -967,6 +991,7 @@ class MainViewModel(
     // ---------- Running state ----------
     private fun updateRunningState(running: Boolean, clearTestingText: Boolean = true) {
         if (!running || clearTestingText) testRequests.invalidateCurrent()
+        if (running) startTrafficStats() else stopTrafficStats()
         _uiState.update { state ->
             val startTime = when {
                 !running -> null
@@ -983,7 +1008,27 @@ class MainViewModel(
         }
     }
 
+    private fun startTrafficStats() {
+        if (trafficStatsJob?.isActive == true) return
+        trafficStatsJob = viewModelScope.launch(ioDispatcher) {
+            while (isActive) {
+                dataSource.sendMsg2Service(AppConfig.MSG_QUERY_TRAFFIC_STATS, "")
+                delay(1000L)
+            }
+        }
+    }
+
+    private fun stopTrafficStats() {
+        trafficStatsJob?.cancel()
+        trafficStatsJob = null
+        lastTrafficAt = 0L
+        lastTrafficUp = 0L
+        lastTrafficDown = 0L
+        _uiState.update { it.copy(uplink = 0, downlink = 0) }
+    }
+
     override fun onCleared() {
+        trafficStatsJob?.cancel()
         setupGroupJob?.cancel()
         preloadJob?.cancel()
         selectedGroupLoadJob?.cancel()

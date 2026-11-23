@@ -16,6 +16,7 @@ import com.v2ray.ang.contracts.IDialerService
 import com.v2ray.ang.contracts.ServiceControl
 import com.v2ray.ang.dto.ConnectionTestResult
 import com.v2ray.ang.dto.OutboundTrafficStat
+import com.v2ray.ang.dto.TrafficCounters
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.enums.BrowserDialerMode
 import com.v2ray.ang.extension.delay
@@ -555,6 +556,27 @@ object CoreServiceManager {
                 AppConfig.MSG_MEASURE_DELAY -> {
                     if (isOrderedBroadcast) resultCode = Activity.RESULT_OK
                     measureV2rayDelay(intent.getStringExtra("content").orEmpty())
+                }
+
+                AppConfig.MSG_QUERY_TRAFFIC_STATS -> {
+                    if (isOrderedBroadcast) resultCode = Activity.RESULT_OK
+                    val service = getService() ?: return
+                    connectionTestScope.launch {
+                        val stats = queryAllOutboundTrafficStats()
+                        var uplink = 0L
+                        var downlink = 0L
+                        stats.forEach { stat ->
+                            when (stat.direction) {
+                                AppConfig.UPLINK -> uplink += stat.value
+                                AppConfig.DOWNLINK -> downlink += stat.value
+                            }
+                        }
+                        MessageHelper.sendMsg2UI(
+                            service,
+                            AppConfig.MSG_TRAFFIC_STATS,
+                            TrafficCounters(uplink, downlink)
+                        )
+                    }
                 }
             }
 

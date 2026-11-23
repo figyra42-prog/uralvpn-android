@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.v2ray.ang.R
 import com.v2ray.ang.dto.entities.ProfileItem
+import com.v2ray.ang.extension.toSpeedString
 import com.v2ray.ang.ui.compose.ConfirmDialog
 import com.v2ray.ang.ui.compose.QRCodeDialog
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -251,6 +252,18 @@ fun MainScreen(
                         modifier = Modifier
                             .clickable { onAction(MainAction.TestCurrentServer) },
                     )
+                    if (isRunning) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = stringResource(
+                                R.string.main_speed_format,
+                                uiState.downlink.toSpeedString(),
+                                uiState.uplink.toSpeedString()
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
 
                 if (groups.isNotEmpty()) {
@@ -283,6 +296,8 @@ fun MainScreen(
                             onRemoveServer = removeServer,
                             usageInfo = group.usageInfo,
                             groupTitle = group.remarks,
+                            otherGroups = groups.filter { it.id != group.id },
+                            onSelectGroup = { onAction(MainAction.SelectGroup(it)) },
                             onOpenLink = { url -> onAction(MainAction.OpenSubscriptionLink(url)) },
                             sortByPing = sortByPing,
                             onToggleSortByPing = { onAction(MainAction.ToggleSortByPing) },

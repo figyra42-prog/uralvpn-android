@@ -174,6 +174,9 @@
 
     <!-- Preferences -->
     <string name="title_settings">Cài đặt</string>
+    <string name="main_speed_format">↓ %1$s   ↑ %2$s</string>
+    <string name="other_subscriptions_title">Đăng ký khác</string>
+    <string name="other_subscription_switch">Nhấn để chuyển</string>
     <string name="menu_home">Trang chủ</string>
     <string name="menu_add_subscription">Thêm đăng ký</string>
     <string name="menu_my_subscription">Đăng ký của tôi</string>

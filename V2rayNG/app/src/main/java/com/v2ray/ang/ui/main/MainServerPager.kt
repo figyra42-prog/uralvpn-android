@@ -4,6 +4,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,12 +22,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,6 +41,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.compositeOver
@@ -51,18 +55,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.v2ray.ang.R
+import com.v2ray.ang.dto.GroupMapItem
 import com.v2ray.ang.dto.LocateTarget
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.dto.entities.SubscriptionUsageInfo
+import com.v2ray.ang.extension.toTrafficString
 import com.v2ray.ang.ui.compose.ReorderableGridItem
 import com.v2ray.ang.ui.compose.ReorderableListItem
 import com.v2ray.ang.ui.compose.colorPing
 import com.v2ray.ang.ui.compose.colorPingRed
 import com.v2ray.ang.ui.compose.verticalScrollbar
+import com.v2ray.ang.util.Utils
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyGridState
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import kotlin.math.abs
+
+private const val FLAG_SCROLL_SCALE = 0.08f
 
 @Composable
 fun GroupPagerPage(
@@ -81,6 +90,8 @@ fun GroupPagerPage(
     onRemoveServer: (String, String) -> Unit,
     usageInfo: SubscriptionUsageInfo?,
     groupTitle: String,
+    otherGroups: List<GroupMapItem>,
+    onSelectGroup: (String) -> Unit,
     onOpenLink: (String) -> Unit,
     sortByPing: Boolean,
     onToggleSortByPing: () -> Unit,
@@ -131,6 +142,9 @@ fun GroupPagerPage(
         onMoveServer = { fromIndex, toIndex ->
             mainViewModel.moveServer(groupId, fromIndex, toIndex)
         },
+        footer = if (otherGroups.isEmpty()) null else {
+            { OtherSubscriptions(otherGroups, onSelectGroup) }
+        },
         header = if (usageInfo != null) {
             {
                 SubscriptionInfoCard(
@@ -173,6 +187,7 @@ private fun ServerListPage(
     onLocateHandled: () -> Unit,
     onMoveServer: (Int, Int) -> Unit,
     header: (@Composable () -> Unit)? = null,
+    footer: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues
 ) {
     if (doubleColumnDisplay) {
@@ -202,7 +217,8 @@ private fun ServerListPage(
                         isSelected = row.guid == selectedGuid,
                         isAutopilot = row.guid == autopilotGuid,
                         doubleColumnDisplay = true,
-                        actions = actions
+                        actions = actions,
+                        gridState = gridState
                     )
                 }
                 if (canReorder && reorderableGridState != null) {
@@ -217,6 +233,11 @@ private fun ServerListPage(
                     }
                 } else {
                     content()
+                }
+            }
+            footer?.let { footerContent ->
+                item(key = "footer", span = { GridItemSpan(maxLineSpan) }) {
+                    footerContent()
                 }
             }
         }
@@ -256,7 +277,8 @@ private fun ServerListPage(
                                 row = row,
                                 isSelected = row.guid == selectedGuid,
                                 isAutopilot = row.guid == autopilotGuid,
-                                actions = actions
+                                actions = actions,
+                                listState = listState
                             )
                         }
                     }
@@ -265,7 +287,89 @@ private fun ServerListPage(
                         row = row,
                         isSelected = row.guid == selectedGuid,
                         isAutopilot = row.guid == autopilotGuid,
-                        actions = actions
+                        actions = actions,
+                        listState = listState
+                    )
+                }
+            }
+            footer?.let { footerContent ->
+                item(key = "footer") { footerContent() }
+            }
+        }
+    }
+}
+
+@Composable
+private fun OtherSubscriptions(
+    groups: List<GroupMapItem>,
+    onSelectGroup: (String) -> Unit,
+) {
+    Column(Modifier.fillMaxWidth().padding(top = 12.dp)) {
+        Text(
+            text = stringResource(R.string.other_subscriptions_title),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 4.dp)
+        )
+        groups.forEach { group ->
+            val model = group.usageInfo?.let {
+                buildSubscriptionInfoUiModel(it, System.currentTimeMillis())
+            }
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .clip(MaterialTheme.shapes.medium)
+                    .clickable { onSelectGroup(group.id) },
+                shape = MaterialTheme.shapes.medium,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                border = BorderStroke(
+                    0.5.dp,
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                )
+            ) {
+                Column(Modifier.padding(14.dp)) {
+                    Text(
+                        text = group.remarks,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (model != null) {
+                        val total = if (model.totalBytes > 0L) {
+                            model.totalBytes.toTrafficString()
+                        } else {
+                            "∞"
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(
+                                R.string.sub_info_traffic,
+                                model.usedBytes.toTrafficString(),
+                                total
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1
+                        )
+                        model.expireMillis?.let {
+                            Text(
+                                text = stringResource(
+                                    R.string.sub_info_expiry,
+                                    Utils.formatTimestamp(it, "yyyy-MM-dd")
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.other_subscription_switch),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -310,14 +414,16 @@ private fun ServerItemRow(
     row: ServerRowUiModel,
     isSelected: Boolean,
     isAutopilot: Boolean,
-    actions: ServerRowActions
+    actions: ServerRowActions,
+    listState: LazyListState? = null
 ) {
     ServerListItem(
         row = row,
         isSelected = isSelected,
         isAutopilot = isAutopilot,
         doubleColumnDisplay = false,
-        actions = actions
+        actions = actions,
+        listState = listState
     )
 }
 
@@ -327,14 +433,16 @@ private fun ServerItemColumn(
     isSelected: Boolean,
     isAutopilot: Boolean,
     doubleColumnDisplay: Boolean,
-    actions: ServerRowActions
+    actions: ServerRowActions,
+    gridState: LazyGridState? = null
 ) {
     ServerListItem(
         row = row,
         isSelected = isSelected,
         isAutopilot = isAutopilot,
         doubleColumnDisplay = doubleColumnDisplay,
-        actions = actions
+        actions = actions,
+        gridState = gridState
     )
 }
 
@@ -415,7 +523,9 @@ private fun ServerListItem(
     isSelected: Boolean,
     isAutopilot: Boolean,
     doubleColumnDisplay: Boolean,
-    actions: ServerRowActions
+    actions: ServerRowActions,
+    listState: LazyListState? = null,
+    gridState: LazyGridState? = null
 ) {
     val testResult = when {
         row.testDelayMillis > 0L -> stringResource(R.string.server_test_delay_value, row.testDelayMillis)
@@ -442,6 +552,27 @@ private fun ServerListItem(
             it.codePointAt(2) in 0x1F1E6..0x1F1FF
     }.orEmpty()
     val name = if (flag.isNotEmpty()) row.remarks.substring(4).trimStart() else row.remarks
+    val flagScale = when {
+        listState != null -> {
+            val layout = listState.layoutInfo
+            val viewport = (layout.viewportEndOffset - layout.viewportStartOffset).coerceAtLeast(1)
+            val info = layout.visibleItemsInfo.firstOrNull { it.key == row.guid }
+            val center = info?.let { it.offset + it.size / 2f }
+                ?: (layout.viewportStartOffset + viewport / 2f)
+            val viewportCenter = layout.viewportStartOffset + viewport / 2f
+            1f - FLAG_SCROLL_SCALE * (abs(center - viewportCenter) / (viewport / 2f)).coerceIn(0f, 1f)
+        }
+        gridState != null -> {
+            val layout = gridState.layoutInfo
+            val viewport = (layout.viewportEndOffset - layout.viewportStartOffset).coerceAtLeast(1)
+            val info = layout.visibleItemsInfo.firstOrNull { it.key == row.guid }
+            val center = info?.let { it.offset.y + it.size.height / 2f }
+                ?: (layout.viewportStartOffset + viewport / 2f)
+            val viewportCenter = layout.viewportStartOffset + viewport / 2f
+            1f - FLAG_SCROLL_SCALE * (abs(center - viewportCenter) / (viewport / 2f)).coerceIn(0f, 1f)
+        }
+        else -> 1f
+    }
     val shape = RoundedCornerShape(18.dp)
     val accent = MaterialTheme.colorScheme.primary
     val cardColor = if (isSelected) {
@@ -483,6 +614,11 @@ private fun ServerListItem(
                 modifier = Modifier
                     .width(46.dp)
                     .height(34.dp)
+                    .graphicsLayer {
+                        scaleX = flagScale
+                        scaleY = flagScale
+                        alpha = 0.8f + 0.2f * flagScale
+                    }
                     .clip(RoundedCornerShape(10.dp))
                     .background(MaterialTheme.colorScheme.surfaceContainerHighest),
                 contentAlignment = Alignment.Center

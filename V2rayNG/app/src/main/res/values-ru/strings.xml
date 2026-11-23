@@ -175,6 +175,9 @@
 
     <!-- Preferences -->
     <string name="title_settings">Настройки</string>
+    <string name="main_speed_format">↓ %1$s   ↑ %2$s</string>
+    <string name="other_subscriptions_title">Другие подписки</string>
+    <string name="other_subscription_switch">Нажмите, чтобы переключиться</string>
     <string name="menu_home">Главная</string>
     <string name="menu_add_subscription">Добавить подписку</string>
     <string name="menu_my_subscription">Моя подписка</string>
