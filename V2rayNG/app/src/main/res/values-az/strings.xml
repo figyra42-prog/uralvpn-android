@@ -168,6 +168,8 @@
     <string name="menu_item_import_proxy_app">Mübadilə buferindən idxal et</string>
     <string name="per_app_proxy_settings">Tətbiq üzrə proksi tənzimləmələri</string>
     <string name="per_app_proxy_settings_enable">Tətbiq üzrə proksini aktivləşdir</string>
+    <string name="per_app_proxy_rus_apps">Rus tətbiqlərini yan keç</string>
+    <string name="per_app_proxy_rus_apps_summary">Banklar, dövlət xidmətləri və digər Rus tətbiqləri VPN-dən kənar birbaşa qoşulur.</string>
     <string name="app_picker_unknown_app">Bilinməyən tətbiq (UID tanınmadı)</string>
 
     <!-- Preferences -->

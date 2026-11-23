@@ -50,6 +50,7 @@ import com.v2ray.ang.ui.compose.AppTopBar
 import com.v2ray.ang.ui.compose.ConfirmDialog
 import com.v2ray.ang.ui.compose.ItemDivider
 import com.v2ray.ang.ui.compose.NavigationBarsBottomPadding
+import com.v2ray.ang.ui.compose.SettingsSwitchItem
 import com.v2ray.ang.ui.compose.verticalScrollbar
 import com.v2ray.ang.util.Utils
 
@@ -77,6 +78,7 @@ class PerAppProxyActivity : BaseComponentActivity() {
         val blacklist by viewModel.blacklist.collectAsStateWithLifecycle()
         val perAppProxyEnabled by viewModel.perAppProxyEnabled.collectAsStateWithLifecycle()
         val bypassApps by viewModel.bypassApps.collectAsStateWithLifecycle()
+        val rusAppsBypass by viewModel.rusAppsBypass.collectAsStateWithLifecycle()
 
         PerAppProxyScreen(
             apps = apps,
@@ -84,9 +86,11 @@ class PerAppProxyActivity : BaseComponentActivity() {
             blacklist = blacklist,
             perAppProxyEnabled = perAppProxyEnabled,
             bypassApps = bypassApps,
+            rusAppsBypass = rusAppsBypass,
             onBackClick = { finish() },
             onPerAppProxyChanged = { viewModel.setPerAppProxyEnabled(it) },
             onBypassAppsChanged = { viewModel.setBypassAppsEnabled(it) },
+            onRusAppsChanged = { viewModel.setRusAppsBypassEnabled(it) },
             onToggleApp = { viewModel.toggle(it) },
             onSearch = { viewModel.filterApps(it) },
             onSelectAll = { viewModel.selectAll() },
@@ -112,9 +116,11 @@ fun PerAppProxyScreen(
     blacklist: Set<String>,
     perAppProxyEnabled: Boolean,
     bypassApps: Boolean,
+    rusAppsBypass: Boolean,
     onBackClick: () -> Unit,
     onPerAppProxyChanged: (Boolean) -> Unit,
     onBypassAppsChanged: (Boolean) -> Unit,
+    onRusAppsChanged: (Boolean) -> Unit,
     onToggleApp: (String) -> Unit,
     onSearch: (String) -> Unit,
     onSelectAll: () -> Unit,
@@ -255,6 +261,18 @@ fun PerAppProxyScreen(
                         )
                     }
                 }
+            }
+            AppDivider()
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                SettingsSwitchItem(
+                    title = stringResource(R.string.per_app_proxy_rus_apps),
+                    summary = stringResource(R.string.per_app_proxy_rus_apps_summary),
+                    checked = rusAppsBypass,
+                    onCheckedChange = onRusAppsChanged
+                )
             }
             AppDivider()
 

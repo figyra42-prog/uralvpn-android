@@ -168,6 +168,8 @@
     <string name="menu_item_import_proxy_app">استيراد من الحافظة</string>
     <string name="per_app_proxy_settings">إعدادات كل تطبيق</string>
     <string name="per_app_proxy_settings_enable">تمكين الإعدادات لكل تطبيق</string>
+    <string name="per_app_proxy_rus_apps">تجاوز تطبيقات روسيا</string>
+    <string name="per_app_proxy_rus_apps_summary">تتصل البنوك والخدمات الحكومية والتطبيقات الروسية الأخرى مباشرةً خارج VPN.</string>
     <string name="app_picker_unknown_app">تطبيق غير معروف (UID غير محدد)</string>
 
     <!-- Preferences -->

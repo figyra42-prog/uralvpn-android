@@ -168,6 +168,8 @@
     <string name="menu_item_import_proxy_app">從剪貼簿匯入</string>
     <string name="per_app_proxy_settings">個別應用程式設定</string>
     <string name="per_app_proxy_settings_enable">啟用個別應用程式代理</string>
+    <string name="per_app_proxy_rus_apps">繞過俄羅斯應用程式</string>
+    <string name="per_app_proxy_rus_apps_summary">銀行、政府服務和其他俄羅斯應用程式直接連線，不經過 VPN。</string>
     <string name="app_picker_unknown_app">未知應用程式（無法識別 UID）</string>
 
     <!-- Preferences -->

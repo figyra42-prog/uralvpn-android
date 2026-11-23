@@ -19,6 +19,7 @@ import com.v2ray.ang.extension.isComplexType
 import com.v2ray.ang.extension.matchesPattern
 import com.v2ray.ang.extension.moveItem
 import com.v2ray.ang.handler.SubscriptionInfoParser
+import com.v2ray.ang.handler.UralRusApps
 import com.v2ray.ang.ui.base.BaseViewModel
 import com.v2ray.ang.util.LogUtil
 import kotlinx.coroutines.CancellationException
@@ -315,6 +316,15 @@ class MainViewModel(
 
     // ---------- Initialization ----------
     fun initialize() {
+        viewModelScope.launch(ioDispatcher) {
+            try {
+                UralRusApps.setupOnce(app)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                LogUtil.e(AppConfig.TAG, "UralVPN Russian apps setup failed", error)
+            }
+        }
         viewModelScope.launch(preloadDispatcher) {
             try {
                 initialPageReady.await()

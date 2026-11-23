@@ -85,6 +85,13 @@ jobs:
         distribution: 'temurin'
         java-version: '21'
 
+    - name: Run unit tests
+      run: |
+        cd ${{ github.workspace }}/V2rayNG
+        echo "sdk.dir=${ANDROID_HOME}" > local.properties
+        chmod 755 gradlew
+        ./gradlew :app:testPlaystoreDebugUnitTest
+
     - name: Build APK (debug)
       env:
         KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}

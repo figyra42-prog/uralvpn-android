@@ -26,6 +26,8 @@ object AppConfig {
     const val PREF_PER_APP_PROXY = "pref_per_app_proxy"
     const val PREF_PER_APP_PROXY_SET = "pref_per_app_proxy_set"
     const val PREF_BYPASS_APPS = "pref_bypass_apps"
+    const val PREF_URALVPN_RUS_APPS = "pref_uralvpn_rus_apps_bypass"
+    const val PREF_URALVPN_RUS_APPS_SETUP_DONE = "pref_uralvpn_rus_apps_setup_done"
     const val PREF_LOCAL_DNS_ENABLED = "pref_local_dns_enabled"
     const val PREF_FAKE_DNS_ENABLED = "pref_fake_dns_enabled"
     const val PREF_APPEND_HTTP_PROXY = "pref_append_http_proxy"

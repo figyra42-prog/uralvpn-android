@@ -8,6 +8,7 @@ import com.v2ray.ang.dto.UrlContentRequest
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.SettingsChangeManager
 import com.v2ray.ang.handler.SettingsManager
+import com.v2ray.ang.handler.UralRusApps
 import com.v2ray.ang.ui.AppSelection
 import com.v2ray.ang.ui.base.BaseViewModel
 import com.v2ray.ang.util.AppManagerUtil
@@ -45,6 +46,9 @@ class PerAppProxyViewModel(application: Application) : BaseViewModel(application
         MmkvManager.decodeSettingsBool(AppConfig.PREF_BYPASS_APPS, false)
     )
     val bypassApps: StateFlow<Boolean> = _bypassApps.asStateFlow()
+
+    private val _rusAppsBypass = MutableStateFlow(UralRusApps.isBypassEnabled())
+    val rusAppsBypass: StateFlow<Boolean> = _rusAppsBypass.asStateFlow()
 
     // Cached full list for filtering
     private var appsAll: List<AppInfo>? = null
@@ -86,6 +90,30 @@ class PerAppProxyViewModel(application: Application) : BaseViewModel(application
         if (_bypassApps.value != enabled) {
             _bypassApps.value = enabled
             MmkvManager.encodeSettings(AppConfig.PREF_BYPASS_APPS, enabled)
+        }
+        if (!enabled && _rusAppsBypass.value) {
+            setRusAppsBypassEnabled(false)
+        }
+    }
+
+    fun setRusAppsBypassEnabled(enabled: Boolean) {
+        if (_rusAppsBypass.value == enabled) return
+        _rusAppsBypass.value = enabled
+        launchLoading {
+            try {
+                UralRusApps.setBypass(app, enabled)
+                _blacklist.value = withContext(Dispatchers.IO) { loadBlacklist() }
+                if (enabled) {
+                    _perAppProxyEnabled.value = true
+                    _bypassApps.value = true
+                }
+                SettingsChangeManager.makeRestartService()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                LogUtil.e(AppConfig.TAG, "Failed to change Russian apps bypass", error)
+                _rusAppsBypass.value = UralRusApps.isBypassEnabled()
+            }
         }
     }
 

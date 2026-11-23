@@ -168,6 +168,8 @@
     <string name="menu_item_import_proxy_app">و من ٱووردن ز کلیپ بورد</string>
     <string name="per_app_proxy_settings">سامووا ب تفکیک برنومه</string>
     <string name="per_app_proxy_settings_enable">ره وندن ب تفکیک برنومه</string>
+    <string name="per_app_proxy_rus_apps">رد شدن از برنومه‌های روسی</string>
+    <string name="per_app_proxy_rus_apps_summary">بانک‌ها، خدمات دولتی و بقیه برنومه‌های روسی مستقیم و بی VPN وصل می‌شن.</string>
     <string name="app_picker_unknown_app">برنومه ناشناس (UID شناسایی نوابیڌه)</string>
 
     <!-- Preferences -->

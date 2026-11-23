@@ -168,6 +168,8 @@
     <string name="menu_item_import_proxy_app">ক্লিপবোর্ড থেকে আমদানি করুন</string>
     <string name="per_app_proxy_settings">অ্যাপভিত্তিক সেটিংস</string>
     <string name="per_app_proxy_settings_enable">অ্যাপভিত্তিক সেটিংস চালু করুন</string>
+    <string name="per_app_proxy_rus_apps">রাশিয়ান অ্যাপ বাইপাস</string>
+    <string name="per_app_proxy_rus_apps_summary">ব্যাংক, সরকারি সেবা ও অন্যান্য রাশিয়ান অ্যাপ VPN-এর বাইরে সরাসরি সংযুক্ত হয়।</string>
     <string name="app_picker_unknown_app">অজানা অ্যাপ (UID শনাক্ত করা যায়নি)</string>
 
     <!-- Preferences -->
