@@ -45,6 +45,15 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.lazy.stickyHeader
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -71,8 +80,6 @@ import sh.calvin.reorderable.rememberReorderableLazyGridState
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import kotlin.math.abs
 
-private const val FLAG_SCROLL_SCALE = 0.08f
-
 @Composable
 fun GroupPagerPage(
     groupId: String,
@@ -92,6 +99,7 @@ fun GroupPagerPage(
     groupTitle: String,
     otherGroups: List<GroupMapItem>,
     onSelectGroup: (String) -> Unit,
+    connectionHeader: @Composable () -> Unit,
     onOpenLink: (String) -> Unit,
     sortByPing: Boolean,
     onToggleSortByPing: () -> Unit,
@@ -142,6 +150,7 @@ fun GroupPagerPage(
         onMoveServer = { fromIndex, toIndex ->
             mainViewModel.moveServer(groupId, fromIndex, toIndex)
         },
+        topHeader = connectionHeader,
         footer = if (otherGroups.isEmpty()) null else {
             { OtherSubscriptions(otherGroups, onSelectGroup) }
         },
@@ -172,6 +181,7 @@ private class ServerRowActions(
     val remove: (String, String) -> Unit,
 )
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ServerListPage(
     rows: List<ServerRowUiModel>,
@@ -186,6 +196,7 @@ private fun ServerListPage(
     actions: ServerRowActions,
     onLocateHandled: () -> Unit,
     onMoveServer: (Int, Int) -> Unit,
+    topHeader: (@Composable () -> Unit)? = null,
     header: (@Composable () -> Unit)? = null,
     footer: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues
@@ -210,6 +221,16 @@ private fun ServerListPage(
                 .verticalScrollbar(gridState),
             contentPadding = contentPadding
         ) {
+            topHeader?.let { headerContent ->
+                item(key = "connection", span = { GridItemSpan(maxLineSpan) }) {
+                    headerContent()
+                }
+            }
+            header?.let { headerContent ->
+                item(key = "header", span = { GridItemSpan(maxLineSpan) }) {
+                    headerContent()
+                }
+            }
             itemsIndexed(items = rows, key = { _, item -> item.guid }) { _, row ->
                 val content: @Composable () -> Unit = {
                     ServerItemColumn(
@@ -217,8 +238,7 @@ private fun ServerListPage(
                         isSelected = row.guid == selectedGuid,
                         isAutopilot = row.guid == autopilotGuid,
                         doubleColumnDisplay = true,
-                        actions = actions,
-                        gridState = gridState
+                        actions = actions
                     )
                 }
                 if (canReorder && reorderableGridState != null) {
@@ -251,6 +271,8 @@ private fun ServerListPage(
             }
         } else null
 
+        var panelBottom by remember { mutableFloatStateOf(0f) }
+
         LocateTargetEffect(locateTarget, rows, listState, onLocateHandled)
 
         LazyColumn(
@@ -260,8 +282,19 @@ private fun ServerListPage(
                 .verticalScrollbar(listState),
             contentPadding = contentPadding
         ) {
-            header?.let { h ->
-                item(key = "header") { h() }
+            topHeader?.let { headerContent ->
+                item(key = "connection") { headerContent() }
+            }
+            header?.let { headerContent ->
+                stickyHeader(key = "header") {
+                    Box(
+                        Modifier.onGloballyPositioned { coords ->
+                            panelBottom = coords.positionInWindow().y + coords.size.height
+                        }
+                    ) {
+                        headerContent()
+                    }
+                }
             }
             itemsIndexed(items = rows, key = { _, item -> item.guid }) { _, row ->
                 if (canReorder && reorderableState != null) {
@@ -273,29 +306,57 @@ private fun ServerListPage(
                             scope = this,
                             isDragging = isDragging
                         ) {
-                            ServerItemRow(
-                                row = row,
-                                isSelected = row.guid == selectedGuid,
-                                isAutopilot = row.guid == autopilotGuid,
-                                actions = actions,
-                                listState = listState
-                            )
+                            UnderSubscriptionCard(panelBottom) {
+                                ServerItemRow(
+                                    row = row,
+                                    isSelected = row.guid == selectedGuid,
+                                    isAutopilot = row.guid == autopilotGuid,
+                                    actions = actions
+                                )
+                            }
                         }
                     }
                 } else {
-                    ServerItemRow(
-                        row = row,
-                        isSelected = row.guid == selectedGuid,
-                        isAutopilot = row.guid == autopilotGuid,
-                        actions = actions,
-                        listState = listState
-                    )
+                    UnderSubscriptionCard(panelBottom) {
+                        ServerItemRow(
+                            row = row,
+                            isSelected = row.guid == selectedGuid,
+                            isAutopilot = row.guid == autopilotGuid,
+                            actions = actions
+                        )
+                    }
                 }
             }
             footer?.let { footerContent ->
                 item(key = "footer") { footerContent() }
             }
         }
+    }
+}
+
+@Composable
+private fun UnderSubscriptionCard(
+    panelBottom: Float,
+    content: @Composable () -> Unit,
+) {
+    var under by remember { mutableFloatStateOf(0f) }
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .onGloballyPositioned { coords ->
+                val top = coords.positionInWindow().y
+                val height = coords.size.height.toFloat().coerceAtLeast(1f)
+                under.floatValue = ((panelBottom - top) / height).coerceIn(0f, 1f)
+            }
+            .graphicsLayer {
+                val p = under.floatValue
+                scaleX = 1f - 0.12f * p
+                scaleY = 1f - 0.12f * p
+                alpha = (1f - 0.9f * p).coerceAtLeast(0.05f)
+                transformOrigin = TransformOrigin(0.5f, 0f)
+            }
+    ) {
+        content()
     }
 }
 
@@ -414,16 +475,14 @@ private fun ServerItemRow(
     row: ServerRowUiModel,
     isSelected: Boolean,
     isAutopilot: Boolean,
-    actions: ServerRowActions,
-    listState: LazyListState? = null
+    actions: ServerRowActions
 ) {
     ServerListItem(
         row = row,
         isSelected = isSelected,
         isAutopilot = isAutopilot,
         doubleColumnDisplay = false,
-        actions = actions,
-        listState = listState
+        actions = actions
     )
 }
 
@@ -433,16 +492,14 @@ private fun ServerItemColumn(
     isSelected: Boolean,
     isAutopilot: Boolean,
     doubleColumnDisplay: Boolean,
-    actions: ServerRowActions,
-    gridState: LazyGridState? = null
+    actions: ServerRowActions
 ) {
     ServerListItem(
         row = row,
         isSelected = isSelected,
         isAutopilot = isAutopilot,
         doubleColumnDisplay = doubleColumnDisplay,
-        actions = actions,
-        gridState = gridState
+        actions = actions
     )
 }
 
@@ -523,9 +580,7 @@ private fun ServerListItem(
     isSelected: Boolean,
     isAutopilot: Boolean,
     doubleColumnDisplay: Boolean,
-    actions: ServerRowActions,
-    listState: LazyListState? = null,
-    gridState: LazyGridState? = null
+    actions: ServerRowActions
 ) {
     val testResult = when {
         row.testDelayMillis > 0L -> stringResource(R.string.server_test_delay_value, row.testDelayMillis)
@@ -546,33 +601,10 @@ private fun ServerListItem(
         )
         return
     }
-    val flag = row.remarks.take(4).takeIf {
-        it.length >= 4 &&
-            it.codePointAt(0) in 0x1F1E6..0x1F1FF &&
-            it.codePointAt(2) in 0x1F1E6..0x1F1FF
-    }.orEmpty()
-    val name = if (flag.isNotEmpty()) row.remarks.substring(4).trimStart() else row.remarks
-    val flagScale = when {
-        listState != null -> {
-            val layout = listState.layoutInfo
-            val viewport = (layout.viewportEndOffset - layout.viewportStartOffset).coerceAtLeast(1)
-            val info = layout.visibleItemsInfo.firstOrNull { it.key == row.guid }
-            val center = info?.let { it.offset + it.size / 2f }
-                ?: (layout.viewportStartOffset + viewport / 2f)
-            val viewportCenter = layout.viewportStartOffset + viewport / 2f
-            1f - FLAG_SCROLL_SCALE * (abs(center - viewportCenter) / (viewport / 2f)).coerceIn(0f, 1f)
-        }
-        gridState != null -> {
-            val layout = gridState.layoutInfo
-            val viewport = (layout.viewportEndOffset - layout.viewportStartOffset).coerceAtLeast(1)
-            val info = layout.visibleItemsInfo.firstOrNull { it.key == row.guid }
-            val center = info?.let { it.offset.y + it.size.height / 2f }
-                ?: (layout.viewportStartOffset + viewport / 2f)
-            val viewportCenter = layout.viewportStartOffset + viewport / 2f
-            1f - FLAG_SCROLL_SCALE * (abs(center - viewportCenter) / (viewport / 2f)).coerceIn(0f, 1f)
-        }
-        else -> 1f
-    }
+    val flagEnd = row.remarks.indexOfFirst { it.isLetterOrDigit() }.let { if (it > 0) it else 0 }
+    val head = row.remarks.substring(0, flagEnd).trim()
+    val hasFlag = head.isNotEmpty()
+    val name = if (hasFlag) row.remarks.substring(flagEnd).trim() else row.remarks
     val shape = RoundedCornerShape(18.dp)
     val accent = MaterialTheme.colorScheme.primary
     val cardColor = if (isSelected) {
@@ -609,26 +641,38 @@ private fun ServerListItem(
             .padding(horizontal = 10.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (flag.isNotEmpty()) {
+        if (hasFlag) {
+            val flagContext = LocalContext.current
+            val flagCodes = head.codePoints().toArray()
+            val flagRes = if (flagCodes.size == 2 && flagCodes.all { it in 0x1F1E6..0x1F1FF }) {
+                val code = String(CharArray(2) { ('a'.code + flagCodes[it] - 0x1F1E6).toChar() })
+                flagContext.resources.getIdentifier("flag_$code", "drawable", flagContext.packageName)
+            } else {
+                0
+            }
             Box(
                 modifier = Modifier
                     .width(46.dp)
                     .height(34.dp)
-                    .graphicsLayer {
-                        scaleX = flagScale
-                        scaleY = flagScale
-                        alpha = 0.8f + 0.2f * flagScale
-                    }
                     .clip(RoundedCornerShape(10.dp))
                     .background(MaterialTheme.colorScheme.surfaceContainerHighest),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = flag,
-                    fontSize = 21.sp,
-                    lineHeight = 25.sp,
-                    maxLines = 1
-                )
+                if (flagRes != 0) {
+                    Image(
+                        painter = painterResource(flagRes),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Text(
+                        text = head,
+                        fontSize = 21.sp,
+                        lineHeight = 25.sp,
+                        maxLines = 1
+                    )
+                }
             }
             Spacer(Modifier.width(10.dp))
         }

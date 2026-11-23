@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
@@ -26,13 +24,10 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -41,7 +36,6 @@ import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.extension.toSpeedString
 import com.v2ray.ang.ui.compose.ConfirmDialog
 import com.v2ray.ang.ui.compose.QRCodeDialog
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 @Composable
@@ -83,11 +77,6 @@ fun MainScreen(
         }
     }
 
-    val pagerState = rememberPagerState(
-        initialPage = 0,
-        pageCount = { groups.size.coerceAtLeast(1) }
-    )
-
     val lazyListStates = remember { mutableStateMapOf<String, LazyListState>() }
     val lazyGridStates = remember { mutableStateMapOf<String, LazyGridState>() }
 
@@ -97,30 +86,49 @@ fun MainScreen(
         lazyGridStates.keys.retainAll(validGroupIds)
     }
 
-    LaunchedEffect(groups, uiState.selectedGroupId) {
-        if (groups.isEmpty()) return@LaunchedEffect
-        val selectedIndex = groups.indexOfFirst { it.id == uiState.selectedGroupId }
-            .takeIf { it >= 0 } ?: 0
-        if (!pagerState.isScrollInProgress && pagerState.settledPage != selectedIndex) {
-            pagerState.scrollToPage(selectedIndex)
-        }
-    }
-
     LaunchedEffect(isRunning) {
         if (!isRunning) showStopConfirm = false
     }
 
-    val latestGroups by rememberUpdatedState(groups)
-
-    LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.settledPage }
-            .distinctUntilChanged()
-            .collect { page ->
-                val currentGroups = latestGroups
-                if (page in currentGroups.indices) {
-                    onAction(MainAction.SelectGroup(currentGroups[page].id))
+    val connectionHeader: @Composable () -> Unit = {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            ConnectButton(
+                isRunning = isRunning,
+                startTime = uiState.serviceStartTime,
+                onClick = {
+                    if (isRunning && uiState.killSwitch) {
+                        showStopConfirm = true
+                    } else {
+                        onAction(MainAction.ToggleService)
+                    }
                 }
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = displayText,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.clickable { onAction(MainAction.TestCurrentServer) }
+            )
+            if (isRunning) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = stringResource(
+                        R.string.main_speed_format,
+                        uiState.downlink.toSpeedString(),
+                        uiState.uplink.toSpeedString()
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
     }
 
     MainDialogs(
@@ -220,95 +228,49 @@ fun MainScreen(
             },
             floatingActionButton = {},
         ) { innerPadding ->
-            val layoutDirection = LocalLayoutDirection.current
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp, bottom = 0.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    ConnectButton(
-                        isRunning = isRunning,
-                        startTime = uiState.serviceStartTime,
-                        onClick = {
-                            if (isRunning && uiState.killSwitch) {
-                                showStopConfirm = true
-                            } else {
-                                onAction(MainAction.ToggleService)
-                            }
+                val selectedGroup = groups.firstOrNull { it.id == uiState.selectedGroupId }
+                    ?: groups.firstOrNull()
+                if (selectedGroup != null) {
+                    GroupPagerPage(
+                        groupId = selectedGroup.id,
+                        mainViewModel = mainViewModel,
+                        selectedGuid = selectedGuid,
+                        locateTarget = uiState.locateTarget,
+                        doubleColumnDisplay = doubleColumnDisplay,
+                        searchQuery = searchQuery,
+                        lazyListStates = lazyListStates,
+                        lazyGridStates = lazyGridStates,
+                        onSelectServer = { guid -> onAction(MainAction.SelectServer(guid)) },
+                        onEditServer = { guid, profile -> onAction(MainAction.EditServer(guid, profile)) },
+                        onShareServer = { guid, profile ->
+                            shareTarget = Triple(guid, profile, false)
                         },
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = displayText,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier
-                            .clickable { onAction(MainAction.TestCurrentServer) },
-                    )
-                    if (isRunning) {
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = stringResource(
-                                R.string.main_speed_format,
-                                uiState.downlink.toSpeedString(),
-                                uiState.uplink.toSpeedString()
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        onMoreServer = { guid, profile ->
+                            shareTarget = Triple(guid, profile, true)
+                        },
+                        onRemoveServer = removeServer,
+                        usageInfo = selectedGroup.usageInfo,
+                        groupTitle = selectedGroup.remarks,
+                        otherGroups = groups.filter { it.id != selectedGroup.id },
+                        onSelectGroup = { onAction(MainAction.SelectGroup(it)) },
+                        onOpenLink = { url -> onAction(MainAction.OpenSubscriptionLink(url)) },
+                        sortByPing = sortByPing,
+                        onToggleSortByPing = { onAction(MainAction.ToggleSortByPing) },
+                        connectionHeader = connectionHeader,
+                        contentPadding = PaddingValues(
+                            start = 12.dp,
+                            top = 0.dp,
+                            end = 12.dp,
+                            bottom = 80.dp
                         )
-                    }
-                }
-
-                if (groups.isNotEmpty()) {
-                    HorizontalPager(
-                        state = pagerState,
-                        modifier = Modifier.fillMaxSize(),
-                        userScrollEnabled = true,
-                        beyondViewportPageCount = 1,
-                        key = { page -> groups.getOrNull(page)?.id ?: "group-page-$page" }
-                    ) { page ->
-                        val group = groups.getOrNull(page) ?: return@HorizontalPager
-
-                        GroupPagerPage(
-                            groupId = group.id,
-                            mainViewModel = mainViewModel,
-                            selectedGuid = selectedGuid,
-                            locateTarget = uiState.locateTarget,
-                            doubleColumnDisplay = doubleColumnDisplay,
-                            searchQuery = searchQuery,
-                            lazyListStates = lazyListStates,
-                            lazyGridStates = lazyGridStates,
-                            onSelectServer = { guid -> onAction(MainAction.SelectServer(guid)) },
-                            onEditServer = { guid, profile -> onAction(MainAction.EditServer(guid, profile)) },
-                            onShareServer = { guid, profile ->
-                                shareTarget = Triple(guid, profile, false)
-                            },
-                            onMoreServer = { guid, profile ->
-                                shareTarget = Triple(guid, profile, true)
-                            },
-                            onRemoveServer = removeServer,
-                            usageInfo = group.usageInfo,
-                            groupTitle = group.remarks,
-                            otherGroups = groups.filter { it.id != group.id },
-                            onSelectGroup = { onAction(MainAction.SelectGroup(it)) },
-                            onOpenLink = { url -> onAction(MainAction.OpenSubscriptionLink(url)) },
-                            sortByPing = sortByPing,
-                            onToggleSortByPing = { onAction(MainAction.ToggleSortByPing) },
-                            contentPadding = PaddingValues(
-                                start = 12.dp,
-                                top = 0.dp,
-                                end = 12.dp,
-                                bottom = 80.dp
-                            )
-                        )
-                    }
+                    )
+                } else {
+                    connectionHeader()
                 }
             }
         }

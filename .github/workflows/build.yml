@@ -92,6 +92,26 @@ jobs:
         chmod 755 gradlew
         ./gradlew :app:testPlaystoreDebugUnitTest
 
+    - name: Download flag assets
+      run: |
+        FLAGS=$(mktemp -d)
+        git -C "$FLAGS" init -q
+        git -C "$FLAGS" remote add origin https://github.com/googlefonts/noto-emoji
+        git -C "$FLAGS" fetch -q --depth 1 --filter=blob:none origin 99701e07d3d1fe1bdbcdb14964547f0fd592966f
+        git -C "$FLAGS" checkout -q FETCH_HEAD -- third_party/region-flags/png
+        DST="${{ github.workspace }}/V2rayNG/app/src/main/res/drawable-nodpi"
+        mkdir -p "$DST"
+        for file in "$FLAGS"/third_party/region-flags/png/*.png; do
+          name=$(basename "$file" .png)
+          case "$name" in
+            [A-Z][A-Z]) cp "$file" "$DST/flag_$(echo "$name" | tr 'A-Z' 'a-z').png" ;;
+          esac
+        done
+        COUNT=$(find "$DST" -name 'flag_*.png' | wc -l)
+        echo "flags: $COUNT"
+        test "$COUNT" -gt 200
+        rm -rf "$FLAGS"
+
     - name: Build APK (debug)
       env:
         KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
