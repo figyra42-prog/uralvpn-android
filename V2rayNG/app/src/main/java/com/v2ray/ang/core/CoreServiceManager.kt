@@ -28,6 +28,8 @@ import com.v2ray.ang.helper.MessageHelper
 import com.v2ray.ang.service.DialerNativeService
 import com.v2ray.ang.service.DialerWebviewService
 import com.v2ray.ang.service.NetworkMonitor
+import com.v2ray.ang.service.Socks5Probe
+import com.v2ray.ang.service.UralWatchdog
 import com.v2ray.ang.util.LogUtil
 import com.v2ray.ang.util.Utils
 import kotlinx.coroutines.CoroutineScope
@@ -56,6 +58,9 @@ object CoreServiceManager {
 
     @Volatile
     private var isReloading = false
+
+    @Volatile
+    private var isStopping = false
 
     /** Tun descriptor the core was started with, null in the proxy only and root run modes. */
     private var currentVpnInterface: ParcelFileDescriptor? = null
@@ -158,6 +163,11 @@ object CoreServiceManager {
         if (!isRunning()) {
             error("Core failed to start")
         }
+        if (isStopping) {
+            LogUtil.w(AppConfig.TAG, "StartCore-Manager: Core start aborted, service is stopping")
+            coreController.stopLoop()
+            return
+        }
 
         if (browserDialer != null) {
             browserDialer!!.stop()
@@ -182,6 +192,13 @@ object CoreServiceManager {
         }
         NotificationManager.startSpeedNotification()
         LogUtil.i(AppConfig.TAG, "StartCore-Manager: Core started successfully")
+        if (!isStopping) {
+            UralWatchdog.start(
+                isRunning = { isRunning() },
+                probe = { probeTunnel() },
+                onReload = { reloadCore() },
+            )
+        }
     }
 
     /**
@@ -190,6 +207,16 @@ object CoreServiceManager {
      * @return True if the core was stopped successfully, false otherwise.
      */
     fun stopCoreLoop(): Boolean {
+        isStopping = true
+        UralWatchdog.stop()
+        return try {
+            stopCoreLoopInternal()
+        } finally {
+            isStopping = false
+        }
+    }
+
+    private fun stopCoreLoopInternal(): Boolean {
         connectionTestScope.coroutineContext.cancelChildren()
         val service = getService() ?: return false
 
@@ -238,9 +265,30 @@ object CoreServiceManager {
         val connectivity = service.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return
         networkMonitor = NetworkMonitor(
             connectivity = connectivity,
-            onUnderlyingNetworksChanged = { networks -> serviceControl?.get()?.setUnderlyingNetworks(networks) },
+            onUnderlyingNetworksChanged = { networks ->
+                serviceControl?.get()?.setUnderlyingNetworks(networks)
+                UralWatchdog.scheduleNetworkCheck()
+            },
             onHandover = { reloadCore() },
         ).also { it.register() }
+    }
+
+    /**
+     * Probes the running core through its local SOCKS inbound, falling back to the core's own
+     * delay measurement when the local proxy is disabled.
+     */
+    internal suspend fun probeTunnel(): Boolean = withContext(Dispatchers.IO) {
+        if (SettingsManager.isLocalProxyEnabled()) {
+            Socks5Probe.check(
+                port = SettingsManager.getSocksPort(),
+                username = SettingsManager.getSocksUsername(),
+                password = SettingsManager.getSocksPassword(),
+            )
+        } else {
+            runCatching {
+                coreController.measureDelay(SettingsManager.getDelayTestUrl()) >= 0
+            }.getOrDefault(false)
+        }
     }
 
     /**
@@ -253,6 +301,7 @@ object CoreServiceManager {
      * @return True if the core is running again.
      */
     private fun reloadCore(): Boolean {
+        if (isStopping) return false
         if (isReloading) return false
         val service = getService() ?: return false
         if (!isRunning()) return false
@@ -265,6 +314,10 @@ object CoreServiceManager {
             LogUtil.i(AppConfig.TAG, "StartCore-Manager: Core reload start...")
 
             coreController.stopLoop()
+            if (isStopping) {
+                LogUtil.w(AppConfig.TAG, "StartCore-Manager: Reload aborted, service is stopping")
+                return false
+            }
             launchCore(service, tunFd, isReload = true)
 
             LogUtil.i(AppConfig.TAG, "StartCore-Manager: Core reload finished")
@@ -514,6 +567,12 @@ object CoreServiceManager {
                 Intent.ACTION_SCREEN_ON -> {
                     LogUtil.i(AppConfig.TAG, "StartCore-Manager: Screen on")
                     NotificationManager.startSpeedNotification()
+                    UralWatchdog.scheduleScreenCheck()
+                }
+
+                Intent.ACTION_USER_PRESENT -> {
+                    LogUtil.i(AppConfig.TAG, "StartCore-Manager: User present")
+                    UralWatchdog.scheduleScreenCheck()
                 }
             }
         }

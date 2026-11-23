@@ -431,6 +431,18 @@ object SettingsManager {
     }
 
     /**
+     * Whether the core exposes a local SOCKS/HTTP proxy.
+     * HEV VPN and root/LAN sharing force it on; otherwise the user setting decides.
+     */
+    fun isLocalProxyEnabled(): Boolean {
+        val forcedByHev = isVpnMode() && isUsingHevTun()
+        val forcedBySocksRoot = isRootMode() ||
+                MmkvManager.decodeSettingsBool(AppConfig.PREF_ROOT_LAN_SHARING)
+        return forcedByHev || forcedBySocksRoot ||
+                MmkvManager.decodeSettingsBool(AppConfig.PREF_ENABLE_LOCAL_PROXY, true)
+    }
+
+    /**
      *  Check if process routing can be used.
      */
     fun canUseProcessRouting(): Boolean {

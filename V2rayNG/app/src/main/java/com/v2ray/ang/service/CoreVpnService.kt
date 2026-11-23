@@ -70,6 +70,7 @@ class CoreVpnService : VpnService(), ServiceControl {
             }
         }
 
+        UralWatchdog.stop()
         unlockStart()
         NotificationManager.cancelNotification()
     }

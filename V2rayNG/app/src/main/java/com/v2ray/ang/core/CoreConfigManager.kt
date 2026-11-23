@@ -512,13 +512,7 @@ object CoreConfigManager {
      * Configure inbound listeners and related runtime options.
      */
     private fun configureInbounds(v2rayConfig: V2rayConfig) {
-        val vpn = SettingsManager.isVpnMode()
-        val useHev = SettingsManager.isUsingHevTun()
-        val forcedByHev = vpn && useHev
-        val forcedBySocksRoot = SettingsManager.isRootMode()
-                || MmkvManager.decodeSettingsBool(AppConfig.PREF_ROOT_LAN_SHARING)
-
-        val enableLocalProxy = forcedByHev || forcedBySocksRoot || MmkvManager.decodeSettingsBool(AppConfig.PREF_ENABLE_LOCAL_PROXY, true)
+        val enableLocalProxy = SettingsManager.isLocalProxyEnabled()
 
         val socksPort = SettingsManager.getSocksPort()
         val socksUsername = SettingsManager.getSocksUsername()
