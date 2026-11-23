@@ -968,8 +968,14 @@ class MainViewModel(
     private fun updateRunningState(running: Boolean, clearTestingText: Boolean = true) {
         if (!running || clearTestingText) testRequests.invalidateCurrent()
         _uiState.update { state ->
+            val startTime = when {
+                !running -> null
+                !state.isRunning -> System.currentTimeMillis()
+                else -> state.serviceStartTime
+            }
             state.copy(
                 isRunning = running,
+                serviceStartTime = startTime,
                 isTesting = testRequests.isTesting,
                 status = if (!clearTestingText && state.isRunning == running) state.status
                 else if (running) MainStatus.Connected else MainStatus.Disconnected

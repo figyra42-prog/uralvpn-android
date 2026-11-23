@@ -174,6 +174,18 @@
 
     <!-- Preferences -->
     <string name="title_settings">Tənzimləmələr</string>
+    <string name="menu_home">Ana səhifə</string>
+    <string name="menu_add_subscription">Abunə əlavə et</string>
+    <string name="menu_my_subscription">Abunəm</string>
+    <string name="menu_apps">Tətbiqlər (VPN yan keçməsi)</string>
+    <string name="menu_logs">Jurnallar</string>
+    <string name="menu_autostart">Avtomatik başlatma</string>
+    <string name="menu_updates">Yeniləmələr</string>
+    <string name="menu_notifications">Bildirişlər</string>
+    <string name="menu_uralvpn_site">UralVPN saytı</string>
+    <string name="menu_more">Daha çox</string>
+    <string name="menu_about">Haqqında</string>
+    <string name="connect_button_connected">Qoşuldu</string>
     <string name="title_advanced">Ətraflı Tənzimləmələr</string>
     <string name="title_core_settings">Nüvə Tənzimləmələri</string>
     <string name="title_vpn_settings">VPN Tənzimləmələri</string>

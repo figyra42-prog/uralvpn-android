@@ -175,6 +175,18 @@
 
     <!-- Preferences -->
     <string name="title_settings">Настройки</string>
+    <string name="menu_home">Главная</string>
+    <string name="menu_add_subscription">Добавить подписку</string>
+    <string name="menu_my_subscription">Моя подписка</string>
+    <string name="menu_apps">Приложения (обход VPN)</string>
+    <string name="menu_logs">Логи</string>
+    <string name="menu_autostart">Автозапуск</string>
+    <string name="menu_updates">Обновления</string>
+    <string name="menu_notifications">Уведомления</string>
+    <string name="menu_uralvpn_site">Сайт UralVPN</string>
+    <string name="menu_more">Дополнительно</string>
+    <string name="menu_about">О программе</string>
+    <string name="connect_button_connected">Подключён</string>
     <string name="title_advanced">Расширенные настройки</string>
     <string name="title_core_settings">Настройки ядра</string>
     <string name="title_vpn_settings">Настройки VPN</string>

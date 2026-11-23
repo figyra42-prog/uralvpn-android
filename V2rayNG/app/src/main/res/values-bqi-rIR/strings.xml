@@ -174,6 +174,18 @@
 
     <!-- Preferences -->
     <string name="title_settings">سامووا</string>
+    <string name="menu_home">خانه</string>
+    <string name="menu_add_subscription">اضافه کردن اشتراک</string>
+    <string name="menu_my_subscription">اشتراکم</string>
+    <string name="menu_apps">برنومه‌ها (رد شدن از VPN)</string>
+    <string name="menu_logs">لاگ‌ها</string>
+    <string name="menu_autostart">اجرای خودکار</string>
+    <string name="menu_updates">به‌روزرسانی‌ها</string>
+    <string name="menu_notifications">اعلان‌ها</string>
+    <string name="menu_uralvpn_site">سایت UralVPN</string>
+    <string name="menu_more">بیشتر</string>
+    <string name="menu_about">درباره</string>
+    <string name="connect_button_connected">وصل شد</string>
     <string name="title_advanced">سامووا پؽش رئڌه</string>
     <string name="title_core_settings">سامووا هسته</string>
     <string name="title_vpn_settings">سامووا VPN</string>

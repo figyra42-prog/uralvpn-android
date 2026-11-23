@@ -31,6 +31,8 @@ import com.v2ray.ang.ui.compose.verticalScrollbar
 @Composable
 fun MainTopBar(
     isLoading: Boolean,
+    showImportMenu: Boolean,
+    onImportMenuChange: (Boolean) -> Unit,
     showSearch: Boolean,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
@@ -40,7 +42,6 @@ fun MainTopBar(
     onAction: (MainAction) -> Unit,
     onMoreMenuAction: (MainMoreMenuAction) -> Unit
 ) {
-    var showImportMenu by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
     val importMenuScrollState = rememberScrollState()
     val moreMenuScrollState = rememberScrollState()
@@ -49,7 +50,7 @@ fun MainTopBar(
     val maxMenuHeight = LocalConfiguration.current.screenHeightDp.dp - statusBarHeight - navBarHeight - 20.dp
 
     AppTopBar(
-        title = "🏔UralVPN",
+        title = "🏔 UralVPN",
         onBackClick = {},
         isLoading = isLoading,
         isSearchActive = showSearch,
@@ -70,13 +71,19 @@ fun MainTopBar(
         },
         actions = {
             if (!showSearch) {
+                IconButton(onClick = { onAction(MainAction.UpdateSubscriptions) }) {
+                    Icon(
+                        painterResource(R.drawable.ic_refresh_24dp),
+                        contentDescription = stringResource(R.string.title_sub_update)
+                    )
+                }
                 IconButton(onClick = { onSearchToggle(true) }) {
                     Icon(painterResource(R.drawable.ic_search_24dp), contentDescription = stringResource(R.string.acc_search))
                 }
             }
             Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
                 IconButton(
-                    onClick = { showImportMenu = true },
+                    onClick = { onImportMenuChange(true) },
                     modifier = Modifier.size(56.dp),
                 ) {
                     Icon(
@@ -87,7 +94,7 @@ fun MainTopBar(
                 }
                 DropdownMenu(
                     expanded = showImportMenu,
-                    onDismissRequest = { showImportMenu = false },
+                    onDismissRequest = { onImportMenuChange(false) },
                     scrollState = importMenuScrollState,
                     containerColor = MaterialTheme.colorScheme.surface,
                     modifier = Modifier
@@ -96,7 +103,7 @@ fun MainTopBar(
                 ) {
                     ImportMenuContent(
                         onAction = { action ->
-                            showImportMenu = false
+                            onImportMenuChange(false)
                             onAction(action)
                         }
                     )

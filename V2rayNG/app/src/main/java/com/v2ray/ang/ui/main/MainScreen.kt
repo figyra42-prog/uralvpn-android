@@ -63,6 +63,7 @@ fun MainScreen(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var showSearch by remember { mutableStateOf(false) }
+    var showImportMenu by rememberSaveable { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
     var showDelAllConfirm by remember { mutableStateOf(false) }
     var showDelDuplicateConfirm by remember { mutableStateOf(false) }
@@ -169,6 +170,10 @@ fun MainScreen(
                 drawerState = drawerState,
                 startOnBoot = uiState.startOnBoot,
                 onStartOnBootChange = { onAction(MainAction.SetStartOnBoot(it)) },
+                onAddSubscription = {
+                    scope.launch { drawerState.close() }
+                    showImportMenu = true
+                },
                 onNavigate = { route ->
                     scope.launch { drawerState.close() }
                     onNavigate(route)
@@ -181,6 +186,8 @@ fun MainScreen(
             topBar = {
                 MainTopBar(
                     isLoading = isLoading,
+                    showImportMenu = showImportMenu,
+                    onImportMenuChange = { showImportMenu = it },
                     showSearch = showSearch,
                     searchQuery = searchQuery,
                     onSearchQueryChange = { query: String ->
@@ -227,6 +234,7 @@ fun MainScreen(
                 ) {
                     ConnectButton(
                         isRunning = isRunning,
+                        startTime = uiState.serviceStartTime,
                         onClick = {
                             if (isRunning && uiState.killSwitch) {
                                 showStopConfirm = true

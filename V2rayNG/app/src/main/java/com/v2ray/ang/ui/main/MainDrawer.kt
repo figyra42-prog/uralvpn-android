@@ -2,9 +2,8 @@ package com.v2ray.ang.ui.main
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,44 +15,55 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.v2ray.ang.R
 import com.v2ray.ang.ui.compose.AppDivider
-import com.v2ray.ang.ui.compose.SettingsSwitchItem
 import com.v2ray.ang.ui.compose.verticalScrollbar
 
 enum class MainDestination(@DrawableRes val iconRes: Int, @StringRes val labelRes: Int) {
-    Subscriptions(R.drawable.ic_subscriptions_24dp, R.string.title_sub_setting),
-    PerAppProxy(R.drawable.ic_per_apps_24dp, R.string.per_app_proxy_settings),
+    Home(R.drawable.ic_home_24dp, R.string.menu_home),
+    AddSubscription(R.drawable.ic_add_24dp, R.string.menu_add_subscription),
+    PerAppProxy(R.drawable.ic_per_apps_24dp, R.string.menu_apps),
+    Logcat(R.drawable.ic_logcat_24dp, R.string.menu_logs),
+    Settings(R.drawable.ic_settings_24dp, R.string.title_settings),
+    Subscriptions(R.drawable.ic_link_24dp, R.string.menu_my_subscription),
+    CheckUpdate(R.drawable.ic_check_update_24dp, R.string.menu_updates),
+    Notifications(R.drawable.ic_notifications_24dp, R.string.menu_notifications),
+    UralVpnSite(R.drawable.ic_translate_24dp, R.string.menu_uralvpn_site),
+    About(R.drawable.ic_about_24dp, R.string.menu_about),
     Routing(R.drawable.ic_routing_24dp, R.string.routing_settings_title),
     UserAssets(R.drawable.ic_file_24dp, R.string.title_user_asset_setting),
-    Settings(R.drawable.ic_settings_24dp, R.string.title_settings),
-    Promotion(R.drawable.ic_promotion_24dp, R.string.title_pref_promotion),
-    Logcat(R.drawable.ic_logcat_24dp, R.string.title_logcat),
-    CheckUpdate(R.drawable.ic_check_update_24dp, R.string.update_check_for_update),
     BackupRestore(R.drawable.ic_restore_24dp, R.string.title_configuration_backup_restore),
-    About(R.drawable.ic_about_24dp, R.string.title_about)
+    Promotion(R.drawable.ic_promotion_24dp, R.string.title_pref_promotion)
 }
 
-private val primaryDrawerItems = listOf(
-    MainDestination.Subscriptions,
+private val topItems = listOf(
+    MainDestination.Home,
+    MainDestination.AddSubscription,
     MainDestination.PerAppProxy,
-    MainDestination.Routing,
-    MainDestination.UserAssets,
-    MainDestination.Settings
+    MainDestination.Logcat,
+    MainDestination.Settings,
+    MainDestination.Subscriptions
 )
 
-private val drawerItems = primaryDrawerItems + listOf(
+private val bottomItems = listOf(
     MainDestination.CheckUpdate,
-    MainDestination.BackupRestore,
+    MainDestination.Notifications,
+    MainDestination.UralVpnSite,
     MainDestination.About
+)
+
+private val moreItems = listOf(
+    MainDestination.Routing,
+    MainDestination.UserAssets,
+    MainDestination.BackupRestore,
+    MainDestination.Promotion
 )
 
 @Composable
@@ -61,6 +71,7 @@ fun MainDrawerContent(
     drawerState: DrawerState,
     startOnBoot: Boolean,
     onStartOnBootChange: (Boolean) -> Unit,
+    onAddSubscription: () -> Unit,
     onNavigate: (MainDestination) -> Unit
 ) {
     val drawerScrollState = rememberScrollState()
@@ -75,42 +86,71 @@ fun MainDrawerContent(
                 .verticalScroll(drawerScrollState)
                 .verticalScrollbar(drawerScrollState)
         ) {
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "🏔UralVPN",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-            SettingsSwitchItem(
-                title = stringResource(R.string.title_pref_is_booted),
-                summary = stringResource(R.string.summary_pref_is_booted),
-                checked = startOnBoot,
-                onCheckedChange = onStartOnBootChange
+            Spacer(Modifier.height(36.dp))
+            Text(
+                text = "🏔UralVPN",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 28.dp, vertical = 12.dp)
             )
-            AppDivider()
-            drawerItems.forEachIndexed { index, item ->
-                if (index == primaryDrawerItems.size) AppDivider()
-                NavigationDrawerItem(
-                    label = { Text(stringResource(item.labelRes)) },
-                    selected = false,
-                    onClick = { onNavigate(item) },
-                    icon = { Icon(painterResource(item.iconRes), contentDescription = null) },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                )
+            Spacer(Modifier.height(12.dp))
+
+            topItems.forEach { item ->
+                DrawerItem(item, onAddSubscription, onNavigate)
             }
+
+            NavigationDrawerItem(
+                label = { Text(stringResource(R.string.menu_autostart)) },
+                selected = false,
+                onClick = { onStartOnBootChange(!startOnBoot) },
+                icon = {
+                    Icon(
+                        painterResource(R.drawable.ic_power_24dp),
+                        contentDescription = null
+                    )
+                },
+                badge = {
+                    Switch(
+                        checked = startOnBoot,
+                        onCheckedChange = onStartOnBootChange
+                    )
+                },
+                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+            )
+
+            bottomItems.forEach { item ->
+                DrawerItem(item, onAddSubscription, onNavigate)
+            }
+
+            AppDivider()
+            Text(
+                text = stringResource(R.string.menu_more),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.padding(start = 28.dp, end = 28.dp, top = 12.dp, bottom = 4.dp)
+            )
+            moreItems.forEach { item ->
+                DrawerItem(item, onAddSubscription, onNavigate)
+            }
+            Spacer(Modifier.height(16.dp))
         }
     }
+}
+
+@Composable
+private fun DrawerItem(
+    item: MainDestination,
+    onAddSubscription: () -> Unit,
+    onNavigate: (MainDestination) -> Unit
+) {
+    NavigationDrawerItem(
+        label = { Text(stringResource(item.labelRes)) },
+        selected = false,
+        onClick = {
+            if (item == MainDestination.AddSubscription) onAddSubscription()
+            else onNavigate(item)
+        },
+        icon = { Icon(painterResource(item.iconRes), contentDescription = null) },
+        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+    )
 }

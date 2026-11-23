@@ -174,6 +174,18 @@
 
     <!-- Preferences -->
     <string name="title_settings">সেটিংস</string>
+    <string name="menu_home">হোম</string>
+    <string name="menu_add_subscription">সাবস্ক্রিপশন যোগ করুন</string>
+    <string name="menu_my_subscription">আমার সাবস্ক্রিপশন</string>
+    <string name="menu_apps">অ্যাপ (VPN বাইপাস)</string>
+    <string name="menu_logs">লগ</string>
+    <string name="menu_autostart">স্বয়ংক্রিয় চালু</string>
+    <string name="menu_updates">আপডেট</string>
+    <string name="menu_notifications">বিজ্ঞপ্তি</string>
+    <string name="menu_uralvpn_site">UralVPN ওয়েবসাইট</string>
+    <string name="menu_more">আরও</string>
+    <string name="menu_about">সম্পর্কে</string>
+    <string name="connect_button_connected">সংযুক্ত</string>
     <string name="title_advanced">এডভান্সড সেটিংস</string>
     <string name="title_core_settings">কোর সেটিংস</string>
     <string name="title_vpn_settings">VPN সেটিংস</string>
