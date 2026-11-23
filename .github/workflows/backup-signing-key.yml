@@ -2,6 +2,9 @@ name: Backup signing key
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/backup-signing-key.yml
 
 permissions:
   contents: write
@@ -10,7 +13,20 @@ jobs:
   backup:
     runs-on: ubuntu-latest
     steps:
+      - name: Check backup secrets
+        id: check
+        env:
+          BACKUP_PASS: ${{ secrets.SIGNING_BACKUP_PASS }}
+          PAT: ${{ secrets.XRAY_REPO_PAT }}
+        run: |
+          if [ -z "${BACKUP_PASS:-}" ] || [ -z "${PAT:-}" ]; then
+            echo "Секреты SIGNING_BACKUP_PASS или XRAY_REPO_PAT не заданы — бэкап пропущен."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Build encrypted backup
+        if: steps.check.outputs.skip != 'true'
         env:
           KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
           KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
@@ -38,6 +54,7 @@ jobs:
           openssl enc -aes-256-cbc -a -pbkdf2 -iter 200000 -salt -pass env:BACKUP_PASS -in /tmp/signing-backup.tar.gz -out /tmp/UralVPN-signing-backup.enc
           sha256sum /tmp/UralVPN-signing-backup.enc
       - name: Upload to private repo
+        if: steps.check.outputs.skip != 'true'
         env:
           PAT: ${{ secrets.XRAY_REPO_PAT }}
         run: |
