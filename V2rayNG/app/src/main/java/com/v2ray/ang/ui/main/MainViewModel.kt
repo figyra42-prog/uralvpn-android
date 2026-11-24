@@ -242,6 +242,8 @@ class MainViewModel(
         if (testResultFlushJob?.isActive == true) return
 
         testResultFlushJob = viewModelScope.launch {
+            // Publish the first result immediately; later results are coalesced briefly.
+            flushPendingTestResults(request)
             while (pendingTestResults.isNotEmpty()) {
                 delay(TEST_RESULT_FLUSH_INTERVAL_MS)
                 flushPendingTestResults(request)
@@ -1112,6 +1114,6 @@ class MainViewModel(
     }
 
     private companion object {
-        const val TEST_RESULT_FLUSH_INTERVAL_MS = 500L
+        const val TEST_RESULT_FLUSH_INTERVAL_MS = 100L
     }
 }
