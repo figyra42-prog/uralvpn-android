@@ -68,4 +68,29 @@ class UralSimulationTest {
             .getAsJsonArray("vnext").first().asJsonObject.get("port").asInt
         assertEquals(443, port)
     }
+
+    @Test
+    fun autopilotCustomConfigBlocksOnlyAutoDirectMembers() {
+        val content = """{"outbounds":[
+            {"protocol":"vless","tag":"fb","settings":{"vnext":[{"port":443}]}},
+            {"protocol":"vless","tag":"auto","settings":{"vnext":[{"port":443}]}},
+            {"protocol":"hysteria","tag":"auto-4","settings":{"address":"x","port":443,"version":2}},
+            {"protocol":"vless","tag":"cdn","settings":{"vnext":[{"port":443}]}}
+        ]}"""
+        val root = JsonParser.parseString(
+            UralSimulation.applyToCustomConfig(content, "АВТОПИЛОТ 💫", true)
+        ).asJsonObject
+        fun port(tag: String): Int {
+            val outbound = root.getAsJsonArray("outbounds")
+                .first { it.asJsonObject.get("tag").asString == tag }.asJsonObject
+            val settings = outbound.getAsJsonObject("settings")
+            return settings.getAsJsonArray("vnext")?.firstOrNull()
+                ?.asJsonObject?.get("port")?.asInt
+                ?: settings.get("port").asInt
+        }
+        assertEquals(1, port("auto"))
+        assertEquals(1, port("auto-4"))
+        assertEquals(443, port("fb"))
+        assertEquals(443, port("cdn"))
+    }
 }

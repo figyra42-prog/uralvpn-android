@@ -41,22 +41,39 @@ object UralSimulation {
         applyToCustomConfig(content, remark, isEnabled())
 
     internal fun applyToCustomConfig(content: String, remark: String, enabled: Boolean): String {
-        if (!enabled || isProtected(remark)) return content
+        if (!enabled) return content
+        val autopilot = isAutopilot(remark)
+        if (isProtected(remark) && !autopilot) return content
         return runCatching {
             val root = JsonParser.parseString(content).asJsonObject
             val outbounds = root.getAsJsonArray("outbounds") ?: return@runCatching content
             var changed = false
             for (element in outbounds) {
                 val outbound = element.asJsonObject
-                val protocol = outbound.get("protocol")?.takeIf { !it.isJsonNull }?.asString
-                if (protocol == "freedom" || protocol == "blackhole") continue
-                val vnext = outbound.getAsJsonObject("settings")
-                    ?.getAsJsonArray("vnext")
-                    ?.firstOrNull()?.asJsonObject ?: continue
-                vnext.addProperty("port", CLOSED_PORT.toInt())
-                changed = true
+                val tag = outbound.get("tag")?.takeIf { !it.isJsonNull }?.asString.orEmpty()
+                if (autopilot) {
+                    if (!tag.startsWith("auto", ignoreCase = true)) continue
+                } else {
+                    val protocol = outbound.get("protocol")?.takeIf { !it.isJsonNull }?.asString
+                    if (protocol == "freedom" || protocol == "blackhole") continue
+                }
+                val settings = outbound.getAsJsonObject("settings") ?: continue
+                val vnext = settings.getAsJsonArray("vnext")?.firstOrNull()?.asJsonObject
+                if (vnext != null) {
+                    vnext.addProperty("port", CLOSED_PORT.toInt())
+                    changed = true
+                } else if (settings.has("port")) {
+                    settings.addProperty("port", CLOSED_PORT.toInt())
+                    changed = true
+                }
             }
             if (changed) root.toString() else content
         }.getOrDefault(content)
+    }
+
+    internal fun isAutopilot(remark: String): Boolean {
+        val value = remark.lowercase()
+        return "автопилот" in value || "autopilot" in value ||
+            "автовыбор" in value || "auto balancer" in value || "two tier" in value
     }
 }
