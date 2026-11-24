@@ -1,0 +1,140 @@
+name: UralVPN Xray signed build
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: 'Build number (versionCode = 4000000 + 1000 + build_number)'
+        required: true
+        default: '56'
+        type: string
+  push:
+    branches:
+      - xray-signed
+
+permissions:
+  contents: write
+
+env:
+  BUILD_NUMBER: ${{ github.event.inputs.build_number || '56' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Xray source
+        uses: actions/checkout@v7
+        with:
+          repository: figyra42-prog/uralvpn-xray-proto
+          ref: xray-proto
+          token: ${{ secrets.XRAY_REPO_PAT }}
+          path: xray
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          log-accepted-android-sdk-licenses: false
+          cmdline-tools-version: '14742923'
+          packages: 'platforms;android-37.0 build-tools;37.0.0 platform-tools'
+
+      - name: Install NDK
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;30.0.16248370"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/30.0.16248370" >> "$GITHUB_ENV"
+          sed -i 's/^    compileSdk = 37$/    compileSdk = 37\n    ndkVersion = "30.0.16248370"/' "$GITHUB_WORKSPACE/xray/V2rayNG/app/build.gradle.kts"
+
+      - name: Build libhevtun
+        working-directory: xray
+        run: bash compile-hevtun.sh
+
+      - name: Copy libhevtun
+        run: cp -r "$GITHUB_WORKSPACE/xray/libs" "$GITHUB_WORKSPACE/xray/V2rayNG/app"
+
+      - name: Fetch AndroidLibXrayLite tag
+        run: |
+          cd "$GITHUB_WORKSPACE/xray/AndroidLibXrayLite"
+          echo "CURRENT_TAG=$(git describe --tags --abbrev=0)" >> "$GITHUB_ENV"
+
+      - name: Download libv2ray
+        uses: robinraju/release-downloader@v1.13
+        with:
+          repository: '2dust/AndroidLibXrayLite'
+          tag: ${{ env.CURRENT_TAG }}
+          fileName: 'libv2ray.aar'
+          out-file-path: xray/V2rayNG/app/libs/
+
+      - name: Setup Java
+        uses: actions/setup-java@v6.1.0
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Run unit tests
+        working-directory: xray/V2rayNG
+        run: |
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+          chmod 755 gradlew
+          ./gradlew :app:testPlaystoreDebugUnitTest
+
+      - name: Download flag assets
+        run: |
+          FLAGS=$(mktemp -d)
+          git -C "$FLAGS" init -q
+          git -C "$FLAGS" remote add origin https://github.com/googlefonts/noto-emoji
+          git -C "$FLAGS" fetch -q --depth 1 --filter=blob:none origin 99701e07d3d1fe1bdbcdb14964547f0fd592966f
+          git -C "$FLAGS" checkout -q FETCH_HEAD -- third_party/region-flags/png
+          DST="$GITHUB_WORKSPACE/xray/V2rayNG/app/src/main/res/drawable-nodpi"
+          mkdir -p "$DST"
+          for file in "$FLAGS"/third_party/region-flags/png/*.png; do
+            name=$(basename "$file" .png)
+            case "$name" in
+              [A-Z][A-Z]) cp "$file" "$DST/flag_$(echo "$name" | tr 'A-Z' 'a-z').png" ;;
+            esac
+          done
+          test "$(find "$DST" -name 'flag_*.png' | wc -l)" -gt 200
+
+      - name: Build signed APK
+        working-directory: xray/V2rayNG
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KS_KEY_PASS: ${{ secrets.ANDROID_KEY_PASS }}
+        run: |
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+          test -n "$KS_B64"
+          echo "$KS_B64" | base64 -d > app/release.keystore
+          {
+            echo "KEYSTORE_PASS=$KS_PASS"
+            echo "ALIAS_NAME=$KS_ALIAS"
+            echo "ALIAS_PASS=$KS_KEY_PASS"
+          } >> local.properties
+          chmod 755 gradlew
+          ./gradlew assemblePlaystoreDebug -PbuildNumber="${BUILD_NUMBER}"
+
+      - name: Verify production signature and version
+        run: |
+          APK=$(find "$GITHUB_WORKSPACE/xray/V2rayNG/app/build/outputs/apk" -type f -name '*arm64-v8a*.apk' | head -1)
+          test -n "$APK"
+          BTOOLS="$ANDROID_HOME/build-tools/37.0.0"
+          "$BTOOLS/apksigner" verify --print-certs "$APK" | tee /tmp/xray-signature.txt
+          grep -q '092d8f97613277ed066c622ad291edd543b73bd6a828043e42d8b6f243a21e33' /tmp/xray-signature.txt
+          "$BTOOLS/aapt2" dump badging "$APK" | grep -q "versionCode='4001056'"
+
+      - name: Draft release with APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          D=$(dirname "$(find "$GITHUB_WORKSPACE/xray/V2rayNG/app/build/outputs/apk" -type f -name '*arm64-v8a*.apk' | head -1)")
+          cp "$D"/*arm64-v8a*.apk UralVPN-Xray-arm64-v8a.apk
+          ASSETS="UralVPN-Xray-arm64-v8a.apk"
+          if ls "$D"/*universal*.apk >/dev/null 2>&1; then
+            cp "$D"/*universal*.apk UralVPN-Xray-universal.apk
+            ASSETS="$ASSETS UralVPN-Xray-universal.apk"
+          fi
+          gh release create "xray-proto-${BUILD_NUMBER}-1" $ASSETS \
+            --draft --prerelease --target "${{ github.sha }}" \
+            --title "UralVPN Xray prototype #${BUILD_NUMBER} (production signed)" \
+            --notes "Production-подпись. Пакет app.uralvpn.xray. Ставится поверх предыдущей версии 55."
