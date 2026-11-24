@@ -117,13 +117,20 @@ fun MainScreen(
                 }
             )
             Spacer(modifier = Modifier.height(2.dp))
-            val statusText = when {
-                uiState.isTesting -> stringResource(R.string.main_status_testing)
-                isRunning -> selectedServerName?.let {
-                    stringResource(R.string.main_status_connected_with, it)
-                } ?: stringResource(R.string.main_status_connected)
-                groups.isEmpty() -> stringResource(R.string.main_status_no_subscription)
-                else -> stringResource(R.string.main_status_disconnected)
+            val statusText = when (
+                mainStatusTextKind(
+                    isTesting = uiState.isTesting,
+                    isRunning = isRunning,
+                    hasGroups = groups.isNotEmpty(),
+                    selectedServerName = selectedServerName,
+                )
+            ) {
+                MainStatusText.Testing -> stringResource(R.string.main_status_testing)
+                MainStatusText.ConnectedWith ->
+                    stringResource(R.string.main_status_connected_with, selectedServerName.orEmpty())
+                MainStatusText.Connected -> stringResource(R.string.main_status_connected)
+                MainStatusText.NoSubscription -> stringResource(R.string.main_status_no_subscription)
+                MainStatusText.Disconnected -> stringResource(R.string.main_status_disconnected)
             }
             Text(
                 text = statusText,
