@@ -10,6 +10,7 @@ import com.v2ray.ang.extension.isNotNullEmpty
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.SettingsManager
 import com.v2ray.ang.handler.SpeedtestManager
+import com.v2ray.ang.handler.UralSimulation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -91,15 +92,16 @@ class RealPingWorkerService(
         val retFailure = -1L
 
         val config = MmkvManager.decodeServerConfig(guid) ?: return retFailure
-        if (!config.configType.isComplexType()
-            && config.configType != EConfigType.HYSTERIA2
-            && config.configType != EConfigType.WIREGUARD
-            && config.alpn?.startsWith("h3") != true
-            && config.server.isNotNullEmpty()
-            && config.serverPort?.toIntOrNull() != null
+        val testConfig = UralSimulation.applyToProfile(config)
+        if (!testConfig.configType.isComplexType()
+            && testConfig.configType != EConfigType.HYSTERIA2
+            && testConfig.configType != EConfigType.WIREGUARD
+            && testConfig.alpn?.startsWith("h3") != true
+            && testConfig.server.isNotNullEmpty()
+            && testConfig.serverPort?.toIntOrNull() != null
         ) {
-            val url = config.server.orEmpty()
-            val port = config.serverPort.orEmpty().toInt()
+            val url = testConfig.server.orEmpty()
+            val port = testConfig.serverPort.orEmpty().toInt()
             val tcpTime = SpeedtestManager.socketConnectTime(url, port, 1000)
             if (tcpTime <= -1L) {
                 return retFailure
@@ -117,15 +119,16 @@ class RealPingWorkerService(
         val retFailure = -1L
 
         val config = MmkvManager.decodeServerConfig(guid) ?: return retFailure
-        if (!config.configType.isComplexType()
-            && config.configType != EConfigType.HYSTERIA2
-            && config.configType != EConfigType.WIREGUARD
-            && config.alpn?.split(',')?.all { it.trim().startsWith("h3") } != true
-            && config.server.isNotNullEmpty()
-            && config.serverPort?.toIntOrNull() != null
+        val testConfig = UralSimulation.applyToProfile(config)
+        if (!testConfig.configType.isComplexType()
+            && testConfig.configType != EConfigType.HYSTERIA2
+            && testConfig.configType != EConfigType.WIREGUARD
+            && testConfig.alpn?.split(',')?.all { it.trim().startsWith("h3") } != true
+            && testConfig.server.isNotNullEmpty()
+            && testConfig.serverPort?.toIntOrNull() != null
         ) {
-            val url = config.server.orEmpty()
-            val port = config.serverPort.orEmpty().toInt()
+            val url = testConfig.server.orEmpty()
+            val port = testConfig.serverPort.orEmpty().toInt()
             val tcpTime = SpeedtestManager.socketConnectTime(url, port, 1000)
 
             return tcpTime
