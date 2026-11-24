@@ -1,7 +1,9 @@
 package com.v2ray.ang.handler
 
+import com.google.gson.JsonParser
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.dto.entities.ProfileItem
+import com.v2ray.ang.enums.EConfigType
 import com.v2ray.ang.extension.isComplexType
 
 /**
@@ -18,9 +20,10 @@ object UralSimulation {
     fun applyToProfile(profile: ProfileItem): ProfileItem =
         applyToProfile(profile, isEnabled())
 
-    /** True when the switch is on and this simple profile is a direct location, not CDN/autopilot. */
+    /** True when the switch is on and this profile is a direct location, not CDN/autopilot. */
     fun isBlocked(profile: ProfileItem): Boolean =
-        isEnabled() && !profile.configType.isComplexType() && !isProtected(profile.remarks)
+        isEnabled() && !isProtected(profile.remarks) &&
+            (profile.configType == EConfigType.CUSTOM || !profile.configType.isComplexType())
 
     internal fun applyToProfile(profile: ProfileItem, enabled: Boolean): ProfileItem =
         if (!enabled || isProtected(profile.remarks)) profile
@@ -31,5 +34,29 @@ object UralSimulation {
         return "мобильн" in value || "моб" in value || "📱" in remark ||
             "cdn" in value || "автопилот" in value || "autopilot" in value ||
             "автовыбор" in value || "auto balancer" in value || "two tier" in value
+    }
+
+    /** Closes the proxy port inside a raw custom Xray config for a direct location. */
+    fun applyToCustomConfig(content: String, remark: String): String =
+        applyToCustomConfig(content, remark, isEnabled())
+
+    internal fun applyToCustomConfig(content: String, remark: String, enabled: Boolean): String {
+        if (!enabled || isProtected(remark)) return content
+        return runCatching {
+            val root = JsonParser.parseString(content).asJsonObject
+            val outbounds = root.getAsJsonArray("outbounds") ?: return@runCatching content
+            var changed = false
+            for (element in outbounds) {
+                val outbound = element.asJsonObject
+                val protocol = outbound.get("protocol")?.takeIf { !it.isJsonNull }?.asString
+                if (protocol == "freedom" || protocol == "blackhole") continue
+                val vnext = outbound.getAsJsonObject("settings")
+                    ?.getAsJsonArray("vnext")
+                    ?.firstOrNull()?.asJsonObject ?: continue
+                vnext.addProperty("port", CLOSED_PORT.toInt())
+                changed = true
+            }
+            if (changed) root.toString() else content
+        }.getOrDefault(content)
     }
 }

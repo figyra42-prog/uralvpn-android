@@ -16,6 +16,7 @@ import com.v2ray.ang.enums.EConfigType
 import com.v2ray.ang.extension.isNotNullEmpty
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.SettingsManager
+import com.v2ray.ang.handler.UralSimulation
 import com.v2ray.ang.util.HttpUtil
 import com.v2ray.ang.util.JsonUtil
 import com.v2ray.ang.util.LogUtil
@@ -94,9 +95,11 @@ object CoreConfigManager {
                 guid = configContext.guid,
                 errorMessage = "Failed to build config context, config is empty"
             )
-        val result = ConfigResult(true, configContext.guid, raw)
+        val remark = MmkvManager.decodeServerConfig(configContext.guid)?.remarks.orEmpty()
+        val effectiveRaw = UralSimulation.applyToCustomConfig(raw, remark)
+        val result = ConfigResult(true, configContext.guid, effectiveRaw)
 
-        val json = JsonUtil.parseString(raw)?.takeIf { it.isJsonObject }?.asJsonObject ?: return result
+        val json = JsonUtil.parseString(effectiveRaw)?.takeIf { it.isJsonObject }?.asJsonObject ?: return result
 
         // Keep traffic statistics for the live speed display. The notification has its own
         // preference; the counters are cheap and are needed by the main screen.
