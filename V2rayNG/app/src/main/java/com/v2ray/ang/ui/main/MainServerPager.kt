@@ -630,7 +630,7 @@ private fun AutopilotCard(
                 )
             }
         }
-        if (isTesting) {
+        if (ServerPingDisplay.showSpinner(isTesting, row.testDelayMillis)) {
             CircularProgressIndicator(
                 modifier = Modifier.size(16.dp),
                 strokeWidth = 1.5.dp,
@@ -777,7 +777,7 @@ private fun ServerListItem(
             }
         }
         Spacer(Modifier.width(8.dp))
-        if (isTesting) {
+        if (ServerPingDisplay.showSpinner(isTesting, row.testDelayMillis)) {
             CircularProgressIndicator(
                 modifier = Modifier.size(16.dp),
                 strokeWidth = 1.5.dp,
