@@ -76,6 +76,8 @@ data class V2rayConfig(
             /*Common */
             var address: Any? = null,
             var port: Int? = null,
+            /*VMess/VLESS*/
+            var vnext: List<VnextBean>? = null,
             var level: Int? = null,
             var email: String? = null,
             /*HTTP/SOCKS*/
@@ -105,6 +107,11 @@ data class V2rayConfig(
                 var publicKey: String = "",
                 var preSharedKey: String? = null,
                 var endpoint: String = ""
+            )
+
+            data class VnextBean(
+                var address: String? = null,
+                var port: Int? = null,
             )
         }
 
@@ -312,7 +319,7 @@ data class V2rayConfig(
             return if (protocol.equals(EConfigType.WIREGUARD.name, true)) {
                 settings?.peers?.firstOrNull()?.endpoint?.substringBeforeLast(":")
             } else {
-                settings?.address as? String
+                (settings?.address as? String) ?: settings?.vnext?.firstOrNull()?.address
             }
         }
 
@@ -320,7 +327,7 @@ data class V2rayConfig(
             return if (protocol.equals(EConfigType.WIREGUARD.name, true)) {
                 settings?.peers?.firstOrNull()?.endpoint?.substringAfterLast(":")?.toIntOrNull()
             } else {
-                settings?.port
+                settings?.port ?: settings?.vnext?.firstOrNull()?.port
             }
         }
 

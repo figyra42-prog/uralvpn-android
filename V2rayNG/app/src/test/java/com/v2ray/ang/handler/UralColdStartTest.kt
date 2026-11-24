@@ -30,6 +30,14 @@ class UralColdStartTest {
     }
 
     @Test
+    fun unknownConnectIsShownAsNa() {
+        val report = UralColdStart.report(
+            listOf(UralColdStart.Row("Unknown", "vless", -1, 100))
+        )
+        assertTrue(report.contains("connect n/a + first request 100"))
+    }
+
+    @Test
     fun emptyReportIsEmpty() {
         assertEquals("", UralColdStart.report(emptyList()))
     }

@@ -16,14 +16,15 @@ object UralColdStart {
         return buildString {
             appendLine("ural-timing, cold open of the servers:")
             rows.sortedBy { it.totalMillis }.forEach { row ->
-                val connect = row.connectMillis.coerceAtLeast(0L)
-                val first = (row.totalMillis - connect).coerceAtLeast(0L)
+                val connect = row.connectMillis
+                val first = if (connect >= 0L) (row.totalMillis - connect).coerceAtLeast(0L) else row.totalMillis
+                val connectText = if (connect >= 0L) connect.toString() else "n/a"
                 appendLine(
                     String.format(
                         Locale.US,
-                        "%4d ms cold (connect %d + first request %d), ping shown %d ms: %s [%s]",
+                        "%4d ms cold (connect %s + first request %d), ping shown %d ms: %s [%s]",
                         row.totalMillis,
-                        connect,
+                        connectText,
                         first,
                         row.totalMillis,
                         row.remark,
