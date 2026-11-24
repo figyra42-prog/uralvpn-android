@@ -2,6 +2,8 @@ package com.v2ray.ang.ui.settings
 
 import android.app.Application
 import android.content.Intent
+import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
@@ -24,6 +26,9 @@ class SettingsViewModel(application: Application) : BaseViewModel(application) {
     private val _alwaysOnState = MutableStateFlow(AlwaysOnVpnState.UNAVAILABLE)
     val alwaysOnState = _alwaysOnState.asStateFlow()
 
+    private val _batteryOptimizationIgnored = MutableStateFlow(true)
+    val batteryOptimizationIgnored = _batteryOptimizationIgnored.asStateFlow()
+
     suspend fun refreshSystemVpnSettings() {
         val application = getApplication<Application>()
         _systemVpnSettingsAvailable.value = withContext(Dispatchers.IO) {
@@ -32,6 +37,18 @@ class SettingsViewModel(application: Application) : BaseViewModel(application) {
         }
         _alwaysOnState.value = withContext(Dispatchers.IO) {
             AlwaysOnVpn.read(application)
+        }
+    }
+
+    suspend fun refreshBatteryOptimizationStatus() {
+        val application = getApplication<Application>()
+        _batteryOptimizationIgnored.value = withContext(Dispatchers.IO) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val powerManager = application.getSystemService(PowerManager::class.java)
+                powerManager?.isIgnoringBatteryOptimizations(application.packageName) == true
+            } else {
+                true
+            }
         }
     }
 

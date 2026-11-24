@@ -302,8 +302,7 @@ class MainActivity : HelperBaseComponentActivity() {
 
     private fun setSelectServer(guid: String) {
         val selected = mainViewModel.uiState.value.selectedGuid
-        if (guid != selected) {
-            mainViewModel.updateSelectedGuid(guid)
+        if (guid != selected && mainViewModel.updateSelectedGuid(guid)) {
             LauncherManager.restartService(this)
         }
     }

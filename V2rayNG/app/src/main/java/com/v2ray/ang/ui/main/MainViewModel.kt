@@ -20,6 +20,7 @@ import com.v2ray.ang.extension.matchesPattern
 import com.v2ray.ang.extension.moveItem
 import com.v2ray.ang.handler.SubscriptionInfoParser
 import com.v2ray.ang.handler.UralRusApps
+import com.v2ray.ang.handler.UralSimulation
 import com.v2ray.ang.ui.base.BaseViewModel
 import com.v2ray.ang.util.LogUtil
 import kotlinx.coroutines.CancellationException
@@ -873,9 +874,15 @@ class MainViewModel(
         }
     }
 
-    fun updateSelectedGuid(guid: String) {
+    fun updateSelectedGuid(guid: String): Boolean {
+        val profile = dataSource.decodeServerConfig(guid)
+        if (profile != null && UralSimulation.isBlocked(profile)) {
+            toast(R.string.toast_simulation_direct_blocked)
+            return false
+        }
         dataSource.setSelectServer(guid)
         _uiState.update { it.copy(selectedGuid = guid) }
+        return true
     }
 
     fun refreshSelectedGuid() {

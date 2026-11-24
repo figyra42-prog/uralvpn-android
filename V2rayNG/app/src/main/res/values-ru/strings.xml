@@ -634,4 +634,9 @@
     <string name="sub_info_status_active">СТАТУС ПОДПИСКИ | ✅ АКТИВНА</string>
     <string name="sub_info_status_expired">СТАТУС ПОДПИСКИ | ❌ ИСТЕКЛА</string>
     <string name="sub_info_remaining">Осталось: %1$d дн.</string>
+    <string name="title_pref_battery_optimization">Оптимизация батареи</string>
+    <string name="summary_pref_battery_optimization_on">Разрешение выдано: система не усыпляет VPN.</string>
+    <string name="summary_pref_battery_optimization_off">Разрешите работу в фоне, иначе Android может отключать VPN.</string>
+    <string name="toast_battery_settings_unavailable">Не удалось открыть настройки батареи.</string>
+    <string name="toast_simulation_direct_blocked">Прямые локации отключены имитацией блокировки.</string>
 </resources>

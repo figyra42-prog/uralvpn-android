@@ -628,4 +628,9 @@
     <string name="sub_info_status_active">Subscription status | ✅ ACTIVE</string>
     <string name="sub_info_status_expired">Subscription status | ❌ EXPIRED</string>
     <string name="sub_info_remaining">Remaining: %1$d days</string>
+    <string name="title_pref_battery_optimization">Battery optimization</string>
+    <string name="summary_pref_battery_optimization_on">Exemption granted: the system will not sleep the VPN.</string>
+    <string name="summary_pref_battery_optimization_off">Allow background work, otherwise Android may stop the VPN.</string>
+    <string name="toast_battery_settings_unavailable">Cannot open battery settings.</string>
+    <string name="toast_simulation_direct_blocked">Direct locations are disabled by the block simulation.</string>
 </resources>

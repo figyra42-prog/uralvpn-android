@@ -2,6 +2,8 @@ package com.v2ray.ang.ui.settings
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.viewModels
@@ -66,6 +68,7 @@ class SettingsActivity : BaseComponentActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.refreshSystemVpnSettings()
+                viewModel.refreshBatteryOptimizationStatus()
             }
         }
     }
@@ -85,15 +88,49 @@ class SettingsActivity : BaseComponentActivity() {
         toastError(R.string.toast_system_vpn_settings_unavailable)
     }
 
+    private fun openBatteryOptimizationSettings() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
+        try {
+            startActivity(
+                Intent(
+                    Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                    Uri.parse("package:$packageName"),
+                )
+            )
+        } catch (error: ActivityNotFoundException) {
+            openBatteryOptimizationList(error)
+        } catch (error: SecurityException) {
+            openBatteryOptimizationList(error)
+        }
+    }
+
+    private fun openBatteryOptimizationList(cause: RuntimeException) {
+        try {
+            startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+        } catch (error: ActivityNotFoundException) {
+            reportBatterySettingsFailure(cause)
+        } catch (error: SecurityException) {
+            reportBatterySettingsFailure(error)
+        }
+    }
+
+    private fun reportBatterySettingsFailure(error: RuntimeException) {
+        LogUtil.e(AppConfig.TAG, "Cannot open battery optimization settings", error)
+        toastError(R.string.toast_battery_settings_unavailable)
+    }
+
     @Composable
     override fun ScreenContent() {
         val alwaysOnState by viewModel.alwaysOnState.collectAsStateWithLifecycle()
+        val batteryOptimizationIgnored by viewModel.batteryOptimizationIgnored.collectAsStateWithLifecycle()
         SettingsScreen(
             viewModel = viewModel,
             alwaysOnState = alwaysOnState,
+            batteryOptimizationIgnored = batteryOptimizationIgnored,
             onBackClick = { finish() },
             onModeHelpClicked = { Utils.openUri(this, AppConfig.APP_WIKI_MODE) },
-            onSystemVpnSettingsClicked = ::openSystemVpnSettings
+            onSystemVpnSettingsClicked = ::openSystemVpnSettings,
+            onBatteryOptimizationClicked = ::openBatteryOptimizationSettings
         )
     }
 }
@@ -103,9 +140,11 @@ class SettingsActivity : BaseComponentActivity() {
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     alwaysOnState: AlwaysOnVpnState,
+    batteryOptimizationIgnored: Boolean,
     onBackClick: () -> Unit,
     onModeHelpClicked: () -> Unit,
-    onSystemVpnSettingsClicked: () -> Unit
+    onSystemVpnSettingsClicked: () -> Unit,
+    onBatteryOptimizationClicked: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
@@ -336,6 +375,17 @@ fun SettingsScreen(
                     ),
                     checked = killSwitch,
                     onCheckedChange = { killSwitch = it }
+                )
+                SettingsMenuItem(
+                    title = stringResource(R.string.title_pref_battery_optimization),
+                    subtitle = stringResource(
+                        if (batteryOptimizationIgnored) {
+                            R.string.summary_pref_battery_optimization_on
+                        } else {
+                            R.string.summary_pref_battery_optimization_off
+                        }
+                    ),
+                    onClick = onBatteryOptimizationClicked
                 )
                 if (systemVpnSettingsAvailable) {
                     SettingsMenuItem(

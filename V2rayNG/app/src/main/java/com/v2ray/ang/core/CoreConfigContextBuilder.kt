@@ -172,6 +172,7 @@ object CoreConfigContextBuilder {
                 .filter { it.server.isNotNullEmpty() }
                 .filter { Utils.isPureIpAddress(it.server!!) || Utils.isValidUrl(it.server!!) }
                 .filter { !it.configType.isComplexType() }
+                .filterNot { UralSimulation.isBlocked(it) }
                 .toList()
         } catch (e: Exception) {
             LogUtil.e(AppConfig.TAG, "Failed to resolve policy group profiles for '${config.remarks}'", e)
