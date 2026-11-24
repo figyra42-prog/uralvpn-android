@@ -268,6 +268,7 @@ fun MainScreen(
                         },
                         onRemoveServer = removeServer,
                         usageInfo = selectedGroup.usageInfo,
+                        lastUpdated = selectedGroup.lastUpdated,
                         groupTitle = selectedGroup.remarks,
                         otherGroups = groups.filter { it.id != selectedGroup.id },
                         onSelectGroup = { onAction(MainAction.SelectGroup(it)) },

@@ -612,6 +612,8 @@
     <string name="value_unknown">未知</string>
     <string name="sub_info_open_support">打开支持链接</string>
     <string name="sub_info_open_page">打开订阅信息页面</string>
+    <string name="sub_info_traffic">流量：%1$s / %2$s</string>
+    <string name="sub_info_updated">更新时间：%1$s</string>
     <string name="sub_info_unlimited">无限制</string>
 
     <string name="sub_info_status_active">Subscription status | ✅ ACTIVE</string>

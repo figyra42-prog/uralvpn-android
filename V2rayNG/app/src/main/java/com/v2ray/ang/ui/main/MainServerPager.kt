@@ -97,6 +97,7 @@ fun GroupPagerPage(
     onMoreServer: (String, ProfileItem) -> Unit,
     onRemoveServer: (String, String) -> Unit,
     usageInfo: SubscriptionUsageInfo?,
+    lastUpdated: Long? = null,
     groupTitle: String,
     otherGroups: List<GroupMapItem>,
     onSelectGroup: (String) -> Unit,
@@ -171,6 +172,7 @@ fun GroupPagerPage(
                     onToggleSortByPing = onToggleSortByPing,
                     collapsed = collapsed,
                     onToggleCollapse = { collapsed = !collapsed },
+                    lastUpdated = lastUpdated,
                 )
             }
         } else null,
@@ -416,7 +418,7 @@ private fun OtherSubscriptions(
         )
         groups.forEach { group ->
             val model = group.usageInfo?.let {
-                buildSubscriptionInfoUiModel(it, System.currentTimeMillis())
+                buildSubscriptionInfoUiModel(it, System.currentTimeMillis(), group.lastUpdated)
             }
             Surface(
                 modifier = Modifier
@@ -461,6 +463,17 @@ private fun OtherSubscriptions(
                                 text = stringResource(
                                     R.string.sub_info_expiry,
                                     Utils.formatTimestamp(it, "yyyy-MM-dd")
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1
+                            )
+                        }
+                        model.updatedMillis?.let {
+                            Text(
+                                text = stringResource(
+                                    R.string.sub_info_updated,
+                                    Utils.formatTimestamp(it)
                                 ),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -615,6 +615,8 @@
     <string name="value_unknown">অজানা</string>
     <string name="sub_info_open_support">সাপোর্ট লিঙ্ক খুলুন</string>
     <string name="sub_info_open_page">সাবস্ক্রিপশন তথ্যের পাতা খুলুন</string>
+    <string name="sub_info_traffic">ট্রাফিক: %1$s / %2$s</string>
+    <string name="sub_info_updated">আপডেট হয়েছে: %1$s</string>
     <string name="sub_info_unlimited">সীমাহীন</string>
 
     <string name="sub_info_status_active">Subscription status | ✅ ACTIVE</string>

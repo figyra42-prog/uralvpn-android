@@ -33,6 +33,19 @@ class MainSubscriptionInfoTest {
         assertTrue(model.trafficLow)
     }
 
+
+    @Test
+    fun updateTimeIsKeptWhenKnown() {
+        val model = buildSubscriptionInfoUiModel(SubscriptionUsageInfo(), now, updatedMillis = 1234L)
+        assertEquals(1234L, model.updatedMillis)
+    }
+
+    @Test
+    fun zeroUpdateTimeIsUnknown() {
+        val model = buildSubscriptionInfoUiModel(SubscriptionUsageInfo(), now, updatedMillis = 0L)
+        assertNull(model.updatedMillis)
+    }
+
     @Test
     fun expiryIsConvertedToMillisAndFlaggedWhenPast() {
         val future = buildSubscriptionInfoUiModel(SubscriptionUsageInfo(expire = now / 1000 + 60), now)

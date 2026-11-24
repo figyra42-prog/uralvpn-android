@@ -62,6 +62,8 @@ internal data class SubscriptionInfoUiModel(
     val expired: Boolean,
     /** Whole days until expiry; null when the subscription never expires. */
     val remainingDays: Long? = null,
+    /** Last successful subscription refresh; null when unknown. */
+    val updatedMillis: Long? = null,
     val supportUrl: String?,
     val webPageUrl: String?,
     /** Panel status message (Remnawave `announce` header), may be multi-line. */
@@ -77,6 +79,7 @@ internal data class SubscriptionInfoUiModel(
 internal fun buildSubscriptionInfoUiModel(
     info: SubscriptionUsageInfo,
     nowMillis: Long,
+    updatedMillis: Long? = null,
 ): SubscriptionInfoUiModel {
     val unlimited = info.total <= 0L
     val expireMillis = info.expire.takeIf { it > 0L }?.let { it * MILLIS_PER_SECOND }
@@ -92,6 +95,7 @@ internal fun buildSubscriptionInfoUiModel(
         remainingDays = expireMillis?.let {
             ((it - nowMillis).coerceAtLeast(0L) + MILLIS_PER_DAY - 1) / MILLIS_PER_DAY
         },
+        updatedMillis = updatedMillis?.takeIf { it > 0L },
         supportUrl = info.supportUrl,
         webPageUrl = info.webPageUrl,
         announce = info.announce,
@@ -113,9 +117,12 @@ internal fun SubscriptionInfoCard(
     onToggleSortByPing: () -> Unit,
     collapsed: Boolean,
     onToggleCollapse: () -> Unit,
+    lastUpdated: Long? = null,
     modifier: Modifier = Modifier,
 ) {
-    val model = remember(info) { buildSubscriptionInfoUiModel(info, System.currentTimeMillis()) }
+    val model = remember(info, lastUpdated) {
+        buildSubscriptionInfoUiModel(info, System.currentTimeMillis(), lastUpdated)
+    }
 
     Surface(
         modifier = modifier
@@ -270,24 +277,35 @@ private fun StatsRow(model: SubscriptionInfoUiModel) {
     // Figures and the slash between them always read left to right, also in right-to-left languages;
     // otherwise the bidi algorithm swaps "used / total" around the slash.
     val figuresStyle = MaterialTheme.typography.bodySmall.copy(textDirection = TextDirection.Ltr)
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(
-            text = stringResource(R.string.sub_info_traffic, model.usedBytes.toTrafficString(), totalText),
-            modifier = Modifier.weight(1f, fill = false),
-            style = figuresStyle,
-            color = if (model.trafficLow) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Spacer(Modifier.size(8.dp))
-        Text(
-            // No expiry date means the subscription never expires.
-            text = model.expireMillis?.let {
-                stringResource(R.string.sub_info_expiry, Utils.formatTimestamp(it, EXPIRY_DATE_PATTERN))
-            } ?: stringResource(R.string.sub_info_expiry, NO_EXPIRY_SYMBOL),
-            style = figuresStyle,
-            color = if (model.expired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-        )
+    Column(Modifier.fillMaxWidth()) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(
+                text = stringResource(R.string.sub_info_traffic, model.usedBytes.toTrafficString(), totalText),
+                modifier = Modifier.weight(1f, fill = false),
+                style = figuresStyle,
+                color = if (model.trafficLow) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(Modifier.size(8.dp))
+            Text(
+                // No expiry date means the subscription never expires.
+                text = model.expireMillis?.let {
+                    stringResource(R.string.sub_info_expiry, Utils.formatTimestamp(it, EXPIRY_DATE_PATTERN))
+                } ?: stringResource(R.string.sub_info_expiry, NO_EXPIRY_SYMBOL),
+                style = figuresStyle,
+                color = if (model.expired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+            )
+        }
+        model.updatedMillis?.let { updated ->
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.sub_info_updated, Utils.formatTimestamp(updated)),
+                style = figuresStyle,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+            )
+        }
     }
 }

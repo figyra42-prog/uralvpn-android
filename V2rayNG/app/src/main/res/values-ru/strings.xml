@@ -623,6 +623,8 @@
     <string name="value_unknown">неизвестно</string>
     <string name="sub_info_open_support">Открыть ссылку поддержки</string>
     <string name="sub_info_open_page">Открыть страницу подписки</string>
+    <string name="sub_info_traffic">Трафик: %1$s / %2$s</string>
+    <string name="sub_info_updated">Обновлена: %1$s</string>
     <string name="sub_info_unlimited">Без ограничений</string>
     <string name="sub_info_sort_by_ping">Сортировать по пингу</string>
     <string name="sub_info_collapse">Свернуть список серверов</string>

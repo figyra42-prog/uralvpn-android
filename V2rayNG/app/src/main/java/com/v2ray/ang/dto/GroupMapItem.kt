@@ -6,4 +6,5 @@ data class GroupMapItem(
     var id: String,
     var remarks: String,
     val usageInfo: SubscriptionUsageInfo? = null,
+    val lastUpdated: Long = -1,
 )
