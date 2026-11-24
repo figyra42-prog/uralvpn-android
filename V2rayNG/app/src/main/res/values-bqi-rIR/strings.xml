@@ -51,10 +51,7 @@
     <string name="confirm_delete_profile">ای کانفیگ پاک ابۊ، هنی هم اخۊی پاکس کۊنی؟</string>
     <string name="confirm_delete_policy_group">ای بونکۊ سیاست پاک ابۊ، هنی هم اخۊی پاکس کۊنی؟</string>
     <string name="confirm_delete_proxy_chain_member">ای عوزو زنجیره پروکسی پاک ابۊ، هنی هم اخۊی پاکس کۊنی؟</string>
-    <string name="confirm_delete_routing_rule">ای قانووݩ تور جوستن پاک ابۊ، هنی هم اخۊی پاکس کۊنی؟</string>
     <string name="confirm_delete_subscription_group">ای بونکۊ اشتراک پاک ابۊ، هنی هم اخۊی پاکس کۊنی؟</string>
-    <string name="confirm_delete_asset_file">فایل بونچک جوقرافیایی «%1$s» پاک ابۊ، هنی هم اخۊی پاکس کۊنی؟</string>
-    <string name="confirm_delete_asset_source">ای بونچک فایل جوقرافیایی پاک ابۊ، هنی هم اخۊی پاکس کۊنی؟</string>
     <string name="server_lab_remarks">نیشتنا</string>
     <string name="server_lab_address">نشۊوی</string>
     <string name="server_lab_port">پورت</string>
@@ -143,19 +140,10 @@
     <string name="toast_fetch_cert_sha256_failed">گرؽڌن جا کلک گوواهی مووفق نبی</string>
 
     <!-- UserAssetActivity -->
-    <string name="toast_asset_copy_failed">لف گیری فایل ٱنجوم نوابی، ز ی برنومه دؽوۉداری فایل هیاری بگرین</string>
     <string name="menu_item_add_asset">ٱووردن دارایی</string>
-    <string name="menu_item_add_file">ٱووردن فایل</string>
-    <string name="menu_item_add_url">ٱووردن لینگ</string>
     <string name="menu_item_scan_qrcode">اسکن کود QR</string>
-    <string name="title_url" translatable="false">URL</string>
     <string name="menu_item_download_file">دانلود فایلا</string>
-    <string name="title_user_asset_add_url">نشۊوی اینترنتی بونچک ن ازاف کۊنین</string>
-    <string name="msg_file_not_found">فایلن نجوست</string>
-    <string name="msg_remark_is_duplicate">ای نوم ز زیتر بیڌس</string>
-    <string name="asset_geo_files_sources">بونچک فایلا جوقرافیایی (اختیاری)</string>
-
-    <!-- PerAppProxyActivity -->
+<!-- PerAppProxyActivity -->
     <string name="msg_dialog_progress">هونی بار ونی ابۊ…</string>
     <string name="menu_item_search">پیتینیڌن</string>
     <string name="menu_item_select_all">پسند پوی</string>
@@ -163,7 +151,6 @@
     <string name="msg_enter_keywords">کلمه یل کلیڌی ن بزنین</string>
     <string name="switch_bypass_apps_mode">هالت دور زیڌن</string>
     <string name="menu_item_select_proxy_app">پسند خوتکار برنومه یلی ک پروکسی اخون</string>
-    <string name="msg_downloading_content">موئتوا هونی دانلود ابۊ…</string>
     <string name="menu_item_export_proxy_app">و در کشیڌن من کلیپ بورد</string>
     <string name="menu_item_import_proxy_app">و من ٱووردن ز کلیپ بورد</string>
     <string name="per_app_proxy_settings">سامووا ب تفکیک برنومه</string>
@@ -217,7 +204,6 @@
     <string name="dialog_kill_switch_title">VPN قطع بشه؟</string>
     <string name="dialog_kill_switch_message">محافظت از نشت فعاله: بعد از قطع، ترافیک مستقیم و بی VPN می‌ره.</string>
     <string name="action_disconnect">قطع</string>
-
 
     <string name="subscription_updater_job_tips">ای کار من پس زمینه ره اوۊفته وو پؽش رئڌن هو منه وارسۊوی نشووݩ داڌه ابۊ.</string>
     <string name="title_pref_auto_test_after_update_subscription">تست خوتکار بئڌ ورۊ رسۊوی کردن اشتراک</string>
@@ -276,7 +262,6 @@
 
     <string name="title_pref_vpn_mtu">VPN MTU (پؽش فرز 1500)</string>
 
-
     <string name="title_pref_domestic_dns">DNS موستقیم (اختیاری)</string>
     <string name="summary_pref_domestic_dns" translatable="false">DNS</string>
 
@@ -313,7 +298,6 @@
     <string name="title_pref_confirm_remove">قوۊل کردن پاک کردن کانفیگ</string>
     <string name="summary_pref_confirm_remove">سی پاک وابیڌن فایل کانفیگ، لنگ قوۊل کردن دووارته ز سمت منتور هڌ.</string>
 
-
     <string name="title_pref_append_http_proxy">پروکسی HTTP ن و VPN ازاف کۊنین</string>
     <string name="summary_pref_append_http_proxy">پروکسی HTTP ن موستقیمن ز (مۊرۊرگر/ی قرد ز برنومه یل لادراری بیڌه)، بؽ استفاڌه ز دسگا NIC مجازی (Android 10+) استفاڌه ابۊ.</string>
 
@@ -335,9 +319,6 @@
     <string name="title_oss_license">موجوزا کود بونچک</string>
     <string name="title_translators">ولرنی کارووݩ</string>
     <string name="title_tg_channel">تورگه تلگرام</string>
-
-    <string name="title_pref_promotion">تبلیقات</string>
-
     <string name="title_pref_auto_update_subscription">ورۊ کردن خوتکار اشتراکا</string>
     <string name="summary_pref_auto_update_subscription">اشتراکا خوتووݩ ن و تۉر خوتکار وا فاسله زمۊوی من پس زمینه ورۊ کۊنین. ای ویژیی من پوی دسگایل گاشڌ هی کار نکونه</string>
     <string name="title_pref_auto_update_interval">فاسله ورۊ کردن خوتکار (ٱقلن وا 15 دؽقه بۊ)</string>
@@ -389,7 +370,6 @@
     <string name="title_sub_update">ورۊ کردن اشتراک بونکۊ سکویی</string>
     <string name="title_ping_all_server">آزمایش تئخیر TCP (TCPing)</string>
     <string name="title_real_ping_all_server">آزمایش تئخیر واقعی</string>
-    <string name="title_user_asset_setting">فایلا بونچک جوقرافیایی</string>
     <string name="title_sort_by_test_results">ترتیب و ری نتیجه یل پینگ</string>
     <string name="title_filter_config">فیلتر کردن کانفیگا</string>
     <string name="filter_config_all">پوی</string>
@@ -406,10 +386,6 @@
         <item quantity="one">%1$d جا ورۊ وابی</item>
         <item quantity="other">%1$d جا ورۊ وابی</item>
     </plurals>
-    <plurals name="title_update_asset_count">
-        <item quantity="one">%1$d فایل بونچک جوقرافیایی ورۊ وابی</item>
-        <item quantity="other">%1$d فایل بونچک جوقرافیایی ورۊ وابی</item>
-    </plurals>
     <string name="title_update_subscription_result">%1$d کانفیگ ورۊ وابی (مووفق: %2$d، شکست خرده: %3$d، رڌ وابیڌه: %4$d)</string>
     <string name="title_update_subscription_no_subscription">بؽ اشتراک</string>
     <string name="toast_server_not_found_in_group">سرور پسند وابیڌه من بونکۊ سکویی نجۊرست</string>
@@ -419,30 +395,6 @@
     <string name="tasker_setting_confirm">قوۊل</string>
 
     <!-- RoutingSettingActivity -->
-    <string name="routing_settings_domain_strategy">نشقه دامنه</string>
-    <string name="routing_settings_title">سامووا تور جوستن</string>
-    <string name="routing_settings_tips">ی قانووݩ تینا زمووی ائمال ابۊ ک پوی شرتا ی جۊر بیڌه و من ٱووڌه هوم زمووݩ برقرار بۊن  (AND). قانووا ز روء و بلم واجۊری ابۊن وو ٱولین قانووݩ ی جۊر، ائمال ابۊ.</string>
-    <string name="routing_settings_comma_tip">چنتا مقدار ن وا کاما (,) ز یک جوڌا کۊنین.</string>
-    <string name="routing_settings_save">زفت کردن</string>
-    <string name="routing_settings_delete">روفتن</string>
-    <string name="routing_settings_rule_title">سامووا قانووݩ تور جوستن</string>
-    <string name="routing_settings_add_rule">ٱووردن قانووݩ</string>
-    <string name="routing_settings_import_predefined_rulesets">و من ٱووردن قانووا</string>
-    <string name="routing_settings_import_rulesets_tip">قانووایی ک هیم سکو هڌسووݩ پاک ابۊن، هنی هم اخۊی پاکسووݩ کۊنی؟</string>
-    <string name="routing_settings_import_rulesets_from_clipboard">و من ٱووردن قانووا ز کلیپ بورد</string>
-    <string name="routing_settings_import_rulesets_from_qrcode">و من ٱووردن قانووا ز کود QR</string>
-    <string name="routing_settings_export_rulesets_to_clipboard">و در کشیڌن قانووا وو زفت کردن من کلیپ بورد</string>
-    <string name="routing_settings_locked">چفت هڌ، ای قانووݩ ن مجال و من ٱووردن ز پؽش سامووا زفت کۊنین</string>
-    <string name="routing_settings_domain" translatable="false">domain</string>
-    <string name="routing_settings_ip" translatable="false">ip</string>
-    <string name="routing_settings_process">process (نوم بسته — تینا مجال و کار گرؽڌن Xray TUN، ره وسته بیڌن routeOnly وو ٱندروید 10+ لادراری ابۊ)</string>
-    <string name="routing_settings_process_select">نوم بسته ن پسند کۊنین</string>
-    <string name="routing_settings_port" translatable="false">port</string>
-    <string name="routing_settings_protocol" translatable="false">protocol</string>
-    <string name="routing_settings_protocol_tip" translatable="false">[http,tls,bittorrent]</string>
-    <string name="routing_settings_network" translatable="false">network</string>
-    <string name="routing_settings_outbound_tag_hint" translatable="false">proxy / direct / block / &lt;%1$s&gt;</string>
-    <string name="routing_settings_outbound_tag" translatable="false">outboundTag</string>
 
     <string name="connection_test_pending">منپیزن واجۊری کوݩ</string>
     <string name="connection_test_testing">هونی آزمایش ابۊ…</string>
@@ -542,14 +494,7 @@
         <item>رۊشنا</item>
         <item>تاریک</item>
     </string-array>
-
-    <string name="routing_preset_china_whitelist">نومگه اسبؽڌ چین</string>
-    <string name="routing_preset_china_blacklist">نومگه شه چین</string>
-    <string name="routing_preset_global">جهۊوی (Global)</string>
-    <string name="routing_preset_iran_whitelist">نومگه اسبؽڌ ایران</string>
-    <string name="routing_preset_russia_whitelist">نومگه اسبؽڌ رۊسیه</string>
-
-    <string-array name="vpn_bypass_lan">
+<string-array name="vpn_bypass_lan">
         <item>پؽش فرز کانفیگ</item>
         <item>دور زیڌه بۊ</item>
         <item>دور زیڌه نبۊ</item>
@@ -575,12 +520,9 @@
     <string name="toast_permission_denied_for">گرؽڌن موجوز مومکن نؽڌ: %1$s</string>
     <string name="acc_add_subscription">ٱووردن اشتراک</string>
     <string name="toast_malformed_json_detail">کانفیگ نا موئتبر هڌ: %1$s</string>
-    <string name="acc_add_asset">ٱووردن بونچک فایلا جوقرافیایی</string>
-    <string name="acc_download_file">دانلود فایلا بونچک جوقرافیایی</string>
     <string name="acc_qr_code">کود QR</string>
     <string name="acc_copy_log">لف گیری گوزارش</string>
     <string name="acc_clear_log">روفتن گوزارش</string>
-    <string name="acc_add_rule">ٱووردن قانووݩ</string>
     <string name="acc_start">ره وستن سرویس</string>
     <string name="acc_stop">واڌاشتن سرویس</string>
     <string name="acc_back">وورگشتن</string>
@@ -597,7 +539,6 @@
     <string name="acc_turn_torch_on">رۊشن کردن لیت</string>
     <string name="acc_turn_torch_off">کۊر کردن لیت</string>
     <string name="acc_select_image">پسند شؽوات سی اسکن</string>
-    <string name="acc_locked">ای قانووݩ مجال و من ٱووردن ز پؽش سامووا زفت ابۊ</string>
     <string name="acc_open_menu">گۊشیڌن نومگه کشاری</string>
     <string name="acc_edit">آلشتکاری</string>
     <string name="acc_delete">پاک کردن</string>

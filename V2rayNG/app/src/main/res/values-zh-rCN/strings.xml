@@ -51,10 +51,7 @@
     <string name="confirm_delete_profile">确定要删除此配置吗？</string>
     <string name="confirm_delete_policy_group">确定要删除此策略组吗？</string>
     <string name="confirm_delete_proxy_chain_member">确定要删除此代理链成员吗？</string>
-    <string name="confirm_delete_routing_rule">确定要删除此路由规则吗？</string>
     <string name="confirm_delete_subscription_group">确定要删除此订阅组吗？</string>
-    <string name="confirm_delete_asset_file">确定要删除此资源文件吗？</string>
-    <string name="confirm_delete_asset_source">确定要删除此资源来源吗？</string>
     <string name="server_lab_remarks">别名 (remarks)</string>
     <string name="server_lab_address">地址 (address)</string>
     <string name="server_lab_port">端口 (port)</string>
@@ -143,19 +140,10 @@
     <string name="toast_fetch_cert_sha256_failed">获取证书指纹失败</string>
 
     <!-- UserAssetActivity -->
-    <string name="toast_asset_copy_failed">文件复制失败，请使用文件管理器</string>
     <string name="menu_item_add_asset">添加资源</string>
-    <string name="menu_item_add_file">添加文件</string>
-    <string name="menu_item_add_url">添加 URL</string>
     <string name="menu_item_scan_qrcode">扫描二维码</string>
-    <string name="title_url" translatable="false">URL</string>
     <string name="menu_item_download_file">下载文件</string>
-    <string name="title_user_asset_add_url">添加资源 URL</string>
-    <string name="msg_file_not_found">未找到文件</string>
-    <string name="msg_remark_is_duplicate">名称已存在</string>
-    <string name="asset_geo_files_sources">Geo 文件来源 (可选)</string>
-
-    <!-- PerAppProxyActivity -->
+<!-- PerAppProxyActivity -->
     <string name="msg_dialog_progress">正在加载</string>
     <string name="menu_item_search">搜索</string>
     <string name="menu_item_select_all">全选</string>
@@ -163,7 +151,6 @@
     <string name="msg_enter_keywords">输入关键字</string>
     <string name="switch_bypass_apps_mode">绕行模式</string>
     <string name="menu_item_select_proxy_app">自动选中需代理应用</string>
-    <string name="msg_downloading_content">正在下载内容</string>
     <string name="menu_item_export_proxy_app">导出至剪贴板</string>
     <string name="menu_item_import_proxy_app">从剪贴板导入</string>
     <string name="per_app_proxy_settings">分应用设置</string>
@@ -217,7 +204,6 @@
     <string name="dialog_kill_switch_title">断开 VPN？</string>
     <string name="dialog_kill_switch_message">防泄漏保护已开启：断开后流量将直接连接，不经过 VPN。</string>
     <string name="action_disconnect">断开</string>
-
 
     <string name="subscription_updater_job_tips">任务将在后台运行，在通知中会显示进度信息</string>
     <string name="title_pref_auto_test_after_update_subscription">更新订阅后自动测试</string>
@@ -276,7 +262,6 @@
 
     <string name="title_pref_vpn_mtu">VPN MTU (默认 1500)</string>
 
-
     <string name="title_pref_domestic_dns">直连 DNS（可选）</string>
     <string name="summary_pref_domestic_dns" translatable="false">DNS</string>
 
@@ -313,7 +298,6 @@
     <string name="title_pref_confirm_remove">删除配置确认</string>
     <string name="summary_pref_confirm_remove">删除配置是否需要用户二次确认</string>
 
-
     <string name="title_pref_append_http_proxy">将 HTTP 代理添加到 VPN</string>
     <string name="summary_pref_append_http_proxy">浏览器和部分受支持的应用将直接使用 HTTP 代理，而不经过虚拟网卡（Android 10+）。</string>
 
@@ -335,9 +319,6 @@
     <string name="title_oss_license">开源许可证</string>
     <string name="title_translators">翻译贡献者</string>
     <string name="title_tg_channel">Telegram 频道</string>
-
-    <string name="title_pref_promotion">推广</string>
-
     <string name="title_pref_auto_update_subscription">自动更新订阅</string>
     <string name="summary_pref_auto_update_subscription">在后台按一定时间间隔自动更新您的订阅。受设备影响，此功能不一定总是有效</string>
     <string name="title_pref_auto_update_interval">自动更新间隔（分钟，最小值 15）</string>
@@ -389,7 +370,6 @@
     <string name="title_sub_update">更新订阅</string>
     <string name="title_ping_all_server">测试 TCP 延迟（TCPing）</string>
     <string name="title_real_ping_all_server">测试真连接延迟</string>
-    <string name="title_user_asset_setting">资源文件</string>
     <string name="title_sort_by_test_results">按测试结果排序</string>
     <string name="title_filter_config">过滤配置</string>
     <string name="filter_config_all">所有</string>
@@ -404,9 +384,6 @@
     <plurals name="main_updated_locations">
         <item quantity="other">已更新 %1$d 个位置</item>
     </plurals>
-    <plurals name="title_update_asset_count">
-        <item quantity="other">已更新 %1$d 个资源文件</item>
-    </plurals>
     <string name="title_update_subscription_result">更新了 %1$d 个配置（%2$d 个成功，%3$d 个失败，%4$d 个跳过）</string>
     <string name="title_update_subscription_no_subscription">无订阅</string>
     <string name="toast_server_not_found_in_group">当前分组中未找到选中的服务器</string>
@@ -416,30 +393,6 @@
     <string name="tasker_setting_confirm">确定</string>
 
     <!-- RoutingSettingActivity -->
-    <string name="routing_settings_domain_strategy">域名策略</string>
-    <string name="routing_settings_title">路由设置</string>
-    <string name="routing_settings_tips">一条规则仅在所有已设置的匹配条件同时满足时生效（AND）。规则按从上到下的顺序检查，并应用首条匹配的规则。</string>
-    <string name="routing_settings_comma_tip">多个条目请用逗号（,）分隔。</string>
-    <string name="routing_settings_save">保存</string>
-    <string name="routing_settings_delete">清空</string>
-    <string name="routing_settings_rule_title">路由规则设置</string>
-    <string name="routing_settings_add_rule">添加规则</string>
-    <string name="routing_settings_import_predefined_rulesets">导入预定义规则集</string>
-    <string name="routing_settings_import_rulesets_tip">将删除现有的规则集，是否确定继续？</string>
-    <string name="routing_settings_import_rulesets_from_clipboard">从剪贴板导入规则集</string>
-    <string name="routing_settings_import_rulesets_from_qrcode">从二维码导入规则集</string>
-    <string name="routing_settings_export_rulesets_to_clipboard">导出规则集至剪贴板</string>
-    <string name="routing_settings_locked">锁定中，导入预设时不删除此规则</string>
-    <string name="routing_settings_domain" translatable="false">domain</string>
-    <string name="routing_settings_ip" translatable="false">ip</string>
-    <string name="routing_settings_process">process (包名 — 仅在使用 Xray TUN、开启 routeOnly 且 Android 10+ 时可用)</string>
-    <string name="routing_settings_process_select">选择包名</string>
-    <string name="routing_settings_port" translatable="false">port</string>
-    <string name="routing_settings_protocol" translatable="false">protocol</string>
-    <string name="routing_settings_protocol_tip" translatable="false">[http,tls,bittorrent]</string>
-    <string name="routing_settings_network" translatable="false">network</string>
-    <string name="routing_settings_outbound_tag_hint">proxy / direct / block / &lt;%1$s&gt;</string>
-    <string name="routing_settings_outbound_tag" translatable="false">outboundTag</string>
 
     <string name="connection_test_pending">"检查网络连接"</string>
     <string name="connection_test_testing">"测试中…"</string>
@@ -539,14 +492,7 @@
         <item>浅色</item>
         <item>深色</item>
     </string-array>
-
-    <string name="routing_preset_china_whitelist">绕过大陆 (Whitelist)</string>
-    <string name="routing_preset_china_blacklist">黑名单 (Blacklist)</string>
-    <string name="routing_preset_global">全局 (Global)</string>
-    <string name="routing_preset_iran_whitelist">伊朗 (Iran)</string>
-    <string name="routing_preset_russia_whitelist">俄罗斯白名单 (Russia Whitelist)</string>
-
-    <string-array name="vpn_bypass_lan">
+<string-array name="vpn_bypass_lan">
         <item>跟随配置</item>
         <item>绕过</item>
         <item>不绕过</item>
@@ -572,12 +518,9 @@
     <string name="toast_permission_denied_for">%1$s权限被拒绝</string>
     <string name="acc_add_subscription">添加订阅</string>
     <string name="toast_malformed_json_detail">配置格式无效：%1$s</string>
-    <string name="acc_add_asset">添加资源来源</string>
-    <string name="acc_download_file">下载资源文件</string>
     <string name="acc_qr_code">二维码</string>
     <string name="acc_copy_log">复制日志</string>
     <string name="acc_clear_log">清除日志</string>
-    <string name="acc_add_rule">添加路由规则</string>
     <string name="acc_start">启动服务</string>
     <string name="acc_stop">停止服务</string>
     <string name="acc_back">返回</string>
@@ -594,7 +537,6 @@
     <string name="acc_turn_torch_on">打开手电筒</string>
     <string name="acc_turn_torch_off">关闭手电筒</string>
     <string name="acc_select_image">选择要扫描的图片</string>
-    <string name="acc_locked">导入预设时保留此规则</string>
     <string name="acc_open_menu">打开导航菜单</string>
     <string name="acc_edit">编辑</string>
     <string name="acc_delete">删除</string>

@@ -52,10 +52,7 @@
     <string name="confirm_delete_profile">Удалить этот профиль?</string>
     <string name="confirm_delete_policy_group">Удалить эту группу политик?</string>
     <string name="confirm_delete_proxy_chain_member">Удалить этого участника цепочки прокси?</string>
-    <string name="confirm_delete_routing_rule">Удалить это правило маршрутизации?</string>
     <string name="confirm_delete_subscription_group">Удалить эту подписку?</string>
-    <string name="confirm_delete_asset_file">Удалить этот файл ресурсов?</string>
-    <string name="confirm_delete_asset_source">Удалить этот источник ресурсов?</string>
     <string name="server_lab_remarks">Название</string>
     <string name="server_lab_address">Адрес</string>
     <string name="server_lab_port">Порт</string>
@@ -144,19 +141,10 @@
     <string name="toast_fetch_cert_sha256_failed">Отпечаток сертификата не получен</string>
 
     <!-- UserAssetActivity -->
-    <string name="toast_asset_copy_failed">Невозможно скопировать файл, используйте файловый менеджер</string>
     <string name="menu_item_add_asset">Добавить ресурс</string>
-    <string name="menu_item_add_file">Добавить файлы</string>
-    <string name="menu_item_add_url">Добавить URL</string>
     <string name="menu_item_scan_qrcode">Сканировать QR-код</string>
-    <string name="title_url" translatable="false">URL</string>
     <string name="menu_item_download_file">Загрузить файлы</string>
-    <string name="title_user_asset_add_url">Добавить URL ресурса</string>
-    <string name="msg_file_not_found">Файл не найден</string>
-    <string name="msg_remark_is_duplicate">Название уже существует</string>
-    <string name="asset_geo_files_sources">Источник геофайлов (необязательно)</string>
-
-    <!-- PerAppProxyActivity -->
+<!-- PerAppProxyActivity -->
     <string name="msg_dialog_progress">Загрузка…</string>
     <string name="menu_item_search">Поиск</string>
     <string name="menu_item_select_all">Выбрать все</string>
@@ -164,7 +152,6 @@
     <string name="msg_enter_keywords">Введите ключевое слово</string>
     <string name="switch_bypass_apps_mode">Обход</string>
     <string name="menu_item_select_proxy_app">Автовыбор проксируемых приложений</string>
-    <string name="msg_downloading_content">Загрузка данных</string>
     <string name="menu_item_export_proxy_app">Экспорт в буфер обмена</string>
     <string name="menu_item_import_proxy_app">Импорт из буфера обмена</string>
     <string name="per_app_proxy_settings">Выбор приложений</string>
@@ -218,7 +205,6 @@
     <string name="dialog_kill_switch_title">Отключить VPN?</string>
     <string name="dialog_kill_switch_message">Включена защита от утечек: после отключения трафик пойдёт напрямую, без VPN.</string>
     <string name="action_disconnect">Отключить</string>
-
 
     <string name="subscription_updater_job_tips">Задача будет выполняться в фоновом режиме, информация о ходе выполнения будет отображаться в уведомлении.</string>
     <string name="title_pref_auto_test_after_update_subscription">Автопроверка после обновления подписки</string>
@@ -277,7 +263,6 @@
 
     <string name="title_pref_vpn_mtu">VPN MTU (по умолчанию 1500)</string>
 
-
     <string name="title_pref_domestic_dns">DNS для прямых подключений (необязательно)</string>
     <string name="summary_pref_domestic_dns" translatable="false">DNS</string>
 
@@ -314,7 +299,6 @@
     <string name="title_pref_confirm_remove">Подтверждать удаление профиля</string>
     <string name="summary_pref_confirm_remove">Обязательное подтверждение удаления профиля</string>
 
-
     <string name="title_pref_append_http_proxy">Дополнительный HTTP-прокси</string>
     <string name="summary_pref_append_http_proxy">Браузеры и поддерживаемые приложения смогут использовать HTTP-прокси напрямую, минуя виртуальный сетевой адаптер (Android 10+)</string>
 
@@ -336,9 +320,6 @@
     <string name="title_oss_license">Лицензии открытого исходного кода</string>
     <string name="title_translators">Переводчики</string>
     <string name="title_tg_channel">Telegram-канал</string>
-
-    <string name="title_pref_promotion">Предложения</string>
-
     <string name="title_pref_auto_update_subscription">Автоматически обновлять подписки</string>
     <string name="summary_pref_auto_update_subscription">Автоматическое обновление подписок в фоновом режиме с указанным интервалом. В зависимости от устройства эта функция может работать не всегда.</string>
     <string name="title_pref_auto_update_interval">Интервал автообновления (минут, не менее 15)</string>
@@ -390,7 +371,6 @@
     <string name="title_sub_update">Обновить подписку</string>
     <string name="title_ping_all_server">Проверить TCP-задержку</string>
     <string name="title_real_ping_all_server">Проверить реальную задержку</string>
-    <string name="title_user_asset_setting">Файлы ресурсов</string>
     <string name="title_sort_by_test_results">Сортировать по результатам теста</string>
     <string name="title_filter_config">Фильтр профилей</string>
     <string name="filter_config_all">Все</string>
@@ -411,12 +391,6 @@
         <item quantity="many">Обновлено %1$d локаций</item>
         <item quantity="other">Обновлено %1$d локации</item>
     </plurals>
-    <plurals name="title_update_asset_count">
-        <item quantity="one">Обновлён %1$d файл ресурсов</item>
-        <item quantity="few">Обновлено %1$d файла ресурсов</item>
-        <item quantity="many">Обновлено %1$d файлов ресурсов</item>
-        <item quantity="other">Обновлено %1$d файла ресурсов</item>
-    </plurals>
     <string name="title_update_subscription_result">Обновлено профилей: %1$d (успешно: %2$d, ошибки: %3$d, пропущено: %4$d)</string>
     <string name="title_update_subscription_no_subscription">Нет подписок</string>
     <string name="toast_server_not_found_in_group">Выбранный профиль не найден в текущей группе</string>
@@ -426,30 +400,6 @@
     <string name="tasker_setting_confirm">Подтвердить</string>
 
     <!-- RoutingSettingActivity -->
-    <string name="routing_settings_domain_strategy">Доменная стратегия</string>
-    <string name="routing_settings_title">Маршрутизация</string>
-    <string name="routing_settings_tips">Правило применяется, только если одновременно выполняются все заданные условия сопоставления (логический оператор «И»). Правила проверяются сверху вниз; применяется первое совпавшее правило.</string>
-    <string name="routing_settings_comma_tip">Разделяйте несколько значений запятыми (,).</string>
-    <string name="routing_settings_save">Сохранить</string>
-    <string name="routing_settings_delete">Очистить</string>
-    <string name="routing_settings_rule_title">Настройка правил маршрутизации</string>
-    <string name="routing_settings_add_rule">Добавить правило</string>
-    <string name="routing_settings_import_predefined_rulesets">Импорт набора правил</string>
-    <string name="routing_settings_import_rulesets_tip">Существующие правила будут удалены. Продолжить?</string>
-    <string name="routing_settings_import_rulesets_from_clipboard">Импорт правил из буфера обмена</string>
-    <string name="routing_settings_import_rulesets_from_qrcode">Импорт правил из QR-кода</string>
-    <string name="routing_settings_export_rulesets_to_clipboard">Экспорт правил в буфер обмена</string>
-    <string name="routing_settings_locked">Постоянное (сохранится при импорте правил)</string>
-    <string name="routing_settings_domain" translatable="false">domain</string>
-    <string name="routing_settings_ip" translatable="false">ip</string>
-    <string name="routing_settings_process">process (имя пакета — поддерживается только при использовании Xray TUN, включённой функции «Домен только для маршрутизации (routeOnly)» и Android 10+)</string>
-    <string name="routing_settings_process_select">Выбор названия пакета</string>
-    <string name="routing_settings_port" translatable="false">port</string>
-    <string name="routing_settings_protocol" translatable="false">protocol</string>
-    <string name="routing_settings_protocol_tip" translatable="false">[http,tls,bittorrent]</string>
-    <string name="routing_settings_network" translatable="false">network</string>
-    <string name="routing_settings_outbound_tag_hint">proxy / direct / block / &lt;%1$s&gt;</string>
-    <string name="routing_settings_outbound_tag" translatable="false">outboundTag</string>
 
     <string name="connection_test_pending">Проверить соединение</string>
     <string name="connection_test_testing">Проверка…</string>
@@ -550,14 +500,7 @@
         <item>Светлая</item>
         <item>Тёмная</item>
     </string-array>
-
-    <string name="routing_preset_china_whitelist">Белый список Китая</string>
-    <string name="routing_preset_china_blacklist">Чёрный список Китая</string>
-    <string name="routing_preset_global">Общие</string>
-    <string name="routing_preset_iran_whitelist">Белый список Ирана</string>
-    <string name="routing_preset_russia_whitelist">Белый список России</string>
-
-    <string-array name="vpn_bypass_lan">
+<string-array name="vpn_bypass_lan">
         <item>Как в профиле</item>
         <item>Обходит</item>
         <item>Не обходит</item>
@@ -583,12 +526,9 @@
     <string name="toast_permission_denied_for">Нет разрешения: %1$s</string>
     <string name="acc_add_subscription">Добавить подписку</string>
     <string name="toast_malformed_json_detail">Некорректная конфигурация: %1$s</string>
-    <string name="acc_add_asset">Добавить источник ресурсов</string>
-    <string name="acc_download_file">Загрузить файлы ресурсов</string>
     <string name="acc_qr_code">QR-код</string>
     <string name="acc_copy_log">Копировать журнал</string>
     <string name="acc_clear_log">Очистить журнал</string>
-    <string name="acc_add_rule">Добавить правило маршрутизации</string>
     <string name="acc_start">Запустить службу</string>
     <string name="acc_stop">Остановить службу</string>
     <string name="acc_back">Назад</string>
@@ -605,7 +545,6 @@
     <string name="acc_turn_torch_on">Включить фонарик</string>
     <string name="acc_turn_torch_off">Отключить фонарик</string>
     <string name="acc_select_image">Выбрать изображение для сканирования</string>
-    <string name="acc_locked">Правило сохраняется при импорте набора</string>
     <string name="acc_open_menu">Открыть меню навигации</string>
     <string name="acc_edit">Изменить</string>
     <string name="acc_delete">Удалить</string>

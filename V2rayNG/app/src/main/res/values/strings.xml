@@ -52,10 +52,7 @@
     <string name="confirm_delete_profile">Are you sure you want to delete this profile?</string>
     <string name="confirm_delete_policy_group">Are you sure you want to delete this policy group?</string>
     <string name="confirm_delete_proxy_chain_member">Are you sure you want to delete this chain member?</string>
-    <string name="confirm_delete_routing_rule">Are you sure you want to delete this routing rule?</string>
     <string name="confirm_delete_subscription_group">Are you sure you want to delete this subscription group?</string>
-    <string name="confirm_delete_asset_file">Are you sure you want to delete this asset file?</string>
-    <string name="confirm_delete_asset_source">Are you sure you want to delete this asset source?</string>
     <string name="server_lab_remarks">remarks</string>
     <string name="server_lab_address">address</string>
     <string name="server_lab_port">port</string>
@@ -144,19 +141,10 @@
     <string name="toast_fetch_cert_sha256_failed">Failed to fetch certificate fingerprint</string>
 
     <!-- UserAssetActivity -->
-    <string name="toast_asset_copy_failed">File copy failed, please use File Manager</string>
     <string name="menu_item_add_asset">Add asset</string>
-    <string name="menu_item_add_file">Add files</string>
-    <string name="menu_item_add_url">Add URL</string>
     <string name="menu_item_scan_qrcode">Scan QR code</string>
-    <string name="title_url" translatable="false">URL</string>
     <string name="menu_item_download_file">Download files</string>
-    <string name="title_user_asset_add_url">Add asset URL</string>
-    <string name="msg_file_not_found">File not found</string>
-    <string name="msg_remark_is_duplicate">This name already exists</string>
-    <string name="asset_geo_files_sources">Geo file source (optional)</string>
-
-    <!-- PerAppProxyActivity -->
+<!-- PerAppProxyActivity -->
     <string name="msg_dialog_progress">Loading</string>
     <string name="menu_item_search">Search</string>
     <string name="menu_item_select_all">Select all</string>
@@ -164,7 +152,6 @@
     <string name="msg_enter_keywords">Enter keywords</string>
     <string name="switch_bypass_apps_mode">Bypass Mode</string>
     <string name="menu_item_select_proxy_app">Auto-select apps to be proxied</string>
-    <string name="msg_downloading_content">Downloading content</string>
     <string name="menu_item_export_proxy_app">Export to Clipboard</string>
     <string name="menu_item_import_proxy_app">Import from Clipboard</string>
     <string name="per_app_proxy_settings">Per-app settings</string>
@@ -218,7 +205,6 @@
     <string name="dialog_kill_switch_title">Disconnect VPN?</string>
     <string name="dialog_kill_switch_message">Leak protection is on: after disconnecting, traffic goes directly without the VPN.</string>
     <string name="action_disconnect">Disconnect</string>
-
 
     <string name="subscription_updater_job_tips">The task will run in the background, and progress information will be displayed in the notification.</string>
     <string name="title_pref_auto_test_after_update_subscription">Auto test after updating subscription</string>
@@ -277,7 +263,6 @@
 
     <string name="title_pref_vpn_mtu">VPN MTU (default 1500)</string>
 
-
     <string name="title_pref_domestic_dns">Direct DNS (optional)</string>
     <string name="summary_pref_domestic_dns" translatable="false">DNS</string>
 
@@ -314,7 +299,6 @@
     <string name="title_pref_confirm_remove">Delete config confirmation</string>
     <string name="summary_pref_confirm_remove">Whether deleting a config requires a second confirmation by the user</string>
 
-
     <string name="title_pref_append_http_proxy">Add HTTP proxy to VPN</string>
     <string name="summary_pref_append_http_proxy">Allow browsers and supported apps to use the HTTP proxy directly instead of the virtual network interface (Android 10+).</string>
 
@@ -336,9 +320,6 @@
     <string name="title_oss_license">Open-source licenses</string>
     <string name="title_translators">Translators</string>
     <string name="title_tg_channel">Telegram channel</string>
-
-    <string name="title_pref_promotion">Promotion</string>
-
     <string name="title_pref_auto_update_subscription">Automatically update subscriptions</string>
     <string name="summary_pref_auto_update_subscription">Update your subscriptions automatically at set intervals in the background. Depending on the device, this feature may not always work</string>
     <string name="title_pref_auto_update_interval">Automatic update interval (minutes; minimum 15)</string>
@@ -390,7 +371,6 @@
     <string name="title_sub_update">Update subscription</string>
     <string name="title_ping_all_server">Test TCP delays (TCPing)</string>
     <string name="title_real_ping_all_server">Test real delays</string>
-    <string name="title_user_asset_setting">Asset files</string>
     <string name="title_sort_by_test_results">Sort by test results</string>
     <string name="title_filter_config">Filter configs</string>
     <string name="filter_config_all">All</string>
@@ -407,10 +387,6 @@
         <item quantity="one">Updated %1$d location</item>
         <item quantity="other">Updated %1$d locations</item>
     </plurals>
-    <plurals name="title_update_asset_count">
-        <item quantity="one">Updated %1$d asset file</item>
-        <item quantity="other">Updated %1$d asset files</item>
-    </plurals>
     <string name="title_update_subscription_result">Updated %1$d configs (%2$d success, %3$d failed, %4$d skipped)</string>
     <string name="title_update_subscription_no_subscription">No subscriptions</string>
     <string name="toast_server_not_found_in_group">Selected server not found in current group</string>
@@ -420,30 +396,6 @@
     <string name="tasker_setting_confirm">Confirm</string>
 
     <!-- RoutingSettingActivity -->
-    <string name="routing_settings_domain_strategy">Domain strategy</string>
-    <string name="routing_settings_title">Routing Settings</string>
-    <string name="routing_settings_tips">A rule applies only when every configured matching condition is satisfied (AND). Rules are checked from top to bottom; the first matching rule is applied.</string>
-    <string name="routing_settings_comma_tip">Separate multiple entries with commas (,).</string>
-    <string name="routing_settings_save">Save</string>
-    <string name="routing_settings_delete">Clear</string>
-    <string name="routing_settings_rule_title">Routing Rule Settings</string>
-    <string name="routing_settings_add_rule">Add rule</string>
-    <string name="routing_settings_import_predefined_rulesets">Import predefined rulesets</string>
-    <string name="routing_settings_import_rulesets_tip">Existing rulesets will be deleted. Continue?</string>
-    <string name="routing_settings_import_rulesets_from_clipboard">Import ruleset from clipboard</string>
-    <string name="routing_settings_import_rulesets_from_qrcode">Import ruleset from QR code</string>
-    <string name="routing_settings_export_rulesets_to_clipboard">Export ruleset to clipboard</string>
-    <string name="routing_settings_locked">Locked; keep this rule when importing presets</string>
-    <string name="routing_settings_domain" translatable="false">domain</string>
-    <string name="routing_settings_ip" translatable="false">ip</string>
-    <string name="routing_settings_process">process (Package Name — only supported when using Xray TUN, routeOnly enabled, and Android 10+)</string>
-    <string name="routing_settings_process_select">Select package name</string>
-    <string name="routing_settings_port" translatable="false">port</string>
-    <string name="routing_settings_protocol" translatable="false">protocol</string>
-    <string name="routing_settings_protocol_tip" translatable="false">[http,tls,bittorrent]</string>
-    <string name="routing_settings_network" translatable="false">network</string>
-    <string name="routing_settings_outbound_tag_hint">proxy / direct / block / &lt;%1$s&gt;</string>
-    <string name="routing_settings_outbound_tag" translatable="false">outboundTag</string>
 
     <string name="connection_test_pending">Check connectivity</string>
     <string name="connection_test_testing">Testing…</string>
@@ -544,14 +496,7 @@
         <item>Light</item>
         <item>Dark</item>
     </string-array>
-
-    <string name="routing_preset_china_whitelist">China Whitelist</string>
-    <string name="routing_preset_china_blacklist">China Blacklist</string>
-    <string name="routing_preset_global">Global</string>
-    <string name="routing_preset_iran_whitelist">Iran Whitelist</string>
-    <string name="routing_preset_russia_whitelist">Russia Whitelist</string>
-
-    <string-array name="vpn_bypass_lan">
+<string-array name="vpn_bypass_lan">
         <item>Follow config</item>
         <item>Bypass</item>
         <item>Not Bypass</item>
@@ -577,12 +522,9 @@
     <string name="toast_permission_denied_for">%1$s permission denied</string>
     <string name="acc_add_subscription">Add subscription</string>
     <string name="toast_malformed_json_detail">Invalid configuration: %1$s</string>
-    <string name="acc_add_asset">Add asset source</string>
-    <string name="acc_download_file">Download asset files</string>
     <string name="acc_qr_code">QR code</string>
     <string name="acc_copy_log">Copy log</string>
     <string name="acc_clear_log">Clear log</string>
-    <string name="acc_add_rule">Add routing rule</string>
     <string name="acc_start">Start service</string>
     <string name="acc_stop">Stop service</string>
     <string name="acc_back">Back</string>
@@ -599,7 +541,6 @@
     <string name="acc_turn_torch_on">Turn flashlight on</string>
     <string name="acc_turn_torch_off">Turn flashlight off</string>
     <string name="acc_select_image">Select image to scan</string>
-    <string name="acc_locked">This rule is kept when importing presets</string>
     <string name="acc_open_menu">Open navigation menu</string>
     <string name="acc_edit">Edit</string>
     <string name="acc_delete">Delete</string>

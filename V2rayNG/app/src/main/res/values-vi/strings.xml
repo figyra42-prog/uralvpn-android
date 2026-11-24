@@ -51,10 +51,7 @@
     <string name="confirm_delete_profile">Bạn có chắc muốn xóa cấu hình này không?</string>
     <string name="confirm_delete_policy_group">Bạn có chắc muốn xóa nhóm chính sách này không?</string>
     <string name="confirm_delete_proxy_chain_member">Bạn có chắc muốn xóa thành viên này khỏi chuỗi proxy không?</string>
-    <string name="confirm_delete_routing_rule">Bạn có chắc muốn xóa quy tắc định tuyến này không?</string>
     <string name="confirm_delete_subscription_group">Bạn có chắc muốn xóa nhóm đăng ký này không?</string>
-    <string name="confirm_delete_asset_file">Bạn có chắc muốn xóa tệp tài nguyên này không?</string>
-    <string name="confirm_delete_asset_source">Bạn có chắc muốn xóa nguồn tài nguyên này không?</string>
     <string name="server_lab_remarks">Tên cấu hình</string>
     <string name="server_lab_address">Địa chỉ</string>
     <string name="server_lab_port">Cổng</string>
@@ -143,19 +140,10 @@
     <string name="toast_fetch_cert_sha256_failed">Không thể lấy dấu vân tay chứng chỉ</string>
 
     <!-- UserAssetActivity -->
-    <string name="toast_asset_copy_failed">Không thể sao chép tệp tin, hãy dùng trình quản lý tệp!</string>
     <string name="menu_item_add_asset">Thêm tài nguyên</string>
-    <string name="menu_item_add_file">Thêm tệp</string>
-    <string name="menu_item_add_url">Thêm URL</string>
     <string name="menu_item_scan_qrcode">Quét mã QR</string>
-    <string name="title_url" translatable="false">URL</string>
     <string name="menu_item_download_file">Tải xuống tệp tin</string>
-    <string name="title_user_asset_add_url">Thêm URL tài nguyên</string>
-    <string name="msg_file_not_found">Không tìm thấy tập tin!</string>
-    <string name="msg_remark_is_duplicate">Tên này đã tồn tại!</string>
-    <string name="asset_geo_files_sources">Nguồn tệp Geo (tùy chọn)</string>
-
-    <!-- PerAppProxyActivity -->
+<!-- PerAppProxyActivity -->
     <string name="msg_dialog_progress">Đang tải…</string>
     <string name="menu_item_search">Tìm kiếm</string>
     <string name="menu_item_select_all">Chọn tất cả</string>
@@ -163,7 +151,6 @@
     <string name="msg_enter_keywords">Nhập từ khoá</string>
     <string name="switch_bypass_apps_mode">Chế độ bỏ qua</string>
     <string name="menu_item_select_proxy_app">Tự động chọn ứng dụng cần dùng proxy</string>
-    <string name="msg_downloading_content">Đang tải xuống nội dung…</string>
     <string name="menu_item_export_proxy_app">Xuất và Sao chép</string>
     <string name="menu_item_import_proxy_app">Nhập từ bảng tạm</string>
     <string name="per_app_proxy_settings">Cài đặt theo ứng dụng</string>
@@ -217,7 +204,6 @@
     <string name="dialog_kill_switch_title">Ngắt VPN?</string>
     <string name="dialog_kill_switch_message">Bảo vệ chống rò rỉ đang bật: sau khi ngắt, lưu lượng sẽ đi trực tiếp, không qua VPN.</string>
     <string name="action_disconnect">Ngắt</string>
-
 
     <string name="subscription_updater_job_tips">Tác vụ sẽ chạy trong nền và thông tin tiến độ sẽ hiển thị trong thông báo.</string>
     <string name="title_pref_auto_test_after_update_subscription">Tự động kiểm tra sau khi cập nhật đăng ký</string>
@@ -276,7 +262,6 @@
 
     <string name="title_pref_vpn_mtu">VPN MTU (mặc định 1500)</string>
 
-
     <string name="title_pref_domestic_dns">DNS cho kết nối trực tiếp (không bắt buộc)</string>
     <string name="summary_pref_domestic_dns" translatable="false">DNS</string>
 
@@ -313,7 +298,6 @@
     <string name="title_pref_confirm_remove">Xác nhận xóa tệp cấu hình</string>
     <string name="summary_pref_confirm_remove">Yêu cầu xác nhận từ người dùng khi thực hiện xóa tệp cấu hình.</string>
 
-
     <string name="title_pref_append_http_proxy">Thêm proxy HTTP vào VPN</string>
     <string name="summary_pref_append_http_proxy">Proxy HTTP sẽ được trình duyệt hoặc một số ứng dụng hỗ trợ dùng trực tiếp mà không đi qua thiết bị NIC ảo (Android 10+)</string>
 
@@ -335,9 +319,6 @@
     <string name="title_oss_license">Giấy phép mã nguồn mở</string>
     <string name="title_translators">Người dịch</string>
     <string name="title_tg_channel">Kênh Telegram</string>
-
-    <string name="title_pref_promotion">Ưu đãi</string>
-
     <string name="title_pref_auto_update_subscription">Tự động cập nhật các gói đăng ký</string>
     <string name="summary_pref_auto_update_subscription">Tự động cập nhật các gói đăng ký của bạn ở trong nền với khoảng thời gian cố định. Tùy thiết bị, tính năng này có thể không luôn hoạt động đúng như mong đợi.</string>
     <string name="title_pref_auto_update_interval">Khoảng thời gian cập nhật tự động (phút; tối thiểu 15)</string>
@@ -389,7 +370,6 @@
     <string name="title_sub_update">Cập nhật gói đăng ký</string>
     <string name="title_ping_all_server">Kiểm tra độ trễ TCP (TCPing)</string>
     <string name="title_real_ping_all_server">Kiểm tra độ trễ thực</string>
-    <string name="title_user_asset_setting">Tệp tài nguyên</string>
     <string name="title_sort_by_test_results">Sắp xếp theo kết quả kiểm tra</string>
     <string name="title_filter_config">Lọc cấu hình</string>
     <string name="filter_config_all">Tất cả</string>
@@ -404,9 +384,6 @@
     <plurals name="main_updated_locations">
         <item quantity="other">Đã cập nhật %1$d vị trí</item>
     </plurals>
-    <plurals name="title_update_asset_count">
-        <item quantity="other">Đã cập nhật %1$d tệp tài nguyên</item>
-    </plurals>
     <string name="title_update_subscription_result">Đã cập nhật %1$d cấu hình (%2$d thành công, %3$d thất bại, %4$d bỏ qua)</string>
     <string name="title_update_subscription_no_subscription">Không có đăng ký</string>
     <string name="toast_server_not_found_in_group">Không tìm thấy máy chủ đã chọn trong nhóm hiện tại</string>
@@ -416,30 +393,6 @@
     <string name="tasker_setting_confirm">Xác nhận</string>
 
     <!-- RoutingSettingActivity -->
-    <string name="routing_settings_domain_strategy">Chiến lược tên miền (DomainStrategy)</string>
-    <string name="routing_settings_title">Cài đặt định tuyến</string>
-    <string name="routing_settings_tips">Quy tắc chỉ được áp dụng khi tất cả điều kiện đối sánh đã đặt đều được thỏa mãn cùng lúc (AND). Các quy tắc được kiểm tra từ trên xuống; quy tắc khớp đầu tiên sẽ được áp dụng.</string>
-    <string name="routing_settings_comma_tip">Phân cách nhiều mục bằng dấu phẩy (,).</string>
-    <string name="routing_settings_save">Lưu lại</string>
-    <string name="routing_settings_delete">Xoá</string>
-    <string name="routing_settings_rule_title">Cài đặt quy tắc định tuyến</string>
-    <string name="routing_settings_add_rule">Thêm quy tắc</string>
-    <string name="routing_settings_import_predefined_rulesets">Nhập các bộ quy tắc được xác định trước</string>
-    <string name="routing_settings_import_rulesets_tip">Các bộ quy tắc hiện có sẽ bị xóa. Bạn có chắc muốn tiếp tục không?</string>
-    <string name="routing_settings_import_rulesets_from_clipboard">Nhập bộ quy tắc từ bảng tạm</string>
-    <string name="routing_settings_import_rulesets_from_qrcode">Nhập bộ quy tắc từ mã QR</string>
-    <string name="routing_settings_export_rulesets_to_clipboard">Xuất bộ quy tắc vào bảng tạm</string>
-    <string name="routing_settings_locked">Đã khóa; giữ quy tắc này khi nhập cài đặt sẵn</string>
-    <string name="routing_settings_domain" translatable="false">domain</string>
-    <string name="routing_settings_ip" translatable="false">ip</string>
-    <string name="routing_settings_process">process (tên gói — chỉ được hỗ trợ khi dùng Xray TUN, bật routeOnly và chạy Android 10+)</string>
-    <string name="routing_settings_process_select">Chọn tên gói</string>
-    <string name="routing_settings_port" translatable="false">port</string>
-    <string name="routing_settings_protocol" translatable="false">protocol</string>
-    <string name="routing_settings_protocol_tip" translatable="false">[http,tls,bittorrent]</string>
-    <string name="routing_settings_network" translatable="false">network</string>
-    <string name="routing_settings_outbound_tag_hint">proxy / direct / block / &lt;%1$s&gt;</string>
-    <string name="routing_settings_outbound_tag" translatable="false">outboundTag</string>
 
     <string name="connection_test_pending">Kiểm tra kết nối</string>
     <string name="connection_test_testing">Đang kiểm tra kết nối mạng…</string>
@@ -539,14 +492,7 @@
         <item>Sáng</item>
         <item>Tối</item>
     </string-array>
-
-    <string name="routing_preset_china_whitelist">Danh sách trắng Trung Quốc</string>
-    <string name="routing_preset_china_blacklist">Danh sách đen Trung Quốc</string>
-    <string name="routing_preset_global">Toàn cầu</string>
-    <string name="routing_preset_iran_whitelist">Danh sách trắng Iran</string>
-    <string name="routing_preset_russia_whitelist">Danh sách trắng Nga</string>
-
-    <string-array name="vpn_bypass_lan">
+<string-array name="vpn_bypass_lan">
         <item>Theo cấu hình</item>
         <item>Bỏ qua</item>
         <item>Không bỏ qua</item>
@@ -572,12 +518,9 @@
     <string name="toast_permission_denied_for">Chưa cấp quyền: %1$s</string>
     <string name="acc_add_subscription">Thêm gói đăng ký</string>
     <string name="toast_malformed_json_detail">Cấu hình không hợp lệ: %1$s</string>
-    <string name="acc_add_asset">Thêm nguồn tệp tài nguyên</string>
-    <string name="acc_download_file">Tải xuống tệp tài nguyên</string>
     <string name="acc_qr_code">Mã QR</string>
     <string name="acc_copy_log">Sao chép nhật ký</string>
     <string name="acc_clear_log">Xóa nhật ký</string>
-    <string name="acc_add_rule">Thêm quy tắc định tuyến</string>
     <string name="acc_start">Khởi động dịch vụ</string>
     <string name="acc_stop">Dừng dịch vụ</string>
     <string name="acc_back">Quay lại</string>
@@ -594,7 +537,6 @@
     <string name="acc_turn_torch_on">Bật đèn pin</string>
     <string name="acc_turn_torch_off">Tắt đèn pin</string>
     <string name="acc_select_image">Chọn ảnh để quét</string>
-    <string name="acc_locked">Giữ quy tắc khi nhập cài đặt sẵn</string>
     <string name="acc_open_menu">Mở trình đơn điều hướng</string>
     <string name="acc_edit">Chỉnh sửa</string>
     <string name="acc_delete">Xóa</string>
