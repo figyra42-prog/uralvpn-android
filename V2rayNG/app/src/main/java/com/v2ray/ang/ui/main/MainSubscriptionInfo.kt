@@ -202,32 +202,6 @@ internal fun SubscriptionInfoCard(
                     .semantics(mergeDescendants = true) {}
             ) {
                 StatsRow(model)
-                Spacer(Modifier.height(4.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = stringResource(
-                            if (model.expired) R.string.sub_info_status_expired
-                            else R.string.sub_info_status_active
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (model.expired) MaterialTheme.colorScheme.error
-                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                    )
-                    if (!model.expired) {
-                        model.remainingDays?.let { days ->
-                            Text(
-                                text = stringResource(R.string.sub_info_remaining, days),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                            )
-                        }
-                    }
-                }
                 model.trafficFraction?.let { fraction ->
                     Spacer(Modifier.height(4.dp))
                     LinearProgressIndicator(
@@ -277,7 +251,12 @@ private fun raisedBrush(base: Color): Brush =
 @Composable
 private fun CardIconButton(iconRes: Int, contentDescription: String, onClick: () -> Unit) {
     IconButton(onClick = onClick, modifier = Modifier.size(32.dp)) {
-        Icon(painterResource(iconRes), contentDescription, Modifier.size(20.dp))
+        Icon(
+            painterResource(iconRes),
+            contentDescription,
+            Modifier.size(22.dp),
+            tint = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }
 

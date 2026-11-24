@@ -40,22 +40,17 @@ fun MainTopBar(
     val maxMenuHeight = LocalConfiguration.current.screenHeightDp.dp - statusBarHeight - navBarHeight - 20.dp
 
     AppTopBar(
-        title = "🏔 UralVPN",
+        title = "🏔UralVPN",
+        centerTitle = true,
         titleFontWeight = FontWeight.Bold,
         onBackClick = {},
         isLoading = isLoading,
         navigationIcon = {
-            IconButton(onClick = onMenuClick) {
-                Icon(painterResource(R.drawable.ic_menu_24dp), contentDescription = stringResource(R.string.acc_open_menu))
+            IconButton(onClick = onMenuClick, modifier = Modifier.size(56.dp)) {
+                Icon(painterResource(R.drawable.ic_menu_24dp), contentDescription = stringResource(R.string.main_menu))
             }
         },
         actions = {
-            IconButton(onClick = { onAction(MainAction.UpdateSubscriptions) }) {
-                Icon(
-                    painterResource(R.drawable.ic_refresh_24dp),
-                    contentDescription = stringResource(R.string.title_sub_update)
-                )
-            }
             Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
                 IconButton(
                     onClick = { onImportMenuChange(true) },

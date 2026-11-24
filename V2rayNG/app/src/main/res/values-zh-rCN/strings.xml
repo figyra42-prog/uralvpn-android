@@ -447,6 +447,7 @@
     <string name="main_status_connected_with">Connected · %1$s</string>
     <string name="main_status_no_subscription">Add a subscription</string>
     <string name="main_status_testing">Testing ping</string>
+    <string name="main_menu">菜单</string>
 
     <string name="import_subscription_success">订阅导入成功</string>
     <string name="import_subscription_failure">导入订阅失败</string>

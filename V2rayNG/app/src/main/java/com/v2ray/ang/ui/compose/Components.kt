@@ -53,6 +53,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -67,6 +68,7 @@ import sh.calvin.reorderable.ReorderableCollectionItemScope
 fun AppTopBar(
     title: String,
     titleFontWeight: FontWeight = FontWeight.Normal,
+    centerTitle: Boolean = false,
     onBackClick: () -> Unit,
     isLoading: Boolean = false,
     isSearchActive: Boolean = false,
@@ -87,7 +89,12 @@ fun AppTopBar(
                         placeholder = searchPlaceholder
                     )
                 } else {
-                    Text(text = title, fontWeight = titleFontWeight)
+                    Text(
+                        text = title,
+                        fontWeight = titleFontWeight,
+                        textAlign = if (centerTitle) TextAlign.Center else null,
+                        modifier = if (centerTitle) Modifier.fillMaxWidth() else Modifier
+                    )
                 }
             },
             navigationIcon = {

@@ -457,6 +457,7 @@
     <string name="main_status_connected_with">Connected · %1$s</string>
     <string name="main_status_no_subscription">Add a subscription</string>
     <string name="main_status_testing">Testing ping</string>
+    <string name="main_menu">القائمة</string>
 
     <string name="import_subscription_success">تم استيراد الاشتراك بنجاح</string>
     <string name="import_subscription_failure">فشل استيراد الاشتراك</string>

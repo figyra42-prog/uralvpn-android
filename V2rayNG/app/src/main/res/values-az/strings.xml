@@ -449,6 +449,7 @@
     <string name="main_status_connected_with">Connected · %1$s</string>
     <string name="main_status_no_subscription">Add a subscription</string>
     <string name="main_status_testing">Testing ping</string>
+    <string name="main_menu">Menyu</string>
 
     <string name="import_subscription_success">Abunəlik uğurla idxal edildi</string>
     <string name="import_subscription_failure">Abunəlik idxalı uğursuz oldu</string>

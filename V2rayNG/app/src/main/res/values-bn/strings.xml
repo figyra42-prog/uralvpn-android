@@ -449,6 +449,7 @@
     <string name="main_status_connected_with">Connected · %1$s</string>
     <string name="main_status_no_subscription">Add a subscription</string>
     <string name="main_status_testing">Testing ping</string>
+    <string name="main_menu">মেনু</string>
 
     <string name="import_subscription_success">সাবস্ক্রিপশন সফলভাবে আমদানি করা হয়েছে</string>
     <string name="import_subscription_failure">সাবস্ক্রিপশন আমদানি ব্যর্থ</string>

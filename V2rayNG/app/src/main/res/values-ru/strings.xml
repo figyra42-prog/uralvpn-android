@@ -455,6 +455,7 @@
     <string name="main_status_connected_with">Подключено · %1$s</string>
     <string name="main_status_no_subscription">Добавьте подписку</string>
     <string name="main_status_testing">Идёт пинг</string>
+    <string name="main_menu">Меню</string>
 
     <string name="import_subscription_success">Подписка импортирована</string>
     <string name="import_subscription_failure">Невозможно импортировать подписку</string>
