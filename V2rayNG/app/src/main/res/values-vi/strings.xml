@@ -394,6 +394,9 @@
     <plurals name="title_update_config_count">
         <item quantity="other">Đã cập nhật %1$d cấu hình</item>
     </plurals>
+    <plurals name="main_updated_locations">
+        <item quantity="other">Đã cập nhật %1$d vị trí</item>
+    </plurals>
     <plurals name="title_update_asset_count">
         <item quantity="other">Đã cập nhật %1$d tệp tài nguyên</item>
     </plurals>

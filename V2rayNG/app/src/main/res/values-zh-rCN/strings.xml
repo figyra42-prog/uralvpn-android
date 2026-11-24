@@ -394,6 +394,9 @@
     <plurals name="title_update_config_count">
         <item quantity="other">已更新 %1$d 个配置</item>
     </plurals>
+    <plurals name="main_updated_locations">
+        <item quantity="other">已更新 %1$d 个位置</item>
+    </plurals>
     <plurals name="title_update_asset_count">
         <item quantity="other">已更新 %1$d 个资源文件</item>
     </plurals>

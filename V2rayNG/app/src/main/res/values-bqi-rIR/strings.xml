@@ -395,6 +395,10 @@
         <item quantity="one">%1$d کانفیگ ورۊ وابی</item>
         <item quantity="other">%1$d کانفیگ ورۊ وابی</item>
     </plurals>
+    <plurals name="main_updated_locations">
+        <item quantity="one">%1$d جا ورۊ وابی</item>
+        <item quantity="other">%1$d جا ورۊ وابی</item>
+    </plurals>
     <plurals name="title_update_asset_count">
         <item quantity="one">%1$d فایل بونچک جوقرافیایی ورۊ وابی</item>
         <item quantity="other">%1$d فایل بونچک جوقرافیایی ورۊ وابی</item>

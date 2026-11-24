@@ -32,6 +32,8 @@ data class MainUiState(
     val sortByPing: Boolean = false,
     val killSwitch: Boolean = false,
     val startOnBoot: Boolean = false,
+    val updatedLocationsCount: Int = 0,
+    val updatedLocationsEvent: Long = 0L,
     val shareQRCodeBitmap: android.graphics.Bitmap? = null
 )
 
@@ -78,3 +80,10 @@ sealed interface MainAction {
 
     data object LocateHandled : MainAction
 }
+
+/** Records a subscription refresh that brought [count] locations and bumps the one-shot event. */
+internal fun MainUiState.withUpdatedLocations(count: Int): MainUiState =
+    copy(
+        updatedLocationsCount = count,
+        updatedLocationsEvent = updatedLocationsEvent + 1,
+    )

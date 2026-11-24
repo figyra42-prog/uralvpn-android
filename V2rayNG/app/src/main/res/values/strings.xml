@@ -396,6 +396,10 @@
         <item quantity="one">Updated %1$d config</item>
         <item quantity="other">Updated %1$d configs</item>
     </plurals>
+    <plurals name="main_updated_locations">
+        <item quantity="one">Updated %1$d location</item>
+        <item quantity="other">Updated %1$d locations</item>
+    </plurals>
     <plurals name="title_update_asset_count">
         <item quantity="one">Updated %1$d asset file</item>
         <item quantity="other">Updated %1$d asset files</item>

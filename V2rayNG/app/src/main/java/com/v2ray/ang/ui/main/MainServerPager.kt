@@ -2,6 +2,7 @@ package com.v2ray.ang.ui.main
 
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.BorderStroke
@@ -58,6 +59,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.LineBreak
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -102,6 +104,8 @@ fun GroupPagerPage(
     onOpenLink: (String) -> Unit,
     sortByPing: Boolean,
     onToggleSortByPing: () -> Unit,
+    isTesting: Boolean,
+    updatedBannerText: String?,
     contentPadding: PaddingValues
 ) {
     val groupStateFlow = remember(groupId) {
@@ -150,6 +154,8 @@ fun GroupPagerPage(
             mainViewModel.moveServer(groupId, fromIndex, toIndex)
         },
         topHeader = connectionHeader,
+        isTesting = isTesting,
+        updatedBannerText = updatedBannerText,
         footer = if (otherGroups.isEmpty()) null else {
             { OtherSubscriptions(otherGroups, onSelectGroup) }
         },
@@ -198,11 +204,16 @@ private fun ServerListPage(
     topHeader: (@Composable () -> Unit)? = null,
     header: (@Composable () -> Unit)? = null,
     footer: (@Composable () -> Unit)? = null,
+    isTesting: Boolean,
+    updatedBannerText: String?,
     contentPadding: PaddingValues
 ) {
     if (doubleColumnDisplay) {
         val gridState = remember(groupId) {
             lazyGridStates.getOrPut(groupId) { LazyGridState() }
+        }
+        LaunchedEffect(updatedBannerText) {
+            if (updatedBannerText != null) gridState.animateScrollToItem(0)
         }
         val reorderableGridState = if (canReorder) {
             rememberReorderableLazyGridState(gridState) { from, to ->
@@ -220,6 +231,11 @@ private fun ServerListPage(
                 .verticalScrollbar(gridState),
             contentPadding = contentPadding
         ) {
+            if (updatedBannerText != null) {
+                item(key = "updated-banner", span = { GridItemSpan(maxLineSpan) }) {
+                    UpdatedBanner(updatedBannerText)
+                }
+            }
             topHeader?.let { headerContent ->
                 item(key = "connection", span = { GridItemSpan(maxLineSpan) }) {
                     headerContent()
@@ -236,6 +252,7 @@ private fun ServerListPage(
                         row = row,
                         isSelected = row.guid == selectedGuid,
                         isAutopilot = row.guid == autopilotGuid,
+                        isTesting = isTesting,
                         doubleColumnDisplay = true,
                         actions = actions
                     )
@@ -264,6 +281,9 @@ private fun ServerListPage(
         val listState = remember(groupId) {
             lazyListStates.getOrPut(groupId) { LazyListState() }
         }
+        LaunchedEffect(updatedBannerText) {
+            if (updatedBannerText != null) listState.animateScrollToItem(0)
+        }
         val reorderableState = if (canReorder) {
             rememberReorderableLazyListState(listState) { from, to ->
                 onMoveServer(from.index, to.index)
@@ -281,6 +301,9 @@ private fun ServerListPage(
                 .verticalScrollbar(listState),
             contentPadding = contentPadding
         ) {
+            if (updatedBannerText != null) {
+                item(key = "updated-banner") { UpdatedBanner(updatedBannerText) }
+            }
             topHeader?.let { headerContent ->
                 item(key = "connection") { headerContent() }
             }
@@ -310,6 +333,7 @@ private fun ServerListPage(
                                     row = row,
                                     isSelected = row.guid == selectedGuid,
                                     isAutopilot = row.guid == autopilotGuid,
+                                    isTesting = isTesting,
                                     actions = actions
                                 )
                             }
@@ -321,6 +345,7 @@ private fun ServerListPage(
                             row = row,
                             isSelected = row.guid == selectedGuid,
                             isAutopilot = row.guid == autopilotGuid,
+                            isTesting = isTesting,
                             actions = actions
                         )
                     }
@@ -330,6 +355,24 @@ private fun ServerListPage(
                 item(key = "footer") { footerContent() }
             }
         }
+    }
+}
+
+@Composable
+private fun UpdatedBanner(text: String) {
+    Surface(
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, bottom = 12.dp),
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 18.dp),
+        )
     }
 }
 
@@ -474,12 +517,14 @@ private fun ServerItemRow(
     row: ServerRowUiModel,
     isSelected: Boolean,
     isAutopilot: Boolean,
+    isTesting: Boolean,
     actions: ServerRowActions
 ) {
     ServerListItem(
         row = row,
         isSelected = isSelected,
         isAutopilot = isAutopilot,
+        isTesting = isTesting,
         doubleColumnDisplay = false,
         actions = actions
     )
@@ -490,6 +535,7 @@ private fun ServerItemColumn(
     row: ServerRowUiModel,
     isSelected: Boolean,
     isAutopilot: Boolean,
+    isTesting: Boolean,
     doubleColumnDisplay: Boolean,
     actions: ServerRowActions
 ) {
@@ -497,6 +543,7 @@ private fun ServerItemColumn(
         row = row,
         isSelected = isSelected,
         isAutopilot = isAutopilot,
+        isTesting = isTesting,
         doubleColumnDisplay = doubleColumnDisplay,
         actions = actions
     )
@@ -507,16 +554,26 @@ private fun AutopilotCard(
     row: ServerRowUiModel,
     testResult: String,
     selectedStateDescription: String?,
+    isSelected: Boolean,
+    isTesting: Boolean,
     onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(18.dp)
+    val accent = MaterialTheme.colorScheme.primary
+    val cardColor = if (isSelected) {
+        accent.copy(alpha = 0.12f).compositeOver(MaterialTheme.colorScheme.surfaceContainerHigh)
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerHigh
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.55f), shape)
+            .background(SolidColor(cardColor))
+            .then(
+                if (isSelected) Modifier.border(1.5.dp, accent.copy(alpha = 0.7f), shape) else Modifier
+            )
             .clickable(onClick = onClick)
             .semantics(mergeDescendants = true) {
                 if (selectedStateDescription != null) {
@@ -560,16 +617,24 @@ private fun AutopilotCard(
                 )
             }
         }
-        Text(
-            text = testResult.ifEmpty { "—" },
-            style = MaterialTheme.typography.bodySmall,
-            color = when {
-                row.testDelayMillis < 0L -> colorPingRed
-                row.testDelayMillis > 0L -> pingGoodColor()
-                else -> MaterialTheme.colorScheme.onSurfaceVariant
-            },
-            maxLines = 1,
-        )
+        if (isTesting) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(16.dp),
+                strokeWidth = 1.5.dp,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        } else {
+            Text(
+                text = testResult.ifEmpty { "—" },
+                style = MaterialTheme.typography.bodySmall,
+                color = when {
+                    row.testDelayMillis < 0L -> colorPingRed
+                    row.testDelayMillis > 0L -> pingGoodColor()
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                maxLines = 1,
+            )
+        }
     }
 }
 
@@ -578,6 +643,7 @@ private fun ServerListItem(
     row: ServerRowUiModel,
     isSelected: Boolean,
     isAutopilot: Boolean,
+    isTesting: Boolean,
     doubleColumnDisplay: Boolean,
     actions: ServerRowActions
 ) {
@@ -596,6 +662,8 @@ private fun ServerListItem(
             row = row,
             testResult = testResult,
             selectedStateDescription = selectedStateDescription,
+            isSelected = isSelected,
+            isTesting = isTesting,
             onClick = { actions.select(row.guid) },
         )
         return
@@ -696,16 +764,24 @@ private fun ServerListItem(
             }
         }
         Spacer(Modifier.width(8.dp))
-        Text(
-            text = testResult.ifEmpty { "—" },
-            style = MaterialTheme.typography.labelLarge,
-            color = when {
-                row.testDelayMillis < 0L -> colorPingRed
-                row.testDelayMillis > 0L -> pingGoodColor()
-                else -> MaterialTheme.colorScheme.onSurfaceVariant
-            },
-            maxLines = 1
-        )
+        if (isTesting) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(16.dp),
+                strokeWidth = 1.5.dp,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        } else {
+            Text(
+                text = testResult.ifEmpty { "—" },
+                style = MaterialTheme.typography.labelLarge,
+                color = when {
+                    row.testDelayMillis < 0L -> colorPingRed
+                    row.testDelayMillis > 0L -> pingGoodColor()
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                maxLines = 1
+            )
+        }
     }
 }
 

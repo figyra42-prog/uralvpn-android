@@ -399,6 +399,10 @@
         <item quantity="many">تم تحديث %1$d تكوينًا</item>
         <item quantity="other">تم تحديث %1$d تكوين</item>
     </plurals>
+    <plurals name="main_updated_locations">
+        <item quantity="one">تم تحديث %1$d موقع</item>
+        <item quantity="other">تم تحديث %1$d موقعًا</item>
+    </plurals>
     <plurals name="title_update_asset_count">
         <item quantity="zero">لم يتم تحديث أي ملفات أصول</item>
         <item quantity="one">تم تحديث ملف أصول واحد</item>

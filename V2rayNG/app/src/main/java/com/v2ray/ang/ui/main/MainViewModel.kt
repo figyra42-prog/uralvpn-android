@@ -603,6 +603,7 @@ class MainViewModel(
                             toast(dataSource.getString(R.string.title_update_subscription_result, result.configCount, result.successCount, result.failureCount, result.skipCount))
                     }
                     if (result.configCount > 0) {
+                        _uiState.update { it.withUpdatedLocations(result.configCount) }
                         setupGroupTab(forceRefresh = true)
                         refreshSelectedGuid()
                     }

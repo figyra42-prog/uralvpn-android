@@ -398,6 +398,12 @@
         <item quantity="many">Обновлено %1$d профилей</item>
         <item quantity="other">Обновлено %1$d профиля</item>
     </plurals>
+    <plurals name="main_updated_locations">
+        <item quantity="one">Обновлена %1$d локация</item>
+        <item quantity="few">Обновлены %1$d локации</item>
+        <item quantity="many">Обновлено %1$d локаций</item>
+        <item quantity="other">Обновлено %1$d локации</item>
+    </plurals>
     <plurals name="title_update_asset_count">
         <item quantity="one">Обновлён %1$d файл ресурсов</item>
         <item quantity="few">Обновлено %1$d файла ресурсов</item>

@@ -27,6 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -38,6 +39,7 @@ import com.v2ray.ang.extension.toSpeedString
 import com.v2ray.ang.ui.compose.ConfirmDialog
 import com.v2ray.ang.ui.compose.QRCodeDialog
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
@@ -80,6 +82,16 @@ fun MainScreen(
     }
 
     var showStopConfirm by rememberSaveable { mutableStateOf(false) }
+    var updatedBannerText by remember { mutableStateOf<String?>(null) }
+    val resources = LocalContext.current.resources
+    LaunchedEffect(uiState.updatedLocationsEvent) {
+        if (uiState.updatedLocationsEvent == 0L) return@LaunchedEffect
+        val count = uiState.updatedLocationsCount
+        if (count <= 0) return@LaunchedEffect
+        updatedBannerText = resources.getQuantityString(R.plurals.main_updated_locations, count, count)
+        delay(1500)
+        updatedBannerText = null
+    }
     var shareTarget by remember { mutableStateOf<Triple<String, ProfileItem, Boolean>?>(null) }
     val removeServer: (String, String) -> Unit = { guid, profileName ->
         if (confirmRemove) {
@@ -262,6 +274,8 @@ fun MainScreen(
                         onOpenLink = { url -> onAction(MainAction.OpenSubscriptionLink(url)) },
                         sortByPing = sortByPing,
                         onToggleSortByPing = { onAction(MainAction.ToggleSortByPing) },
+                        isTesting = uiState.isTesting,
+                        updatedBannerText = updatedBannerText,
                         connectionHeader = connectionHeader,
                         contentPadding = PaddingValues(
                             start = 12.dp,

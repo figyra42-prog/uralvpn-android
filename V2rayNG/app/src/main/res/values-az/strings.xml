@@ -395,6 +395,10 @@
         <item quantity="one">%1$d konfiqurasiya yeniləndi</item>
         <item quantity="other">%1$d konfiqurasiya yeniləndi</item>
     </plurals>
+    <plurals name="main_updated_locations">
+        <item quantity="one">%1$d məkan yeniləndi</item>
+        <item quantity="other">%1$d məkan yeniləndi</item>
+    </plurals>
     <plurals name="title_update_asset_count">
         <item quantity="one">%1$d resurs faylı yeniləndi</item>
         <item quantity="other">%1$d resurs faylı yeniləndi</item>

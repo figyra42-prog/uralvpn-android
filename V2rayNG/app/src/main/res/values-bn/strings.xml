@@ -395,6 +395,10 @@
         <item quantity="one">%1$dটি কনফিগারেশন আপডেট হয়েছে</item>
         <item quantity="other">%1$dটি কনফিগারেশন আপডেট হয়েছে</item>
     </plurals>
+    <plurals name="main_updated_locations">
+        <item quantity="one">%1$dটি লোকেশন আপডেট হয়েছে</item>
+        <item quantity="other">%1$dটি লোকেশন আপডেট হয়েছে</item>
+    </plurals>
     <plurals name="title_update_asset_count">
         <item quantity="one">%1$dটি অ্যাসেট ফাইল আপডেট হয়েছে</item>
         <item quantity="other">%1$dটি অ্যাসেট ফাইল আপডেট হয়েছে</item>
