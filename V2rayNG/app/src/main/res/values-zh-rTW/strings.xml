@@ -442,6 +442,11 @@
     <string name="connection_connected">"已連線。輕觸以檢查連線。"</string>
     <string name="connection_not_connected">"未連線"</string>
     <string name="connection_running_task_left">正在執行的測試：%s</string>
+    <string name="main_status_disconnected">Disconnected</string>
+    <string name="main_status_connected">Connected</string>
+    <string name="main_status_connected_with">Connected · %1$s</string>
+    <string name="main_status_no_subscription">Add a subscription</string>
+    <string name="main_status_testing">Testing ping</string>
 
     <string name="import_subscription_success">匯入訂閱成功</string>
     <string name="import_subscription_failure">匯入訂閱失敗</string>

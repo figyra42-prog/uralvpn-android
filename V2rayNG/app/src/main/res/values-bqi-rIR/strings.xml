@@ -444,6 +444,11 @@
     <string name="connection_connected">منپیز هڌ. سی واجۊری کیلیک کوݩ.</string>
     <string name="connection_not_connected">منپیز نؽڌ</string>
     <string name="connection_running_task_left">آزمایشا هونی ٱنجوم ابۊن: %s</string>
+    <string name="main_status_disconnected">Disconnected</string>
+    <string name="main_status_connected">Connected</string>
+    <string name="main_status_connected_with">Connected · %1$s</string>
+    <string name="main_status_no_subscription">Add a subscription</string>
+    <string name="main_status_testing">Testing ping</string>
 
     <string name="import_subscription_success">اشتراک وا مووفقیت و من ٱوورده وابی</string>
     <string name="import_subscription_failure">و من ٱووردن اشتراک مووفق نبی</string>

@@ -1,6 +1,7 @@
 package com.v2ray.ang.ui.main
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,6 +23,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -41,7 +44,6 @@ private const val MILLIS_PER_SECOND = 1000L
 private const val MILLIS_PER_DAY = 86_400_000L
 private const val EXPIRY_DATE_PATTERN = "yyyy-MM-dd"
 private const val NO_EXPIRY_SYMBOL = "∞"
-private const val CARD_ALPHA = 0.97f
 
 /** Locale-neutral values the subscription information box renders. */
 internal data class SubscriptionInfoUiModel(
@@ -117,14 +119,18 @@ internal fun SubscriptionInfoCard(
 
     Surface(
         modifier = modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .padding(horizontal = 2.dp, vertical = 6.dp),
         shape = MaterialTheme.shapes.medium,
-        // Almost opaque: the list scrolls underneath without showing through readably.
-        color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = CARD_ALPHA),
-        border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+        border = BorderStroke(1.dp, raisedRim()),
         shadowElevation = 18.dp,
     ) {
-        Column(Modifier.padding(start = 16.dp, end = 8.dp, top = 2.dp, bottom = 6.dp)) {
+        Column(
+            Modifier
+                .background(raisedBrush(MaterialTheme.colorScheme.surfaceContainerHighest))
+                .padding(start = 8.dp, end = 8.dp, top = 2.dp, bottom = 10.dp)
+        ) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
                     onClick = onToggleCollapse,
@@ -249,6 +255,24 @@ internal fun SubscriptionInfoCard(
         }
     }
 }
+
+// Volume of the subscription card: light top edge, darker bottom.
+@Composable
+private fun raisedRim(): Brush =
+    Brush.verticalGradient(listOf(Color(0x59FFFFFF), Color(0x66000000)))
+
+private fun raisedBrush(base: Color): Brush =
+    Brush.verticalGradient(
+        listOf(
+            Color(
+                red = base.red + (1f - base.red) * 0.12f,
+                green = base.green + (1f - base.green) * 0.12f,
+                blue = base.blue + (1f - base.blue) * 0.12f,
+                alpha = base.alpha,
+            ),
+            Color(red = base.red * 0.88f, green = base.green * 0.88f, blue = base.blue * 0.88f, alpha = base.alpha),
+        ),
+    )
 
 @Composable
 private fun CardIconButton(iconRes: Int, contentDescription: String, onClick: () -> Unit) {

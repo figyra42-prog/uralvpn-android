@@ -1,6 +1,5 @@
 package com.v2ray.ang.ui.main
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -29,13 +28,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.v2ray.ang.R
 import com.v2ray.ang.dto.entities.ProfileItem
+import com.v2ray.ang.dto.entities.ServersCache
 import com.v2ray.ang.extension.toSpeedString
 import com.v2ray.ang.ui.compose.ConfirmDialog
 import com.v2ray.ang.ui.compose.QRCodeDialog
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 @Composable
@@ -48,8 +50,16 @@ fun MainScreen(
     val groups = uiState.groups
     val isLoading by mainViewModel.isLoading.collectAsStateWithLifecycle()
     val isRunning = uiState.isRunning
-    val displayText = mainViewModel.formatStatus(uiState.status)
     val selectedGuid = uiState.selectedGuid
+    val selectedGroup = groups.firstOrNull { it.id == uiState.selectedGroupId }
+        ?: groups.firstOrNull()
+    val selectedGroupServers by (selectedGroup?.let { mainViewModel.serversForGroup(it.id) }
+        ?: flowOf(emptyList<ServersCache>()))
+        .collectAsStateWithLifecycle()
+    val selectedServerName = selectedGroupServers
+        .firstOrNull { it.guid == selectedGuid }
+        ?.profile?.remarks
+        ?.takeIf { it.isNotBlank() }
     val doubleColumnDisplay = uiState.doubleColumnDisplay
     val confirmRemove = uiState.confirmRemove
     val sortByPing = uiState.sortByPing
@@ -57,9 +67,7 @@ fun MainScreen(
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    var showSearch by remember { mutableStateOf(false) }
     var showImportMenu by rememberSaveable { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
     var showDelAllConfirm by remember { mutableStateOf(false) }
     var showDelDuplicateConfirm by remember { mutableStateOf(false) }
     var showDelInvalidConfirm by remember { mutableStateOf(false) }
@@ -109,11 +117,20 @@ fun MainScreen(
                 }
             )
             Spacer(modifier = Modifier.height(2.dp))
+            val statusText = when {
+                uiState.isTesting -> stringResource(R.string.main_status_testing)
+                isRunning -> selectedServerName?.let {
+                    stringResource(R.string.main_status_connected_with, it)
+                } ?: stringResource(R.string.main_status_connected)
+                groups.isEmpty() -> stringResource(R.string.main_status_no_subscription)
+                else -> stringResource(R.string.main_status_disconnected)
+            }
             Text(
-                text = displayText,
+                text = statusText,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.clickable { onAction(MainAction.TestCurrentServer) }
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             if (isRunning) {
                 Spacer(modifier = Modifier.height(2.dp))
@@ -197,33 +214,8 @@ fun MainScreen(
                     isLoading = isLoading,
                     showImportMenu = showImportMenu,
                     onImportMenuChange = { showImportMenu = it },
-                    showSearch = showSearch,
-                    searchQuery = searchQuery,
-                    onSearchQueryChange = { query: String ->
-                        searchQuery = query
-                        onAction(MainAction.Search(query))
-                    },
-                    onSearchClose = {
-                        searchQuery = ""
-                        onAction(MainAction.Search(""))
-                        showSearch = false
-                    },
-                    onSearchToggle = { show: Boolean -> showSearch = show },
                     onMenuClick = { scope.launch { drawerState.open() } },
-                    onAction = onAction,
-                    onMoreMenuAction = { action ->
-                        when (action) {
-                            MainMoreMenuAction.RestartService -> onAction(MainAction.RestartService)
-                            MainMoreMenuAction.DeleteAll -> showDelAllConfirm = true
-                            MainMoreMenuAction.DeleteDuplicate -> showDelDuplicateConfirm = true
-                            MainMoreMenuAction.DeleteInvalid -> showDelInvalidConfirm = true
-                            MainMoreMenuAction.ExportAll -> onAction(MainAction.ExportAll)
-                            MainMoreMenuAction.LocateSelected -> onAction(MainAction.LocateSelectedServer)
-                            MainMoreMenuAction.TestAll -> onAction(MainAction.TestAllServers)
-                            MainMoreMenuAction.TestAllRealPing -> onAction(MainAction.TestRealAllServers)
-                            MainMoreMenuAction.UpdateSubscriptions -> onAction(MainAction.UpdateSubscriptions)
-                        }
-                    }
+                    onAction = onAction
                 )
             },
             floatingActionButton = {},
@@ -233,8 +225,6 @@ fun MainScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                val selectedGroup = groups.firstOrNull { it.id == uiState.selectedGroupId }
-                    ?: groups.firstOrNull()
                 if (selectedGroup != null) {
                     GroupPagerPage(
                         groupId = selectedGroup.id,
@@ -242,7 +232,7 @@ fun MainScreen(
                         selectedGuid = selectedGuid,
                         locateTarget = uiState.locateTarget,
                         doubleColumnDisplay = doubleColumnDisplay,
-                        searchQuery = searchQuery,
+                        searchQuery = "",
                         lazyListStates = lazyListStates,
                         lazyGridStates = lazyGridStates,
                         onSelectServer = { guid -> onAction(MainAction.SelectServer(guid)) },

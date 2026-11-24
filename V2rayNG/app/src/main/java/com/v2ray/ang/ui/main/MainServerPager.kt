@@ -70,7 +70,7 @@ import com.v2ray.ang.dto.entities.SubscriptionUsageInfo
 import com.v2ray.ang.extension.toTrafficString
 import com.v2ray.ang.ui.compose.ReorderableGridItem
 import com.v2ray.ang.ui.compose.ReorderableListItem
-import com.v2ray.ang.ui.compose.colorPing
+import com.v2ray.ang.ui.compose.pingGoodColor
 import com.v2ray.ang.ui.compose.colorPingRed
 import com.v2ray.ang.ui.compose.verticalScrollbar
 import com.v2ray.ang.util.Utils
@@ -565,7 +565,7 @@ private fun AutopilotCard(
             style = MaterialTheme.typography.bodySmall,
             color = when {
                 row.testDelayMillis < 0L -> colorPingRed
-                row.testDelayMillis > 0L -> colorPing
+                row.testDelayMillis > 0L -> pingGoodColor()
                 else -> MaterialTheme.colorScheme.onSurfaceVariant
             },
             maxLines = 1,
@@ -701,7 +701,7 @@ private fun ServerListItem(
             style = MaterialTheme.typography.labelLarge,
             color = when {
                 row.testDelayMillis < 0L -> colorPingRed
-                row.testDelayMillis > 0L -> colorPing
+                row.testDelayMillis > 0L -> pingGoodColor()
                 else -> MaterialTheme.colorScheme.onSurfaceVariant
             },
             maxLines = 1

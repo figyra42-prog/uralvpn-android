@@ -446,6 +446,11 @@
     <string name="connection_connected">Connected. Tap to check connection.</string>
     <string name="connection_not_connected">Not connected</string>
     <string name="connection_running_task_left">Tests running: %s</string>
+    <string name="main_status_disconnected">Disconnected</string>
+    <string name="main_status_connected">Connected</string>
+    <string name="main_status_connected_with">Connected · %1$s</string>
+    <string name="main_status_no_subscription">Add a subscription</string>
+    <string name="main_status_testing">Testing ping</string>
 
     <string name="import_subscription_success">Subscription imported successfully</string>
     <string name="import_subscription_failure">Import subscription failed</string>

@@ -157,6 +157,10 @@ fun resolveDarkTheme(): Boolean {
 
 val LocalDarkTheme = compositionLocalOf { false }
 
+// Like the old app: lime at good ping in the dark theme, green in the light one.
+@Composable
+fun pingGoodColor(): Color = if (LocalDarkTheme.current) Color(0xFFC6FF3D) else colorPing
+
 @Composable
 fun AppTheme(
     darkTheme: Boolean = resolveDarkTheme(),

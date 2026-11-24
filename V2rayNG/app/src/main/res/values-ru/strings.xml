@@ -450,6 +450,11 @@
     <string name="connection_connected">Подключено.\nНажмите, чтобы проверить соединение.</string>
     <string name="connection_not_connected">Нет соединения</string>
     <string name="connection_running_task_left">Выполняется проверок: %s</string>
+    <string name="main_status_disconnected">Отключено</string>
+    <string name="main_status_connected">Подключено</string>
+    <string name="main_status_connected_with">Подключено · %1$s</string>
+    <string name="main_status_no_subscription">Добавьте подписку</string>
+    <string name="main_status_testing">Идёт пинг</string>
 
     <string name="import_subscription_success">Подписка импортирована</string>
     <string name="import_subscription_failure">Невозможно импортировать подписку</string>
