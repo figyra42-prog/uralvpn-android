@@ -24,6 +24,8 @@ class UralFastDnsTest {
                 .getAsJsonObject("sniffing").getAsJsonArray("destOverride")
                 .any { it.asString == "fakedns" }
         )
+        assertTrue(root.getAsJsonArray("outbounds").any { it.asJsonObject.get("tag").asString == "dns-out" })
+        assertEquals("dns-out", root.getAsJsonObject("routing").getAsJsonArray("rules").first().asJsonObject.get("outboundTag").asString)
     }
 
     @Test
@@ -40,6 +42,8 @@ class UralFastDnsTest {
         val overrides = root.getAsJsonArray("inbounds").first().asJsonObject
             .getAsJsonObject("sniffing").getAsJsonArray("destOverride")
         assertEquals(1, overrides.count { it.asString == "fakedns" })
+        assertEquals(1, root.getAsJsonArray("outbounds").count { it.asJsonObject.get("tag")?.asString == "dns-out" })
+        assertEquals(1, root.getAsJsonObject("routing").getAsJsonArray("rules").count { it.asJsonObject.get("outboundTag")?.asString == "dns-out" })
     }
 
     @Test

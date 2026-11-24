@@ -21,6 +21,8 @@ object UralFastDns {
         ensurePool(root)
         ensureDnsServer(root)
         ensureSniffing(root)
+        ensureDnsOutbound(root)
+        ensureDnsRoute(root)
     }
 
     private fun ensurePool(root: JsonObject) {
@@ -68,5 +70,45 @@ object UralFastDns {
                 overrides.add(FAKE_DNS)
             }
         }
+    }
+
+    private fun ensureDnsOutbound(root: JsonObject) {
+        val outbounds = root.get("outbounds") as? JsonArray
+            ?: JsonArray().also { root.add("outbounds", it) }
+        if (outbounds.any { item ->
+                item.isJsonObject && item.asJsonObject.get("tag")?.takeIf { it.isJsonPrimitive }?.asString == "dns-out"
+            }
+        ) {
+            return
+        }
+        val dnsOutbound = JsonObject().apply {
+            addProperty("tag", "dns-out")
+            addProperty("protocol", "dns")
+        }
+        outbounds.add(dnsOutbound)
+    }
+
+    private fun ensureDnsRoute(root: JsonObject) {
+        val routing = root.get("routing") as? JsonObject
+            ?: JsonObject().also { root.add("routing", it) }
+        val rules = routing.get("rules") as? JsonArray
+            ?: JsonArray().also { routing.add("rules", it) }
+        if (rules.any { rule ->
+                rule.isJsonObject && rule.asJsonObject.get("port")?.takeIf { it.isJsonPrimitive }?.asString == "53" &&
+                    rule.asJsonObject.get("outboundTag")?.takeIf { it.isJsonPrimitive }?.asString == "dns-out"
+            }
+        ) {
+            return
+        }
+        val rule = JsonObject().apply {
+            addProperty("type", "field")
+            addProperty("port", "53")
+            addProperty("outboundTag", "dns-out")
+        }
+        val reordered = JsonArray().apply {
+            add(rule)
+            for (item in rules) add(item)
+        }
+        routing.add("rules", reordered)
     }
 }
