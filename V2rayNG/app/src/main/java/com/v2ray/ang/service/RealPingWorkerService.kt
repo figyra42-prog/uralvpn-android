@@ -7,6 +7,7 @@ import com.v2ray.ang.dto.RealPingEvent
 import com.v2ray.ang.enums.EConfigType
 import com.v2ray.ang.extension.isComplexType
 import com.v2ray.ang.extension.isNotNullEmpty
+import com.v2ray.ang.handler.CustomEndpoint
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.SettingsManager
 import com.v2ray.ang.handler.SpeedtestManager
@@ -110,17 +111,26 @@ class RealPingWorkerService(
 
         val config = MmkvManager.decodeServerConfig(guid) ?: return retFailure
         val testConfig = UralSimulation.applyToProfile(config)
+        val rawEndpoint = if (testConfig.configType == EConfigType.CUSTOM) {
+            CustomEndpoint.fromRaw(MmkvManager.decodeServerRaw(guid).orEmpty())
+        } else {
+            null
+        }
+        val probeAddress = testConfig.server.takeIf { it.isNotNullEmpty() } ?: rawEndpoint?.address
+        val probePort = testConfig.serverPort?.toIntOrNull() ?: rawEndpoint?.port
         var connectMillis = -1L
-        val canTcpProbe = testConfig.server.isNotNullEmpty()
-            && testConfig.serverPort?.toIntOrNull() != null
+        val canTcpProbe = probeAddress.isNotNullEmpty()
+            && probePort != null
             && testConfig.configType != EConfigType.HYSTERIA2
             && testConfig.configType != EConfigType.WIREGUARD
             && testConfig.alpn?.startsWith("h3") != true
             && (testConfig.configType == EConfigType.CUSTOM || !testConfig.configType.isComplexType())
         if (canTcpProbe) {
-            val url = testConfig.server.orEmpty()
-            val port = testConfig.serverPort.orEmpty().toInt()
-            connectMillis = SpeedtestManager.socketConnectTime(url, port, 1000)
+            connectMillis = SpeedtestManager.socketConnectTime(
+                probeAddress.orEmpty(),
+                probePort ?: 0,
+                1000,
+            )
             if (connectMillis <= -1L) {
                 return retFailure
             }
@@ -143,16 +153,25 @@ class RealPingWorkerService(
 
         val config = MmkvManager.decodeServerConfig(guid) ?: return retFailure
         val testConfig = UralSimulation.applyToProfile(config)
-        val canTcpProbe = testConfig.server.isNotNullEmpty()
-            && testConfig.serverPort?.toIntOrNull() != null
+        val rawEndpoint = if (testConfig.configType == EConfigType.CUSTOM) {
+            CustomEndpoint.fromRaw(MmkvManager.decodeServerRaw(guid).orEmpty())
+        } else {
+            null
+        }
+        val probeAddress = testConfig.server.takeIf { it.isNotNullEmpty() } ?: rawEndpoint?.address
+        val probePort = testConfig.serverPort?.toIntOrNull() ?: rawEndpoint?.port
+        val canTcpProbe = probeAddress.isNotNullEmpty()
+            && probePort != null
             && testConfig.configType != EConfigType.HYSTERIA2
             && testConfig.configType != EConfigType.WIREGUARD
             && testConfig.alpn?.split(',')?.all { it.trim().startsWith("h3") } != true
             && (testConfig.configType == EConfigType.CUSTOM || !testConfig.configType.isComplexType())
         if (canTcpProbe) {
-            val url = testConfig.server.orEmpty()
-            val port = testConfig.serverPort.orEmpty().toInt()
-            return SpeedtestManager.socketConnectTime(url, port, 1000)
+            return SpeedtestManager.socketConnectTime(
+                probeAddress.orEmpty(),
+                probePort ?: 0,
+                1000,
+            )
         }
 
         return retFailure
