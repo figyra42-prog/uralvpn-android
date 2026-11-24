@@ -4,6 +4,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.os.Build
 import androidx.core.content.ContextCompat
 import com.v2ray.ang.AngApplication
 import com.v2ray.ang.AppConfig
@@ -44,6 +49,33 @@ class MainRepository(
     private val mainServiceEventChannel = Channel<MainServiceEvent>(Channel.UNLIMITED)
 
     override val mainServiceEvent: Flow<MainServiceEvent> = mainServiceEventChannel.receiveAsFlow()
+
+    private val connectivity =
+        app.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+    private var lastUnderlyingNetwork: Network? = null
+    private val networkRequest = NetworkRequest.Builder()
+        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
+        .build()
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            if (closed.get() || isVpnNetwork(network)) return
+            if (lastUnderlyingNetwork == network) return
+            lastUnderlyingNetwork = network
+            mainServiceEventChannel.trySend(MainServiceEvent.NetworkChanged)
+        }
+
+        override fun onLost(network: Network) {
+            if (lastUnderlyingNetwork != network) return
+            lastUnderlyingNetwork = null
+            if (!closed.get()) mainServiceEventChannel.trySend(MainServiceEvent.NetworkChanged)
+        }
+
+        private fun isVpnNetwork(network: Network): Boolean {
+            val capabilities = connectivity?.getNetworkCapabilities(network) ?: return false
+            return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
+        }
+    }
 
     private val serviceReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -92,6 +124,10 @@ class MainRepository(
             Utils.receiverFlags()
         )
         MessageHelper.sendMsg2Service(app, AppConfig.MSG_REGISTER_CLIENT, "")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            runCatching { connectivity?.registerNetworkCallback(networkRequest, networkCallback) }
+                .onFailure { LogUtil.e(AppConfig.TAG, "Failed to register network callback", it) }
+        }
     }
 
     override fun close() {
@@ -105,6 +141,10 @@ class MainRepository(
             app.unregisterReceiver(serviceReceiver)
         }.onFailure {
             LogUtil.e(AppConfig.TAG, "Failed to unregister main service receiver", it)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            runCatching { connectivity?.unregisterNetworkCallback(networkCallback) }
+                .onFailure { LogUtil.w(AppConfig.TAG, "Failed to unregister network callback", it) }
         }
         mainServiceEventChannel.close()
     }

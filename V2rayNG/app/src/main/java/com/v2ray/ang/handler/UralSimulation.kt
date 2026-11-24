@@ -2,6 +2,7 @@ package com.v2ray.ang.handler
 
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.dto.entities.ProfileItem
+import com.v2ray.ang.extension.isComplexType
 
 /**
  * Developer-only simulation of a block: direct locations are given a closed port, while CDN
@@ -17,6 +18,10 @@ object UralSimulation {
     fun applyToProfile(profile: ProfileItem): ProfileItem =
         applyToProfile(profile, isEnabled())
 
+    /** True when the switch is on and this simple profile is a direct location, not CDN/autopilot. */
+    fun isBlocked(profile: ProfileItem): Boolean =
+        isEnabled() && !profile.configType.isComplexType() && !isProtected(profile.remarks)
+
     internal fun applyToProfile(profile: ProfileItem, enabled: Boolean): ProfileItem =
         if (!enabled || isProtected(profile.remarks)) profile
         else profile.copy(serverPort = CLOSED_PORT)
@@ -25,6 +30,6 @@ object UralSimulation {
         val value = remark.lowercase()
         return "мобильн" in value || "моб" in value || "📱" in remark ||
             "cdn" in value || "автопилот" in value || "autopilot" in value ||
-            "автовыбор" in value
+            "автовыбор" in value || "auto balancer" in value || "two tier" in value
     }
 }

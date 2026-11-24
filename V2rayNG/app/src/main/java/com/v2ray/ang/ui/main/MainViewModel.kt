@@ -45,6 +45,9 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.PatternSyntaxException
 
+private const val AUTO_PING_DELAY_MS = 800L
+private const val AUTO_PING_AFTER_REFRESH_DELAY_MS = 300L
+
 private fun applyTestDelayResults(
     servers: List<ServersCache>,
     updates: Map<String, Long>,
@@ -114,6 +117,7 @@ class MainViewModel(
 
     private val testRequests = MainTestRequests()
     private var bulkTestJob: Job? = null
+    private var autoPingJob: Job? = null
 
     // ---------- Live speed ----------
     private var trafficStatsJob: Job? = null
@@ -139,14 +143,27 @@ class MainViewModel(
 
     private fun handleServiceEvent(event: MainServiceEvent) {
         when (event) {
-            MainServiceEvent.StateRunning -> updateRunningState(true, clearTestingText = false)
-            MainServiceEvent.StateNotRunning -> updateRunningState(false, clearTestingText = false)
+            MainServiceEvent.StateRunning -> {
+                val wasRunning = uiState.value.isRunning
+                updateRunningState(true, clearTestingText = false)
+                if (!wasRunning) scheduleAutoPing()
+            }
+
+            MainServiceEvent.StateNotRunning -> {
+                autoPingJob?.cancel()
+                autoPingJob = null
+                updateRunningState(false, clearTestingText = false)
+            }
+
             MainServiceEvent.StateStartSuccess -> {
                 toastSuccess(R.string.toast_services_success)
                 updateRunningState(true)
+                scheduleAutoPing()
             }
 
             is MainServiceEvent.StateStartFailure -> {
+                autoPingJob?.cancel()
+                autoPingJob = null
                 if (!event.message.isNullOrBlank()) {
                     toastError(event.message)
                 } else {
@@ -155,7 +172,13 @@ class MainViewModel(
                 updateRunningState(false)
             }
 
-            MainServiceEvent.StateStopSuccess -> updateRunningState(false)
+            MainServiceEvent.StateStopSuccess -> {
+                autoPingJob?.cancel()
+                autoPingJob = null
+                updateRunningState(false)
+            }
+
+            MainServiceEvent.NetworkChanged -> scheduleAutoPing()
             is MainServiceEvent.TrafficStats -> {
                 if (!uiState.value.isRunning) return
                 val now = System.currentTimeMillis()
@@ -296,7 +319,7 @@ class MainViewModel(
     fun onAction(action: MainAction) {
         when (action) {
             MainAction.Initialize -> initialize()
-            MainAction.RefreshGroups -> setupGroupTab(forceRefresh = true)
+            MainAction.RefreshGroups -> refreshGroups(pingAfter = true)
             MainAction.TestAllServers -> testAllRealPing(true)
             MainAction.TestRealAllServers -> testAllRealPing()
             MainAction.CancelTesting -> cancelAllPing()
@@ -480,6 +503,15 @@ class MainViewModel(
         return result
     }
 
+    private fun refreshGroups(pingAfter: Boolean = false) {
+        val job = setupGroupTab(forceRefresh = true)
+        if (pingAfter) {
+            job.invokeOnCompletion { cause ->
+                if (cause == null) scheduleAutoPing(AUTO_PING_AFTER_REFRESH_DELAY_MS)
+            }
+        }
+    }
+
     fun setupGroupTab(forceRefresh: Boolean = false): Job {
         setupGroupJob?.cancel()
         preloadJob?.cancel()
@@ -521,6 +553,7 @@ class MainViewModel(
 
                 val selectedServers = loadGroup(selectedGroup, forceRefresh)
                 updateGroupUi(selectedGroup, selectedServers)
+                if (uiState.value.isRunning) scheduleAutoPing(AUTO_PING_AFTER_REFRESH_DELAY_MS)
 
                 if (!initialPageReady.isCompleted) {
                     initialPageReady.complete(Unit)
@@ -560,10 +593,10 @@ class MainViewModel(
                     when {
                         count > 0 -> {
                             toast(dataSource.getString(R.string.title_import_config_count, count))
-                            setupGroupTab(forceRefresh = true)
+                            refreshGroups(pingAfter = true)
                         }
 
-                        countSub > 0 -> setupGroupTab(forceRefresh = true)
+                        countSub > 0 -> refreshGroups(pingAfter = true)
                         else -> toastError(R.string.toast_failure)
                     }
                 } catch (cancelled: CancellationException) {
@@ -604,7 +637,7 @@ class MainViewModel(
                     }
                     if (result.configCount > 0) {
                         _uiState.update { it.withUpdatedLocations(result.configCount) }
-                        setupGroupTab(forceRefresh = true)
+                        refreshGroups(pingAfter = true)
                         refreshSelectedGuid()
                     }
                 } catch (cancelled: CancellationException) {
@@ -791,6 +824,7 @@ class MainViewModel(
         selectedGroupLoadJob = viewModelScope.launch(ioDispatcher) {
             try {
                 updateGroupUi(id, loadGroup(id))
+                if (uiState.value.isRunning) scheduleAutoPing(AUTO_PING_AFTER_REFRESH_DELAY_MS)
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
@@ -804,6 +838,7 @@ class MainViewModel(
         selectedGroupLoadJob?.cancel()
         selectedGroupLoadJob = viewModelScope.launch(ioDispatcher) {
             updateGroupUi(groupId, loadGroup(groupId, forceRefresh = true))
+            if (uiState.value.isRunning) scheduleAutoPing(AUTO_PING_AFTER_REFRESH_DELAY_MS)
         }
     }
 
@@ -876,7 +911,24 @@ class MainViewModel(
     }
 
     // ---------- Testing ----------
+    private fun scheduleAutoPing(delayMillis: Long = AUTO_PING_DELAY_MS) {
+        autoPingJob?.cancel()
+        if (!AutoPingPolicy.shouldPing(uiState.value.isRunning, currentServers().size)) return
+        autoPingJob = viewModelScope.launch {
+            kotlinx.coroutines.delay(delayMillis)
+            if (!uiState.value.isRunning || currentServers().isEmpty()) return@launch
+            autoPingJob = null
+            testAllRealPing()
+        }
+    }
+
     fun cancelAllPing() {
+        autoPingJob?.cancel()
+        autoPingJob = null
+        cancelAllPingInternal()
+    }
+
+    private fun cancelAllPingInternal() {
         bulkTestJob?.cancel()
         bulkTestJob = null
         testRequests.cancelBulk()
@@ -897,7 +949,7 @@ class MainViewModel(
     }
 
     fun testAllRealPing(onlyTcp: Boolean = false) {
-        cancelAllPing()
+        cancelAllPingInternal()
         val groupId = uiState.value.selectedGroupId
         val servers = currentServers()
         if (servers.isEmpty()) {

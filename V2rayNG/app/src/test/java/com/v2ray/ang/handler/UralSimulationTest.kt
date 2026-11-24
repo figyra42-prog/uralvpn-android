@@ -35,4 +35,10 @@ class UralSimulationTest {
         val profile = profile("🚀 АВТОПИЛОТ")
         assertEquals("443", UralSimulation.applyToProfile(profile, true).serverPort)
     }
+
+    @Test
+    fun englishAutopilotKeepsWorking() {
+        val profile = profile("Auto Balancer Two Tier")
+        assertEquals("443", UralSimulation.applyToProfile(profile, true).serverPort)
+    }
 }
