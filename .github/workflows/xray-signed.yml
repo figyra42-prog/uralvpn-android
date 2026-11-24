@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: figyra42-prog/uralvpn-xray-proto
-          ref: xray-proto
+          ref: release-1.1.16
           token: ${{ secrets.XRAY_REPO_PAT }}
           path: xray
           submodules: recursive
@@ -121,7 +121,9 @@ jobs:
           BTOOLS="$ANDROID_HOME/build-tools/37.0.0"
           "$BTOOLS/apksigner" verify --print-certs "$APK" | tee /tmp/xray-signature.txt
           grep -q '092d8f97613277ed066c622ad291edd543b73bd6a828043e42d8b6f243a21e33' /tmp/xray-signature.txt
+          "$BTOOLS/aapt2" dump badging "$APK" | grep -q "package: name='app.uralvpn.next'"
           "$BTOOLS/aapt2" dump badging "$APK" | grep -q "versionCode='4001056'"
+          "$BTOOLS/aapt2" dump badging "$APK" | grep -q "versionName='1.1.16'"
 
       - name: Draft release with APK
         env:
@@ -129,13 +131,11 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           D=$(dirname "$(find "$GITHUB_WORKSPACE/xray/V2rayNG/app/build/outputs/apk" -type f -name '*arm64-v8a*.apk' | head -1)")
-          cp "$D"/*arm64-v8a*.apk UralVPN-Xray-arm64-v8a.apk
-          ASSETS="UralVPN-Xray-arm64-v8a.apk"
-          if ls "$D"/*universal*.apk >/dev/null 2>&1; then
-            cp "$D"/*universal*.apk UralVPN-Xray-universal.apk
-            ASSETS="$ASSETS UralVPN-Xray-universal.apk"
-          fi
-          gh release create "xray-proto-${BUILD_NUMBER}-1" $ASSETS \
+          cp "$D"/*arm64-v8a*.apk UralVPN-arm64-v8a.apk
+          cp "$D"/*universal*.apk UralVPN-universal.apk
+          printf '{"version_code":4001056}\n' > SFA-version-metadata.json
+          ASSETS="UralVPN-arm64-v8a.apk UralVPN-universal.apk SFA-version-metadata.json"
+          gh release create "v1.1.16" $ASSETS \
             --repo "$GH_REPO" --draft --prerelease --target "${{ github.sha }}" \
-            --title "UralVPN Xray prototype #${BUILD_NUMBER} (production signed)" \
-            --notes "Production-подпись. Пакет app.uralvpn.xray. Ставится поверх предыдущей версии 55."
+            --title "UralVPN 1.1.16 Xray" \
+            --notes "UralVPN 1.1.16 на Xray. Пакет app.uralvpn.next, обновление поверх 1.1.15 с переносом подписки. Черновик для проверки."
