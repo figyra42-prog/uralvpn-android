@@ -60,10 +60,8 @@ private val bottomItems = listOf(
 )
 
 private val moreItems = listOf(
-    MainDestination.Routing,
-    MainDestination.UserAssets,
-    MainDestination.BackupRestore,
-    MainDestination.Promotion
+    // UralVPN: routing and geo assets are controlled by the subscription.
+    MainDestination.BackupRestore
 )
 
 @Composable
