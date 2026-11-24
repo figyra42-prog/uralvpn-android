@@ -37,10 +37,7 @@ enum class MainDestination(@DrawableRes val iconRes: Int, @StringRes val labelRe
     Notifications(R.drawable.ic_notifications_24dp, R.string.menu_notifications),
     UralVpnSite(R.drawable.ic_translate_24dp, R.string.menu_uralvpn_site),
     About(R.drawable.ic_about_24dp, R.string.menu_about),
-    Routing(R.drawable.ic_routing_24dp, R.string.routing_settings_title),
-    UserAssets(R.drawable.ic_file_24dp, R.string.title_user_asset_setting),
-    BackupRestore(R.drawable.ic_restore_24dp, R.string.title_configuration_backup_restore),
-    Promotion(R.drawable.ic_promotion_24dp, R.string.title_pref_promotion)
+    BackupRestore(R.drawable.ic_restore_24dp, R.string.title_configuration_backup_restore)
 }
 
 private val topItems = listOf(

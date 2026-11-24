@@ -8,6 +8,8 @@ plugins {
     id("com.jaredsburrows.license")
 }
 
+val buildNumber = providers.gradleProperty("buildNumber").orNull?.toIntOrNull() ?: 0
+
 fun getProps(propName: String): String {
     val propsFile = rootProject.file("local.properties")
     if (propsFile.exists()) {
@@ -26,8 +28,8 @@ android {
         applicationId = "app.uralvpn.xray"
         minSdk = 24
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0.0-xray-proto"
+        versionCode = 1000 + buildNumber
+        versionName = "1.0.0-xray-proto.$buildNumber"
 
         val abiFilterList = (properties["ABI_FILTERS"] as? String)?.split(';')
         splits {

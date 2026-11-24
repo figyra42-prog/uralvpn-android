@@ -135,7 +135,7 @@ jobs:
           echo "ALIAS_PASS=$KS_KEY_PASS"
         } >> local.properties
         chmod 755 gradlew
-        ./gradlew assemblePlaystoreDebug
+        ./gradlew assemblePlaystoreDebug -PbuildNumber=${{ github.run_number }}
     
     - name: Draft release with APK
       if: ${{ success() }}
