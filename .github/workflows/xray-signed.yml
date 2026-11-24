@@ -6,7 +6,7 @@ on:
       build_number:
         description: 'Build number (versionCode = 4000000 + 1000 + build_number)'
         required: true
-        default: '56'
+        default: '57'
         type: string
   push:
     branches:
@@ -16,7 +16,7 @@ permissions:
   contents: write
 
 env:
-  BUILD_NUMBER: ${{ github.event.inputs.build_number || '56' }}
+  BUILD_NUMBER: ${{ github.event.inputs.build_number || '57' }}
 
 jobs:
   build:
@@ -119,10 +119,11 @@ jobs:
           APK=$(find "$GITHUB_WORKSPACE/xray/V2rayNG/app/build/outputs/apk" -type f -name '*arm64-v8a*.apk' | head -1)
           test -n "$APK"
           BTOOLS="$ANDROID_HOME/build-tools/37.0.0"
+          EXPECTED_CODE=$((4000000 + 1000 + BUILD_NUMBER))
           "$BTOOLS/apksigner" verify --print-certs "$APK" | tee /tmp/xray-signature.txt
           grep -q '092d8f97613277ed066c622ad291edd543b73bd6a828043e42d8b6f243a21e33' /tmp/xray-signature.txt
           "$BTOOLS/aapt2" dump badging "$APK" | grep -q "package: name='app.uralvpn.next'"
-          "$BTOOLS/aapt2" dump badging "$APK" | grep -q "versionCode='4001056'"
+          "$BTOOLS/aapt2" dump badging "$APK" | grep -q "versionCode='$EXPECTED_CODE'"
           "$BTOOLS/aapt2" dump badging "$APK" | grep -q "versionName='1.1.16'"
 
       - name: Draft release with APK
@@ -133,9 +134,15 @@ jobs:
           D=$(dirname "$(find "$GITHUB_WORKSPACE/xray/V2rayNG/app/build/outputs/apk" -type f -name '*arm64-v8a*.apk' | head -1)")
           cp "$D"/*arm64-v8a*.apk UralVPN-arm64-v8a.apk
           cp "$D"/*universal*.apk UralVPN-universal.apk
-          printf '{"version_code":4001056}\n' > SFA-version-metadata.json
+          EXPECTED_CODE=$((4000000 + 1000 + BUILD_NUMBER))
+          printf '{"version_code":%d}\n' "$EXPECTED_CODE" > SFA-version-metadata.json
           ASSETS="UralVPN-arm64-v8a.apk UralVPN-universal.apk SFA-version-metadata.json"
+          DRAFT_ID=$(gh api "repos/$GH_REPO/releases?per_page=100" \
+            --jq '.[] | select(.tag_name == "v1.1.16" and .draft) | .id' | head -1)
+          if [ -n "$DRAFT_ID" ]; then
+            gh api -X DELETE "repos/$GH_REPO/releases/$DRAFT_ID"
+          fi
           gh release create "v1.1.16" $ASSETS \
             --repo "$GH_REPO" --draft --prerelease --target "${{ github.sha }}" \
             --title "UralVPN 1.1.16 Xray" \
-            --notes "UralVPN 1.1.16 на Xray. Пакет app.uralvpn.next, обновление поверх 1.1.15 с переносом подписки. Черновик для проверки."
+            --notes "UralVPN 1.1.16 на Xray, сборка 57. Пакет app.uralvpn.next, обновление поверх 1.1.15 с переносом подписки. Исправлен импорт: служебная подписка Default больше не блокирует миграцию. Черновик для проверки."
