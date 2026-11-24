@@ -16,6 +16,7 @@ import com.v2ray.ang.enums.EConfigType
 import com.v2ray.ang.extension.isNotNullEmpty
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.SettingsManager
+import com.v2ray.ang.handler.UralFastDns
 import com.v2ray.ang.handler.UralRouting
 import com.v2ray.ang.handler.UralSimulation
 import com.v2ray.ang.util.HttpUtil
@@ -102,6 +103,7 @@ object CoreConfigManager {
 
         val json = JsonUtil.parseString(effectiveRaw)?.takeIf { it.isJsonObject }?.asJsonObject ?: return result
         UralRouting.applyFastRouting(json)
+        UralFastDns.apply(json)
 
         // Keep traffic statistics for the live speed display. The notification has its own
         // preference; the counters are cheap and are needed by the main screen.
@@ -153,6 +155,7 @@ object CoreConfigManager {
                 inboundTun.settings?.mtu = SettingsManager.getVpnMtu()
                 inboundsJson.add(JsonUtil.parseString(JsonUtil.toJson(inboundTun)))
             }
+            UralFastDns.apply(json)
         }
 
         return JsonUtil.toJsonPretty(json)?.let { ConfigResult(true, configContext.guid, it) } ?: result
