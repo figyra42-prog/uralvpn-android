@@ -29,6 +29,15 @@ class UralColdStartTest {
         assertTrue(report.contains("connect 40 + first request 100"))
     }
 
+
+    @Test
+    fun connectLongerThanPingRaisesColdTime() {
+        val report = UralColdStart.report(
+            listOf(UralColdStart.Row("Russia", "vless", 140, 64))
+        )
+        assertTrue(report.contains("140 ms cold (connect 140 + first request 0), ping shown 64 ms"))
+    }
+
     @Test
     fun unknownConnectIsShownAsNa() {
         val report = UralColdStart.report(
