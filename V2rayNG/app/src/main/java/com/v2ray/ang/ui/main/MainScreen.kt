@@ -37,7 +37,8 @@ import com.v2ray.ang.dto.entities.ServersCache
 import com.v2ray.ang.extension.toSpeedString
 import com.v2ray.ang.ui.compose.ConfirmDialog
 import com.v2ray.ang.ui.compose.QRCodeDialog
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @Composable
@@ -53,9 +54,12 @@ fun MainScreen(
     val selectedGuid = uiState.selectedGuid
     val selectedGroup = groups.firstOrNull { it.id == uiState.selectedGroupId }
         ?: groups.firstOrNull()
-    val selectedGroupServers by (selectedGroup?.let { mainViewModel.serversForGroup(it.id) }
-        ?: flowOf(emptyList<ServersCache>()))
-        .collectAsStateWithLifecycle()
+    val selectedGroupServersFlow: StateFlow<List<ServersCache>> =
+        remember(selectedGroup?.id, mainViewModel) {
+            selectedGroup?.let { mainViewModel.serversForGroup(it.id) }
+                ?: MutableStateFlow(emptyList<ServersCache>())
+        }
+    val selectedGroupServers by selectedGroupServersFlow.collectAsStateWithLifecycle()
     val selectedServerName = selectedGroupServers
         .firstOrNull { it.guid == selectedGuid }
         ?.profile?.remarks
