@@ -175,6 +175,13 @@
 
     <!-- Preferences -->
     <string name="title_settings">Настройки</string>
+    <string name="settings_version">Версия %1$s</string>
+    <string name="title_developer">Для разработчика</string>
+    <string name="title_pref_simulate_block">Имитировать блокировку прямых</string>
+    <string name="summary_pref_simulate_block">Прямые локации получают закрытый порт, работают только CDN. Для проверки автопилота.</string>
+    <string name="toast_developer_mode">Режим разработчика включён</string>
+    <string name="toast_simulation_updated">Подписка обновлена. Переподключите VPN.</string>
+    <string name="toast_simulation_failed">Не удалось обновить подписку</string>
     <string name="main_speed_format">↓ %1$s   ↑ %2$s</string>
     <string name="other_subscriptions_title">Другие подписки</string>
     <string name="other_subscription_switch">Нажмите, чтобы переключиться</string>

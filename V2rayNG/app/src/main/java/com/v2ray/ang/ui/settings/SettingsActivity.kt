@@ -32,6 +32,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.AppConfig.VPN
+import com.v2ray.ang.BuildConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.extension.toastError
 import com.v2ray.ang.handler.AlwaysOnVpnState
@@ -111,6 +112,9 @@ fun SettingsScreen(
     val systemVpnSettingsAvailable by viewModel.systemVpnSettingsAvailable.collectAsStateWithLifecycle()
     var uiSettingsExpanded by rememberSaveable { mutableStateOf(true) }
     var vpnSettingsExpanded by rememberSaveable { mutableStateOf(true) }
+    var developerExpanded by rememberSaveable { mutableStateOf(true) }
+    var devMode by rememberSaveable { mutableStateOf(false) }
+    var versionTaps by rememberSaveable { mutableStateOf(0) }
     var coreSettingsExpanded by rememberSaveable { mutableStateOf(true) }
     var muxSettingsExpanded by rememberSaveable { mutableStateOf(false) }
     var fragmentSettingsExpanded by rememberSaveable { mutableStateOf(false) }
@@ -119,6 +123,7 @@ fun SettingsScreen(
     var modeSettingsExpanded by rememberSaveable { mutableStateOf(true) }
 
     var killSwitch by rememberMmkvBool(AppConfig.PREF_KILL_SWITCH, false)
+    var simulateBlock by rememberMmkvBool(AppConfig.PREF_SIMULATE_BLOCK, false)
     var localDns by rememberMmkvBool(AppConfig.PREF_LOCAL_DNS_ENABLED, false)
     var fakeDns by rememberMmkvBool(AppConfig.PREF_FAKE_DNS_ENABLED, false)
     var appendHttpProxy by rememberMmkvBool(AppConfig.PREF_APPEND_HTTP_PROXY, false)
@@ -247,6 +252,24 @@ fun SettingsScreen(
                 .verticalScrollbar(scrollState)
                 .verticalScroll(scrollState)
         ) {
+            if (devMode) {
+                CollapsiblePreferenceGroupHeader(
+                    title = stringResource(R.string.title_developer),
+                    expanded = developerExpanded,
+                    onExpandedChange = { developerExpanded = it }
+                )
+                if (developerExpanded) {
+                    SettingsSwitchItem(
+                        title = stringResource(R.string.title_pref_simulate_block),
+                        summary = stringResource(R.string.summary_pref_simulate_block),
+                        checked = simulateBlock,
+                        onCheckedChange = { value ->
+                            simulateBlock = value
+                            viewModel.setSimulateBlock(value)
+                        }
+                    )
+                }
+            }
             CollapsiblePreferenceGroupHeader(
                 title = stringResource(R.string.title_ui_settings),
                 expanded = uiSettingsExpanded,
@@ -363,6 +386,16 @@ fun SettingsScreen(
                 }
             }
 
+            SettingsMenuItem(
+                title = stringResource(R.string.settings_version, BuildConfig.VERSION_NAME),
+                onClick = {
+                    versionTaps += 1
+                    if (versionTaps >= 7) {
+                        if (!devMode) viewModel.toast(R.string.toast_developer_mode)
+                        devMode = true
+                    }
+                }
+            )
             Spacer(modifier = Modifier.height(24.dp))
             NavigationBarsSpacer()
         }

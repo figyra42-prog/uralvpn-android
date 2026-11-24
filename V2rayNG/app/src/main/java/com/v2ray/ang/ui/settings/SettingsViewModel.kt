@@ -5,8 +5,11 @@ import android.content.Intent
 import android.provider.Settings
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
+import com.v2ray.ang.handler.AngConfigManager
 import com.v2ray.ang.handler.AlwaysOnVpn
 import com.v2ray.ang.handler.AlwaysOnVpnState
+import com.v2ray.ang.handler.MmkvManager
+import com.v2ray.ang.handler.SettingsChangeManager
 import com.v2ray.ang.root.RootManager
 import com.v2ray.ang.ui.base.BaseViewModel
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +33,23 @@ class SettingsViewModel(application: Application) : BaseViewModel(application) {
         }
         _alwaysOnState.value = withContext(Dispatchers.IO) {
             AlwaysOnVpn.read(application)
+        }
+    }
+
+    /** Persists the developer simulation switch and refreshes all subscriptions. */
+    fun setSimulateBlock(enabled: Boolean) {
+        MmkvManager.encodeSettings(AppConfig.PREF_SIMULATE_BLOCK, enabled)
+        launchLoading {
+            val result = withContext(Dispatchers.IO) {
+                AngConfigManager.updateConfigViaSubAll()
+            }
+            if (result.configCount > 0) {
+                SettingsChangeManager.makeRestartService()
+                SettingsChangeManager.makeSetupGroupTab()
+                toastSuccess(R.string.toast_simulation_updated)
+            } else {
+                toastError(R.string.toast_simulation_failed)
+            }
         }
     }
 

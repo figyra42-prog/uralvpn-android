@@ -22,6 +22,7 @@ object SettingsChangeManager {
         AppConfig.PREF_DYNAMIC_COLOR,
         AppConfig.PREF_IS_BOOTED,
         AppConfig.PREF_KILL_SWITCH,
+        AppConfig.PREF_SIMULATE_BLOCK,
     )
 
     /**
