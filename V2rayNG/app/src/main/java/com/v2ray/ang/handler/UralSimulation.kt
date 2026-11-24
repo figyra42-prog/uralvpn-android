@@ -15,14 +15,22 @@ object UralSimulation {
     fun apply(content: String): String =
         apply(content, MmkvManager.decodeSettingsBool(AppConfig.PREF_SIMULATE_BLOCK, false))
 
-    internal fun apply(content: String, enabled: Boolean): String {
+    internal fun apply(content: String, enabled: Boolean): String =
+        apply(content, enabled, { Utils.decode(it) }, { Utils.encode(it) })
+
+    internal fun apply(
+        content: String,
+        enabled: Boolean,
+        decodeBase64: (String) -> String,
+        encodeBase64: (String) -> String,
+    ): String {
         if (!enabled) return content
         val trimmed = content.trim()
         if (trimmed.startsWith("{")) return applyToJson(content)
         if (trimmed.contains("vless://", ignoreCase = true)) return applyToLinks(trimmed)
-        val decoded = Utils.decode(content)
+        val decoded = decodeBase64(content)
         return if (decoded.contains("vless://", ignoreCase = true)) {
-            Utils.encode(applyToLinks(decoded))
+            encodeBase64(applyToLinks(decoded))
         } else {
             content
         }

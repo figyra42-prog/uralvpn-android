@@ -1,7 +1,6 @@
 package com.v2ray.ang.handler
 
 import com.google.gson.JsonParser
-import com.v2ray.ang.util.Utils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -50,8 +49,11 @@ class UralSimulationTest {
 
     @Test
     fun base64LinksAreDecodedAndReencoded() {
-        val encoded = Utils.encode(links)
-        val decoded = Utils.decode(UralSimulation.apply(encoded, true))
+        // The production code uses android.util.Base64 through Utils; a JVM test supplies Java Base64.
+        val javaEncode: (String) -> String = { java.util.Base64.getEncoder().encodeToString(it.toByteArray()) }
+        val javaDecode: (String) -> String = { String(java.util.Base64.getDecoder().decode(it)) }
+        val encoded = javaEncode(links)
+        val decoded = javaDecode(UralSimulation.apply(encoded, true, javaDecode, javaEncode))
         assertEquals("vless://uuid@direct.example:1?encryption=none#Латвия", decoded.lines().first())
     }
 }
