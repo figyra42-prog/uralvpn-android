@@ -11,6 +11,7 @@ import com.v2ray.ang.extension.isComplexType
 import com.v2ray.ang.extension.isNotNullEmpty
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.SettingsManager
+import com.v2ray.ang.handler.UralSimulation
 import com.v2ray.ang.util.LogUtil
 import com.v2ray.ang.util.Utils
 
@@ -66,20 +67,21 @@ object CoreConfigContextBuilder {
             return null
         }
 
-        val (resolvedProfiles, resolvedType) = when (profile.configType) {
+        val effectiveProfile = UralSimulation.applyToProfile(profile)
+        val (resolvedProfiles, resolvedType) = when (effectiveProfile.configType) {
             EConfigType.POLICYGROUP -> Pair(
-                resolvePolicyGroupProfiles(profile),
+                resolvePolicyGroupProfiles(effectiveProfile),
                 CoreResolvedType.POLICYGROUP,
             )
 
             EConfigType.PROXYCHAIN -> {
-                val chainProfiles = resolveProxyChainProfiles(profile)
+                val chainProfiles = resolveProxyChainProfiles(effectiveProfile)
                 val type = if (chainProfiles.size <= 1) CoreResolvedType.NORMAL else CoreResolvedType.PROXYCHAIN
                 Pair(chainProfiles, type)
             }
 
             else -> {
-                val chainProfiles = resolveProxyChainProfilesFromGroup(profile)
+                val chainProfiles = resolveProxyChainProfilesFromGroup(effectiveProfile)
                 val type = if (chainProfiles.size <= 1) CoreResolvedType.NORMAL else CoreResolvedType.PROXYCHAIN
                 Pair(chainProfiles, type)
             }
@@ -87,8 +89,8 @@ object CoreConfigContextBuilder {
 
         return CoreConfigContext.ResolvedOutbound(
             tag = tag,
-            profile = profile,
-            resolvedProfiles = resolvedProfiles,
+            profile = effectiveProfile,
+            resolvedProfiles = resolvedProfiles.map(UralSimulation::applyToProfile),
             resolvedType = resolvedType,
         )
     }
