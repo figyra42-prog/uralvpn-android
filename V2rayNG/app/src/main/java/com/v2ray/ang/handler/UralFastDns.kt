@@ -16,6 +16,7 @@ object UralFastDns {
     private const val FAKE_DNS = "fakedns"
     private const val IP_POOL = "198.18.0.0/15"
     private const val POOL_SIZE = 10000
+    private const val SLOW_DNS_HOST = "yandex.net"
 
     fun apply(root: JsonObject) {
         ensurePool(root)
@@ -39,19 +40,27 @@ object UralFastDns {
             ?: JsonObject().also { root.add("dns", it) }
         val servers = dns.get("servers") as? JsonArray
             ?: JsonArray().also { dns.add("servers", it) }
-        if (servers.any { server ->
-                server.isJsonObject &&
-                    server.asJsonObject.get("address")?.takeIf { it.isJsonPrimitive }?.asString == FAKE_DNS
+        val filtered = JsonArray()
+        for (server in servers) {
+            val address = (server as? JsonObject)
+                ?.get("address")?.takeIf { it.isJsonPrimitive }?.asString.orEmpty()
+            if (address.contains(SLOW_DNS_HOST, ignoreCase = true)) continue
+            filtered.add(server)
+        }
+        val hasFakeDns = filtered.any { server ->
+            server.isJsonObject &&
+                server.asJsonObject.get("address")?.takeIf { it.isJsonPrimitive }?.asString == FAKE_DNS
+        }
+        if (!hasFakeDns) {
+            val first = JsonObject().apply { addProperty("address", FAKE_DNS) }
+            val reordered = JsonArray().apply {
+                add(first)
+                for (server in filtered) add(server)
             }
-        ) {
-            return
+            dns.add("servers", reordered)
+        } else {
+            dns.add("servers", filtered)
         }
-        val first = JsonObject().apply { addProperty("address", FAKE_DNS) }
-        val reordered = JsonArray().apply {
-            add(first)
-            for (server in servers) add(server)
-        }
-        dns.add("servers", reordered)
     }
 
     private fun ensureSniffing(root: JsonObject) {

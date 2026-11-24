@@ -46,6 +46,24 @@ class UralFastDnsTest {
         assertEquals(1, root.getAsJsonObject("routing").getAsJsonArray("rules").count { it.asJsonObject.get("outboundTag")?.asString == "dns-out" })
     }
 
+
+    @Test
+    fun removesYandexDohSoFakeDnsIsDefault() {
+        val root = JsonParser.parseString(
+            """{"dns":{"servers":[
+              {"address":"https://common.dot.dns.yandex.net/dns-query","domains":["domain:vk.com"]},
+              {"address":"1.1.1.1"}
+            ]}}"""
+        ).asJsonObject
+
+        UralFastDns.apply(root)
+
+        val servers = root.getAsJsonObject("dns").getAsJsonArray("servers")
+        assertEquals("fakedns", servers.first().asJsonObject.get("address").asString)
+        assertEquals(2, servers.size())
+        assertTrue(servers.none { it.asJsonObject.get("address").asString.contains("yandex") })
+    }
+
     @Test
     fun createsDnsAndSniffingWhenMissing() {
         val root = JsonParser.parseString("""{"inbounds":[{}]}""").asJsonObject
