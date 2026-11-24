@@ -510,36 +510,39 @@ object AngConfigManager {
                 )
             }
 
+            // Try a direct request first: a fresh install has no running tunnel, so the local proxy
+            // port is a dead end. The proxy is only a fallback when the direct request is blocked.
             var configText = try {
-                val httpPort = SettingsManager.getHttpPort()
                 HttpUtil.getUrlContentWithUserAgent(
                     UrlContentRequest(
                         url = url,
                         userAgent = userAgent,
                         requestHeaders = requestHeaders,
-                        timeout = 15000,
-                        httpPort = httpPort,
-                        proxyUsername = proxyUsername,
-                        proxyPassword = proxyPassword
+                        timeout = 15000
                     ),
                     captureUsageInfo
                 )
             } catch (e: Exception) {
-                LogUtil.e(AppConfig.ANG_PACKAGE, "Update subscription: proxy not ready or other error", e)
+                LogUtil.e(AppConfig.TAG, "Update subscription: direct request failed", e)
                 ""
             }
             if (configText.isEmpty()) {
                 configText = try {
+                    val httpPort = SettingsManager.getHttpPort()
                     HttpUtil.getUrlContentWithUserAgent(
                         UrlContentRequest(
                             url = url,
                             userAgent = userAgent,
-                            requestHeaders = requestHeaders
+                            requestHeaders = requestHeaders,
+                            timeout = 15000,
+                            httpPort = httpPort,
+                            proxyUsername = proxyUsername,
+                            proxyPassword = proxyPassword
                         ),
                         captureUsageInfo
                     )
                 } catch (e: Exception) {
-                    LogUtil.e(AppConfig.TAG, "Update subscription: Failed to get URL content with user agent", e)
+                    LogUtil.e(AppConfig.ANG_PACKAGE, "Update subscription: proxy fallback failed", e)
                     ""
                 }
             }
