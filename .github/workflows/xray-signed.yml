@@ -6,7 +6,7 @@ on:
       build_number:
         description: 'Build number (versionCode = 4000000 + 1000 + build_number)'
         required: true
-        default: '60'
+        default: '61'
         type: string
   push:
     branches:
@@ -16,7 +16,7 @@ permissions:
   contents: write
 
 env:
-  BUILD_NUMBER: ${{ github.event.inputs.build_number || '60' }}
+  BUILD_NUMBER: ${{ github.event.inputs.build_number || '61' }}
 
 jobs:
   build:
@@ -145,4 +145,4 @@ jobs:
           gh release create "v1.1.16" $ASSETS \
             --repo "$GH_REPO" --draft --prerelease --target "${{ github.sha }}" \
             --title "UralVPN 1.1.16 Xray" \
-            --notes "UralVPN 1.1.16 на Xray, сборка 60. Пакет app.uralvpn.next, обновление поверх 1.1.15 с переносом подписки. Название UralVPN и надпись «Меню» у кнопки бокового меню. Черновик для проверки."
+            --notes "UralVPN 1.1.16 на Xray, сборка 61. Пакет app.uralvpn.next, обновление поверх 1.1.15 с переносом подписки. Долгое нажатие на локацию показывает данные с скрытыми ключами и кнопкой копирования. Черновик для проверки."
