@@ -408,6 +408,17 @@ fun SettingsScreen(
                     checked = ipv6Enabled,
                     onCheckedChange = { ipv6Enabled = it }
                 )
+                SettingsSwitchItem(
+                    title = stringResource(R.string.title_pref_use_hev_tunnel),
+                    summary = stringResource(R.string.summary_pref_use_hev_tunnel),
+                    checked = useHevTun,
+                    onCheckedChange = { useHevTun = it }
+                )
+                SettingsEditItem(
+                    title = stringResource(R.string.title_pref_vpn_mtu),
+                    value = vpnMtu,
+                    onValueChanged = { vpnMtu = it }
+                )
                 SettingsListItem(
                     title = stringResource(R.string.title_pref_dns_preset),
                     entries = dnsPresetEntries,
