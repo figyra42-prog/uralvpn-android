@@ -17,9 +17,11 @@ import com.v2ray.ang.extension.serializable
 import com.v2ray.ang.handler.AngConfigManager
 import com.v2ray.ang.handler.AppLocaleManager
 import com.v2ray.ang.handler.MmkvManager
+import com.v2ray.ang.handler.UralColdStart
 import com.v2ray.ang.helper.MessageHelper
 import com.v2ray.ang.helper.NotificationHelper
 import com.v2ray.ang.util.LogUtil
+import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 
 class CoreTestService : Service() {
@@ -30,6 +32,7 @@ class CoreTestService : Service() {
 
     // manage active batch workers so each batch is independent and cancellable
     private val activeWorkers = ConcurrentHashMap<RealPingWorkerService, String>()
+    private val timingRows = ConcurrentHashMap<String, MutableList<UralColdStart.Row>>()
     private val cancelAction by lazy {
         val intent = Intent(this, CoreTestService::class.java).putExtra(
             "content",
@@ -160,7 +163,24 @@ class CoreTestService : Service() {
                 )
             }
 
+            is RealPingEvent.Timing -> {
+                timingRows.computeIfAbsent(requestId) {
+                    Collections.synchronizedList(mutableListOf<UralColdStart.Row>())
+                }.add(
+                    UralColdStart.Row(
+                        remark = event.remark,
+                        type = event.type,
+                        connectMillis = event.connectMillis,
+                        totalMillis = event.totalMillis,
+                    )
+                )
+            }
+
             is RealPingEvent.Finish -> {
+                timingRows.remove(requestId)?.let { rows ->
+                    val report = UralColdStart.report(rows)
+                    if (report.isNotEmpty()) LogUtil.w(AppConfig.TAG, report)
+                }
                 if (message.subscriptionId.isNotEmpty()) {
                     if (MmkvManager.decodeSettingsBool(AppConfig.PREF_AUTO_REMOVE_INVALID_AFTER_TEST, false)) {
                         AngConfigManager.removeInvalidServer(message.subscriptionId)
@@ -192,6 +212,7 @@ class CoreTestService : Service() {
         // Reply for each cancelled request, never for a newer UI request that has not started here.
         activeWorkers.entries.toList().forEach { (worker, requestId) ->
             if (activeWorkers.remove(worker, requestId)) {
+                timingRows.remove(requestId)
                 worker.cancel()
                 MessageHelper.sendMsg2UI(this, AppConfig.MSG_MEASURE_CONFIG_CANCEL, "", requestId)
             }
