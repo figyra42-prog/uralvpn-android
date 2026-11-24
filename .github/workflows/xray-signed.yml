@@ -126,6 +126,7 @@ jobs:
       - name: Draft release with APK
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
           D=$(dirname "$(find "$GITHUB_WORKSPACE/xray/V2rayNG/app/build/outputs/apk" -type f -name '*arm64-v8a*.apk' | head -1)")
           cp "$D"/*arm64-v8a*.apk UralVPN-Xray-arm64-v8a.apk
@@ -135,6 +136,6 @@ jobs:
             ASSETS="$ASSETS UralVPN-Xray-universal.apk"
           fi
           gh release create "xray-proto-${BUILD_NUMBER}-1" $ASSETS \
-            --draft --prerelease --target "${{ github.sha }}" \
+            --repo "$GH_REPO" --draft --prerelease --target "${{ github.sha }}" \
             --title "UralVPN Xray prototype #${BUILD_NUMBER} (production signed)" \
             --notes "Production-подпись. Пакет app.uralvpn.xray. Ставится поверх предыдущей версии 55."
