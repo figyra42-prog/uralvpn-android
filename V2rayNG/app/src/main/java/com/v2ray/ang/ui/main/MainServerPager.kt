@@ -363,7 +363,7 @@ private fun UpdatedBanner(text: String) {
     Surface(
         shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.primaryContainer,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, bottom = 12.dp),
+        modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, bottom = 12.dp),
     ) {
         Text(
             text = text,
