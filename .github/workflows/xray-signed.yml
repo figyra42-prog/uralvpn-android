@@ -6,7 +6,7 @@ on:
       build_number:
         description: 'Build number (versionCode = 4000000 + 1000 + build_number)'
         required: true
-        default: '79'
+        default: '80'
         type: string
   push:
     branches:
@@ -16,7 +16,7 @@ permissions:
   contents: write
 
 env:
-  BUILD_NUMBER: ${{ github.event.inputs.build_number || '79' }}
+  BUILD_NUMBER: ${{ github.event.inputs.build_number || '80' }}
 
 jobs:
   build:
@@ -124,7 +124,7 @@ jobs:
           grep -q '092d8f97613277ed066c622ad291edd543b73bd6a828043e42d8b6f243a21e33' /tmp/xray-signature.txt
           "$BTOOLS/aapt2" dump badging "$APK" | grep -q "package: name='app.uralvpn.next'"
           "$BTOOLS/aapt2" dump badging "$APK" | grep -q "versionCode='$EXPECTED_CODE'"
-          "$BTOOLS/aapt2" dump badging "$APK" | grep -q "versionName='1.1.30'"
+          "$BTOOLS/aapt2" dump badging "$APK" | grep -q "versionName='1.1.31'"
 
       - name: Draft release with APK
         env:
@@ -138,11 +138,11 @@ jobs:
           printf '{"version_code":%d}\n' "$EXPECTED_CODE" > SFA-version-metadata.json
           ASSETS="UralVPN-arm64-v8a.apk UralVPN-universal.apk SFA-version-metadata.json"
           DRAFT_ID=$(gh api "repos/$GH_REPO/releases?per_page=100" \
-            --jq '.[] | select(.tag_name == "v1.1.30" and .draft) | .id' | head -1)
+            --jq '.[] | select(.tag_name == "v1.1.31" and .draft) | .id' | head -1)
           if [ -n "$DRAFT_ID" ]; then
             gh api -X DELETE "repos/$GH_REPO/releases/$DRAFT_ID"
           fi
-          gh release create "v1.1.30" $ASSETS \
+          gh release create "v1.1.31" $ASSETS \
             --repo "$GH_REPO" --draft --prerelease --target "${{ github.sha }}" \
-            --title "UralVPN 1.1.30 Xray" \
-            --notes "UralVPN 1.1.30 на Xray, сборка 79. Пакет app.uralvpn.next, обновление поверх 1.1.29. Карточка подписки переделана: трафик слева с иконкой сайта, срок справа с иконкой Telegram; служебные иконки убраны из шапки. Черновик для проверки."
+            --title "UralVPN 1.1.31 Xray" \
+            --notes "UralVPN 1.1.31 на Xray, сборка 80. Пакет app.uralvpn.next, обновление поверх 1.1.29. Карточка подписки: слева трафик с иконкой сайта, справа срок с иконкой Telegram; без внутренней подсветки и без остатка дней. Черновик для проверки."
