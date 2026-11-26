@@ -6,7 +6,12 @@ on:
       build_number:
         description: 'Build number (versionCode = 4000000 + 1000 + build_number)'
         required: true
-        default: '84'
+        default: '85'
+        type: string
+      version_name:
+        description: 'Version name. Empty = test suffix 1.1.36-test<build>.'
+        required: false
+        default: ''
         type: string
   push:
     branches:
@@ -16,7 +21,9 @@ permissions:
   contents: write
 
 env:
-  BUILD_NUMBER: ${{ github.event.inputs.build_number || '84' }}
+  BUILD_NUMBER: ${{ github.event.inputs.build_number || '85' }}
+  VERSION_NAME: ${{ github.event.inputs.version_name || format('1.1.36-test{0}', github.event.inputs.build_number || '85') }}
+  RELEASE_TAG: v${{ github.event.inputs.version_name || format('1.1.36-test{0}', github.event.inputs.build_number || '85') }}
 
 jobs:
   build:
@@ -112,7 +119,7 @@ jobs:
             echo "ALIAS_PASS=$KS_KEY_PASS"
           } >> local.properties
           chmod 755 gradlew
-          ./gradlew assemblePlaystoreDebug -PbuildNumber="${BUILD_NUMBER}"
+          ./gradlew assemblePlaystoreDebug -PbuildNumber="${BUILD_NUMBER}" -PappVersionName="${VERSION_NAME}"
 
       - name: Verify production signature and version
         run: |
@@ -124,7 +131,7 @@ jobs:
           grep -q '092d8f97613277ed066c622ad291edd543b73bd6a828043e42d8b6f243a21e33' /tmp/xray-signature.txt
           "$BTOOLS/aapt2" dump badging "$APK" | grep -q "package: name='app.uralvpn.next'"
           "$BTOOLS/aapt2" dump badging "$APK" | grep -q "versionCode='$EXPECTED_CODE'"
-          "$BTOOLS/aapt2" dump badging "$APK" | grep -q "versionName='1.1.35'"
+          "$BTOOLS/aapt2" dump badging "$APK" | grep -q "versionName='$VERSION_NAME'"
 
       - name: Draft release with APK
         env:
@@ -138,11 +145,11 @@ jobs:
           printf '{"version_code":%d}\n' "$EXPECTED_CODE" > SFA-version-metadata.json
           ASSETS="UralVPN-arm64-v8a.apk UralVPN-universal.apk SFA-version-metadata.json"
           DRAFT_ID=$(gh api "repos/$GH_REPO/releases?per_page=100" \
-            --jq '.[] | select(.tag_name == "v1.1.35" and .draft) | .id' | head -1)
+            --jq '.[] | select(.tag_name == "'"$RELEASE_TAG"'" and .draft) | .id' | head -1)
           if [ -n "$DRAFT_ID" ]; then
             gh api -X DELETE "repos/$GH_REPO/releases/$DRAFT_ID"
           fi
-          gh release create "v1.1.35" $ASSETS \
+          gh release create "$RELEASE_TAG" $ASSETS \
             --repo "$GH_REPO" --draft --prerelease --target "${{ github.sha }}" \
-            --title "UralVPN 1.1.35 Xray" \
-            --notes "UralVPN 1.1.35 на Xray, сборка 84. Пакет app.uralvpn.next, обновление поверх 1.1.29. Карточка подписки стала компактнее: уменьшены нижний отступ, промежуток перед прогрессом и перед сообщением подписки. Черновик для проверки."
+            --title "UralVPN $VERSION_NAME Xray" \
+            --notes "UralVPN $VERSION_NAME на Xray, сборка $BUILD_NUMBER. Пакет app.uralvpn.next. Черновик для проверки."
