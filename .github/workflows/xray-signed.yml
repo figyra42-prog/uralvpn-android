@@ -6,10 +6,10 @@ on:
       build_number:
         description: 'Build number (versionCode = 4000000 + 1000 + build_number)'
         required: true
-        default: '85'
+        default: '86'
         type: string
       version_name:
-        description: 'Version name. Empty = test suffix 1.1.36-test<build>.'
+        description: 'Version name. Empty = test suffix 1.1.37-test<build>.'
         required: false
         default: ''
         type: string
@@ -21,9 +21,9 @@ permissions:
   contents: write
 
 env:
-  BUILD_NUMBER: ${{ github.event.inputs.build_number || '85' }}
-  VERSION_NAME: ${{ github.event.inputs.version_name || format('1.1.36-test{0}', github.event.inputs.build_number || '85') }}
-  RELEASE_TAG: v${{ github.event.inputs.version_name || format('1.1.36-test{0}', github.event.inputs.build_number || '85') }}
+  BUILD_NUMBER: ${{ github.event.inputs.build_number || '86' }}
+  VERSION_NAME: ${{ github.event.inputs.version_name || format('1.1.37-test{0}', github.event.inputs.build_number || '86') }}
+  RELEASE_TAG: v${{ github.event.inputs.version_name || format('1.1.37-test{0}', github.event.inputs.build_number || '86') }}
 
 jobs:
   build:
